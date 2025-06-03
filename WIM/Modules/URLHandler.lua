@@ -20,6 +20,10 @@ db_defaults.displayColors.webAddress = {
 local URL = CreateModule("URLHandler", true);
 
 armoryLinks = {
+	{
+		title = "複製名字",
+		url = "{user}",
+    },
     {
 		title = "官方英雄榜",
 		url = "https://worldofwarcraft.com/zh-tw/character/{realm}/{user}"
@@ -50,8 +54,16 @@ armoryLinks = {
 		url = "http://www.wowhead.com/profile={eu/us}.{realm-}.{user}",
     },
 	{
-			title = "複製角色名稱",
-			url = "{user}"
+        title = "Warcraft Logs Fresh",
+        url = "https://fresh.warcraftlogs.com/character/{eu/us}/{realm}/{user}"
+    },
+    {
+        title = "Warcraft Logs Classic",
+        url = "https://classic.warcraftlogs.com/character/{eu/us}/{realm}/{user}"
+    },
+	{
+		title = "Warcraft Logs Season of Mastery",
+		url = "https://sod.warcraftlogs.com/character/{eu/us}/{realm}/{user}"
 	}
 };
 
