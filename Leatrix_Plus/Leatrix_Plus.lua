@@ -1,5 +1,5 @@
 ﻿----------------------------------------------------------------------
--- 	Leatrix Plus 4.0.69 (14th May 2025)
+-- 	Leatrix Plus 4.0.71 (18th June 2025)
 ----------------------------------------------------------------------
 
 --	01:Functions 02:Locks   03:Restart 40:Player   45:Rest
@@ -19,7 +19,7 @@
 	local void
 
 	-- Version
-	LeaPlusLC["AddonVer"] = "4.0.69"
+	LeaPlusLC["AddonVer"] = "4.0.71"
 
 	-- Get locale table
 	local void, Leatrix_Plus = ...
@@ -1730,9 +1730,17 @@
 			----------------------------------------------------------------------
 
 			-- Create editbox
-			local mEB = CreateFrame("EditBox", nil, QuestLogFrame)
-			mEB:ClearAllPoints()
-			mEB:SetPoint("TOPLEFT", 70, 4)
+			local mEB
+			if LeaPlusLC.NewPatch then
+				mEB = CreateFrame("EditBox", nil, QuestLogFrame.TitleContainer)
+				mEB:ClearAllPoints()
+				mEB:SetPoint("TOPLEFT", 8, -2)
+				QuestLogTitleText:Hide()
+			else
+				mEB = CreateFrame("EditBox", nil, QuestLogFrame)
+				mEB:ClearAllPoints()
+				mEB:SetPoint("TOPLEFT", 70, 4)
+			end
 			mEB:SetHeight(16)
 			mEB:SetFontObject("GameFontNormal")
 			mEB:SetBlinkSpeed(0)
@@ -8783,8 +8791,13 @@
 
 			-- Button to toggle quest headers
 			LeaPlusLC:CreateButton("ToggleQuestHeaders", QuestLogFrame, "Expand", "BOTTOMLEFT", 344, 54, 0, 22, true, "", false)
-			LeaPlusCB["ToggleQuestHeaders"]:ClearAllPoints()
-			LeaPlusCB["ToggleQuestHeaders"]:SetPoint("TOPRIGHT", QuestLogFrame, "TOPRIGHT", -360, -44)
+			if LeaPlusLC.NewPatch then
+				LeaPlusCB["ToggleQuestHeaders"]:ClearAllPoints()
+				LeaPlusCB["ToggleQuestHeaders"]:SetPoint("TOPRIGHT", QuestLogFrame, "TOPRIGHT", -360, -33)
+			else
+				LeaPlusCB["ToggleQuestHeaders"]:ClearAllPoints()
+				LeaPlusCB["ToggleQuestHeaders"]:SetPoint("TOPRIGHT", QuestLogFrame, "TOPRIGHT", -360, -44)
+			end
 			LeaPlusCB["ToggleQuestHeaders"]:GetFontString():SetWordWrap(false)
 			LeaPlusCB["ToggleQuestHeaders"].collapsed = true
 
@@ -8962,62 +8975,37 @@
 
 		if LeaPlusLC["ShowBagSearchBox"] == "On" and not LeaLockList["ShowBagSearchBox"] then
 
-			if LeaPlusLC.NewPatch then
+			-- Function to unregister search event for guild bank since it isn't used
+			EventUtil.ContinueOnAddOnLoaded("Blizzard_GuildBankUI",function()
+				for i = 1, MAX_GUILDBANK_TABS do
+					_G["GuildBankTab" .. i].Button:UnregisterEvent("INVENTORY_SEARCH_UPDATE")
+				end
+			end)
 
-				-- Create bag item search box
-				local BagItemSearchBox = CreateFrame("EditBox", nil, ContainerFrame1, "BagSearchBoxTemplate")
-				BagItemSearchBox:SetSize(110, 18)
-				BagItemSearchBox:SetMaxLetters(15)
+			-- Create bag item search box
+			local BagItemSearchBox = CreateFrame("EditBox", nil, ContainerFrame1, "BagSearchBoxTemplate")
+			BagItemSearchBox:SetSize(110, 18)
+			BagItemSearchBox:SetMaxLetters(15)
 
-				-- Attach bag search box first bag only
-				hooksecurefunc("ContainerFrame_Update", function(self)
-					if self:GetID() == 0 then
-						BagItemSearchBox:SetParent(self)
-						BagItemSearchBox:SetPoint("TOPLEFT", self, "TOPLEFT", 54, -29)
-						BagItemSearchBox.anchorBag = self
-						BagItemSearchBox:Show()
-					elseif BagItemSearchBox.anchorBag == self then
-						BagItemSearchBox:ClearAllPoints()
-						BagItemSearchBox:Hide()
-						BagItemSearchBox.anchorBag = nil
-					end
-				end)
+			-- Create bank item search box
+			local BankItemSearchBox = CreateFrame("EditBox", nil, BankFrame, "BagSearchBoxTemplate")
+			BankItemSearchBox:SetSize(120, 14)
+			BankItemSearchBox:SetMaxLetters(15)
+			BankItemSearchBox:SetPoint("TOPRIGHT", -60, -40)
 
-			else
-
-				-- Function to unregister search event for guild bank since it isn't used
-				EventUtil.ContinueOnAddOnLoaded("Blizzard_GuildBankUI",function()
-					for i = 1, MAX_GUILDBANK_TABS do
-						_G["GuildBankTab" .. i].Button:UnregisterEvent("INVENTORY_SEARCH_UPDATE")
-					end
-				end)
-
-				-- Create bag item search box
-				local BagItemSearchBox = CreateFrame("EditBox", nil, ContainerFrame1, "BagSearchBoxTemplate")
-				BagItemSearchBox:SetSize(110, 18)
-				BagItemSearchBox:SetMaxLetters(15)
-
-				-- Create bank item search box
-				local BankItemSearchBox = CreateFrame("EditBox", nil, BankFrame, "BagSearchBoxTemplate")
-				BankItemSearchBox:SetSize(120, 14)
-				BankItemSearchBox:SetMaxLetters(15)
-				BankItemSearchBox:SetPoint("TOPRIGHT", -60, -40)
-
-				-- Attach bag search box first bag only
-				hooksecurefunc("ContainerFrame_Update", function(self)
-					if self:GetID() == 0 then
-						BagItemSearchBox:SetParent(self)
-						BagItemSearchBox:SetPoint("TOPLEFT", self, "TOPLEFT", 54, -29)
-						BagItemSearchBox.anchorBag = self
-						BagItemSearchBox:Show()
-					elseif BagItemSearchBox.anchorBag == self then
-						BagItemSearchBox:ClearAllPoints()
-						BagItemSearchBox:Hide()
-						BagItemSearchBox.anchorBag = nil
-					end
-				end)
-
-			end
+			-- Attach bag search box first bag only
+			hooksecurefunc("ContainerFrame_Update", function(self)
+				if self:GetID() == 0 then
+					BagItemSearchBox:SetParent(self)
+					BagItemSearchBox:SetPoint("TOPLEFT", self, "TOPLEFT", 54, -29)
+					BagItemSearchBox.anchorBag = self
+					BagItemSearchBox:Show()
+				elseif BagItemSearchBox.anchorBag == self then
+					BagItemSearchBox:ClearAllPoints()
+					BagItemSearchBox:Hide()
+					BagItemSearchBox.anchorBag = nil
+				end
+			end)
 
 		end
 
@@ -13951,6 +13939,11 @@
 						Lock("ShowPetSaveBtn", L["This is for Mists of Pandaria Classic"]) -- Show pet save button
 						Lock("HideEventToasts", L["This is for Mists of Pandaria Classic"]) -- Hide event toasts
 						Lock("NoTransforms", L["This is for Mists of Pandaria Classic"]) -- Remove transforms
+					end
+
+					-- Remove settings that are now part of Mists of Pandaria default UI
+					if LeaPlusLC.NewPatch then
+						Lock("ShowBagSearchBox", L["This is now included in the default UI"]) -- Show bag search box
 					end
 
 					-- Disable items that conflict with Easy Frames
