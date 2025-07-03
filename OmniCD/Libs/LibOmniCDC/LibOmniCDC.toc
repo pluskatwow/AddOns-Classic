@@ -1,4 +1,4 @@
-## Interface: 11506, 40402, 110100
+## Interface: 11506, 50500, 110100
 
 ## Title: Lib: OmniCDC
 ## Author: Treebonker

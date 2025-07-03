@@ -1,4 +1,4 @@
-## Interface: 40402
+## Interface: 50500
 ## Title: Button Forge |cff69ccf0(Classic-Cata)|r
 ## Version: 1.0.24-classic-Cata
 ## Author: Massiner of Nathrezim, Albirew, Sunnova

@@ -1,4 +1,4 @@
-## Interface: 40402
+## Interface: 50500
 ## Title: WeakAuras Options
 ## Author: The WeakAuras Team
 ## Version: 5.19.12

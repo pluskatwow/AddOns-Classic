@@ -1,4 +1,4 @@
-## Interface: 40402
+## Interface: 50500
 ## Title: CursorTrail
 ## Notes: Adds a shape, shadow, and glowing trail effect to your mouse cursor.
 ## Author: UppyDan

@@ -1,4 +1,4 @@
-## Interface: 40402
+## Interface: 50500
 ## Title: NugComboBarGUI
 ## Notes: NugComboBar Configuration Panel
 ## Version: 10.2.4

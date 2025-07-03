@@ -1,4 +1,4 @@
-## Interface: 40402, 40402
+## Interface: 50500, 50500
 ## Title: TotemTimers
 ## Author:  Xianghar
 ## Version: 4.0.11
