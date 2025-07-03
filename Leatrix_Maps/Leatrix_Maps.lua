@@ -70,10 +70,12 @@
 		WorldMapTrackQuestText:SetText("")
 
 		-- Hide Quest Objectives and Show Digsites checkboxes (both are in the configuration panel)
-		WorldMapQuestShowObjectives:SetHitRectInsets(0, 0, 0, 0)
-		WorldMapQuestShowObjectives:ClearAllPoints()
-		WorldMapQuestShowObjectives.SetPoint = function() return end
-		WorldMapQuestShowObjectivesText:SetText("")
+		if WorldMapQuestShowObjectives then -- 暫時修正
+			WorldMapQuestShowObjectives:SetHitRectInsets(0, 0, 0, 0)
+			WorldMapQuestShowObjectives:ClearAllPoints()
+			WorldMapQuestShowObjectives.SetPoint = function() return end
+			WorldMapQuestShowObjectivesText:SetText("")
+		end
 
 		-- Make the map bigger
 		if LeaMapsLC["UseDefaultMap"] == "Off" then
