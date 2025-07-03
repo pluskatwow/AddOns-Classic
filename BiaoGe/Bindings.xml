@@ -1,8 +1,0 @@
-<Bindings>
-    <Binding name="BIAOGE" header="BiaoGe" Category="ADDONS">
-        BG.MainFrame:SetShown(not BG.MainFrame:IsVisible())
-    </Binding>
-    <Binding name="RoleOverview" Category="ADDONS">
-        BG.SetFBCD(nil, nil, true)
-    </Binding>
-</Bindings>
