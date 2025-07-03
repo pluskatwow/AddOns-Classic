@@ -8777,7 +8777,7 @@
 		--	Enhance professions
 		----------------------------------------------------------------------
 
-		if LeaPlusLC["EnhanceProfessions"] == "On" then
+		if LeaPlusLC["EnhanceProfessions"] == "On" and (not C_AddOns.IsAddOnLoaded("Skillet-Classic")) then -- 暫時修正
 
 			-- Set increased height of professions frame and maximum number of recipes listed
 			local tall, numTallProfs = 73, 19
