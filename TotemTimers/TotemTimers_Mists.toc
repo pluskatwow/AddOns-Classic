@@ -1,4 +1,4 @@
-## Interface: 30403
+## Interface: 50500
 ## Title: TotemTimers
 ## Author:  Xianghar
 ## Version: 5.0.0
@@ -27,7 +27,7 @@ localization\localization.esmx.lua
 XiTimers.lua
 XiTimers.xml
 
-wrath\TotemData.lua
+mists\TotemData.lua
 TotemTimers.xml
 TotemTimers.lua
 
@@ -42,7 +42,7 @@ TTActionBars.lua
 DefaultSettings.lua
 Settings.lua
 SetupTimers.lua
-MultiSpell.lua
+# MultiSpell.lua
 SetupTrackers.lua
 Ankh.lua
 Shield.lua
