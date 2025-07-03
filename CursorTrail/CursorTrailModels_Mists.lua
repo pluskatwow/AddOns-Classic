@@ -272,7 +272,7 @@ kModelConstants =
         ----BaseOfsX = 0, BaseOfsY = 0, BaseOfsZ = 0,
     },
     [667272] = {  -- "spells/time_vortex_state_green.m2"
-        Name = kCategory.Object .. "Vortex, Green",
+        Name = kCategory.Object .. "綠色漩渦",
         UseSetTransform = true, BaseScale = 0.005,
         ----BaseRotX = 0, BaseRotY = 0, BaseRotZ = 0,
         ----BaseOfsX = 0, BaseOfsY = 0, BaseOfsZ = 0,
@@ -371,7 +371,7 @@ kModelConstants =
     --~~~~~~~~~~~~~~~~~~~~~~~~~
 
     [166498] = {  -- "spells/lightningboltivus_missile.m2"    ****** DEFAULT ******
-        Name = kCategory.Trail .. "Electric, Blue (Long)",
+        Name = kCategory.Trail .. "藍色閃電 (長)",
         BaseScale = 0.06, BaseFacing = 0,
         BaseOfsX = 0.075, BaseOfsY = 0.2,
         BaseStepX = 472, BaseStepY = 472,  -- To increase range, decrease #s.  To decrease range, increase #s.
