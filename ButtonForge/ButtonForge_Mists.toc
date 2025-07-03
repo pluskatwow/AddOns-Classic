@@ -1,6 +1,6 @@
 ## Interface: 50500
-## Title: Button Forge |cff69ccf0(Classic-Cata)|r
-## Version: 1.0.24-classic-Cata
+## Title: Button Forge |cff69ccf0(Classic-Mists)|r
+## Version: 1.0.25-classic-Mists
 ## Author: Massiner of Nathrezim, Albirew, Sunnova
 ## SavedVariables: ButtonForgeGlobalSettings, ButtonForgeGlobalProfiles, ButtonForgeGlobalBackup
 ## SavedVariablesPerCharacter: ButtonForgeSave, BFSave
@@ -12,6 +12,8 @@
 ## Notes-zhTW: Button Forge |n|n讓你可以打造出更多快捷列和按鈕。|n|n|cffffd200使用方法: |r從Esc>選項>插件>快捷列-更多，開啟快捷列製作工具。
 ## X-Category-zhTW: 介面
 ## DefaultState: disabled
+
+Libs\LibDataBroker-1.1.lua
 
 Declares.lua
 Const.lua

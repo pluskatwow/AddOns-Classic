@@ -1,11 +1,11 @@
 ﻿Button Forge
-Mod for World of Warcraft
-
+Mod for World of Warcraft Classic Versions
+ 
 Author: Massiner of Nathrezim
 Contributor: xfsbill
 Past Contributors: DT85, DandierSphinx
 
-Version: 1.0.22
+Version: 1.0.25
 
 Description: Graphically create as many Action Bars and Buttons in the game as you choose
 
@@ -23,8 +23,14 @@ Restrictions:
 
 
 History:
+ 
+18-May-2025   v1.0.25  - Modifed for MoP (Mists Classic) 5.5.0, Data Broker support added.
 
-04-Apr-2024   v1.0.22  - Modifed for Cata, look for comments in files, -- changed for Cata, -- removed for Cata, -- added for Cata
+26-Feb-2025   v1.0.24  - Modifed for Cata 4.4.2 02/26/2025
+
+03-Sep-2024   v1.0.23  - fixes for 4.4.1 09/03/2024
+
+04-Apr-2024   v1.0.22  - Modifed for Cata 4.4.0, look for comments in files, -- changed for Cata, -- removed for Cata, -- added for Cata
 
 23-Mar-2024		v1.2.2.4 - Updated Interface version to 100206
 09-Mar-2024		v1.2.2.3 - Updated Interface version to 100205 to match retail

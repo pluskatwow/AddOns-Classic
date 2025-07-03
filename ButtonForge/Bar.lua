@@ -320,8 +320,8 @@ function Bar.New(BarSave)
 			--table.insert(NewBar.LeftControls, NewBar.LabelButton);
 
 		-- a bit hacky - but to get this out sooner rather than a bigger refactor
-			-- local NumSpecs = GetNumSpecializations() 
-			local NumSpecs = GetNumTalentGroups() -- changed for Cata 04/04/2024
+			local NumSpecs = GetNumSpecializations() -- changed for Mists 5.5.0 05/15/2025
+			-- local NumSpecs = GetNumTalentGroups() -- changed for Cata 04/04/2024
 			
 			for i = 1, NumSpecs do
 				--[[Hide On Talent # Button]]--

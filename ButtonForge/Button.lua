@@ -571,7 +571,7 @@ function Button:SetCommandSpell(Id)
 end
 function Button:SetCommandItem(Id, Link)
 	local Name;
-	Name, Link = GetItemInfo(Id);	--Note this will get a clean link, as the one passed in may have enchants etc encoded in it
+	Name, Link = C_Item.GetItemInfo(Id);	--Note this will get a clean link, as the one passed in may have enchants etc encoded in it
 	self:SetCommandExplicitItem(Id, Name, Link);
 end
 function Button:SetCommandMacro(Index)
@@ -735,7 +735,7 @@ function Button:SetEnvItem(Id, Name, Link)
 	self.ItemId 		= Id;
 	self.ItemName 		= Name;
 	self.ItemLink 		= Link;
-	self.Texture		= GetItemIcon(Id) or "Interface/Icons/INV_Misc_QuestionMark";				--safe no matter what
+	self.Texture		= C_Item.GetItemIconByID(Id) or "Interface/Icons/INV_Misc_QuestionMark";				--safe no matter what
 	self.Target			= "target";
 	
 	self:ResetAppearance();
@@ -1246,8 +1246,8 @@ function Button:SetAttributes(Type, Value)
 	elseif (Type == "battlepet") then
 		self.Widget:SetAttribute("type", "macro");
 		self.Widget:SetAttribute("typerelease", "macro");
-		self.Widget:SetAttribute("macrotext", string.format("/run local petID = \"%s\" if C_PetJournal.IsCurrentlySummoned(petID) then C_PetJournal.DismissSummonedPet(petID) elseif not InCombatLockdown() then C_PetJournal.SummonPetByGUID(petID) end", Value))
-	end
+		self.Widget:SetAttribute("macrotext", string.format("/run local petID = \"%s\" if C_PetJournal.GetSummonedPetGUID(petID) then C_PetJournal.SummonPetByGUID(C_PetJournal.GetSummonedPetGUID()) elseif not InCombatLockdown() then C_PetJournal.SummonPetByGUID(petID) end", Value)) -- changed for Mists 05/16/2025
+  end
 end
 
 
@@ -1492,7 +1492,7 @@ function Button:UpdateCheckedSpell()
 	end
 end
 function Button:UpdateCheckedItem()
-    if (IsCurrentItem(self.ItemId)) then
+    if (C_Item.IsCurrentItem(self.ItemId)) then  -- changed for Mists 05/16/2025
         self.Widget:SetChecked(true);
     else
 		self.Widget:SetChecked(false);
@@ -1528,10 +1528,15 @@ end
 function Button:UpdateCheckedCustomAction()
 	self.Widget:SetChecked(CustomAction.GetChecked(self.CustomActionName));
 end
-function Button:UpdateCheckedBattlePet()
-	self.Widget:SetChecked(C_PetJournal.IsCurrentlySummoned(self.BattlePetId))
-end
 
+-- function Button:UpdateCheckedBattlePet()
+--	self.Widget:SetChecked(C_PetJournal.IsCurrentlySummoned(self.BattlePetId))
+-- end
+
+function Button:UpdateCheckedBattlePet()
+	local Active = self.BattlePetId == C_PetJournal.GetSummonedPetGUID();
+	self.Widget:SetChecked(Active);
+end
 
 
 
@@ -1543,7 +1548,7 @@ function Button:UpdateEquipped()
 end
 
 function Button:UpdateEquippedItem()
-	if (IsEquippedItem(self.ItemId)) then
+	if (C_Item.IsEquippedItem(self.ItemId)) then  -- changed for Mists 05/16/2025
 		self.WBorder:SetVertexColor(0, 1.0, 0, 0.35);
 		self.WBorder:Show();
 	else
@@ -1650,7 +1655,7 @@ function Button:UpdateUsableSpell()
 	end
 end
 function Button:UpdateUsableItem()
-	local IsUsable, NotEnoughMana = IsUsableItem(self.ItemId);
+	local IsUsable, NotEnoughMana = C_Item.IsUsableItem(self.ItemId); -- changed for Mists 05/16/2025
 	IsUsable = IsUsable or PlayerHasToy(self.ItemId);
 	if (IsUsable) then
 		self.WIcon:SetVertexColor(1.0, 1.0, 1.0);
@@ -1743,8 +1748,8 @@ function Button:UpdateTextCountSpell()
 	self.WCount:SetText("");
 end
 function Button:UpdateTextCountItem()
-	local ItemCount = GetItemCount(self.ItemId, nil, true);
-	if (IsConsumableItem(self.ItemId) or ItemCount > 1) then
+	local ItemCount = C_Item.GetItemCount(self.ItemId, nil, true); -- changed for Mists 05/16/2025
+	if (C_Item.IsConsumableItem(self.ItemId) or ItemCount > 1) then  -- changed for Mists 05/16/2025
 		self.WCount:SetText(ItemCount);
 	else
 		self.WCount:SetText("");
