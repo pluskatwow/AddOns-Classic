@@ -1,5 +1,5 @@
 ﻿----------------------------------------------------------------------
--- 	Leatrix Plus 4.0.71 (18th June 2025)
+-- 	Leatrix Plus 4.0.72 (26th June 2025)
 ----------------------------------------------------------------------
 
 --	01:Functions 02:Locks   03:Restart 40:Player   45:Rest
@@ -19,7 +19,7 @@
 	local void
 
 	-- Version
-	LeaPlusLC["AddonVer"] = "4.0.71"
+	LeaPlusLC["AddonVer"] = "4.0.72"
 
 	-- Get locale table
 	local void, Leatrix_Plus = ...
@@ -4190,178 +4190,332 @@
 
 		if LeaPlusLC["EnhanceFlightMap"] == "On" then
 
-			-- Hide flight map textures
-			local regions = {TaxiFrame:GetRegions()}
-			regions[2]:Hide()
-			regions[3]:Hide()
-			regions[4]:Hide()
-			regions[5]:Hide()
-			TaxiPortrait:Hide()
-			TaxiMerchant:Hide()
+			if LeaPlusLC.NewPatch then
 
-			-- Create flight map border
-			local border = TaxiFrame:CreateTexture(nil, "BACKGROUND")
-			border:SetTexture("Interface\\DialogFrame\\UI-DialogBox-Background-Dark")
-			border:SetPoint("TOPLEFT", 18, -73)
-			border:SetPoint("BOTTOMRIGHT", -45, 83)
-			border:SetVertexColor(0, 0, 0, 1)
+				-- Set flight map properties
+				TaxiFrame:SetFrameStrata("FULLSCREEN_DIALOG")
+				TaxiFrame:SetHitRectInsets(18, 45, 73, 83)
+				TaxiFrame:SetClampedToScreen(true)
+				TaxiFrame:SetClampRectInsets(200, -200, -300, 300)
 
-			-- Set flight map properties
-			TaxiFrame:SetFrameStrata("FULLSCREEN_DIALOG")
-			TaxiFrame:SetHitRectInsets(18, 45, 73, 83)
-			TaxiFrame:SetClampedToScreen(true)
-			TaxiFrame:SetClampRectInsets(200, -200, -300, 300)
+				-- Position flight map when shown
+				hooksecurefunc(TaxiFrame, "SetPoint", function(self, ...)
+					local a, void, r, x, y = TaxiFrame:GetPoint()
+					x = tonumber(string.format("%.2f", x))
+					y = tonumber(string.format("%.2f", y))
+					local xb = tonumber(string.format("%.2f", LeaPlusLC["FlightMapX"]))
+					local yb = tonumber(string.format("%.2f", LeaPlusLC["FlightMapY"]))
+					if a ~= LeaPlusLC["FlightMapA"] or r ~= LeaPlusLC["FlightMapR"] or x ~= xb or y ~= yb then
+						TaxiFrame:ClearAllPoints()
+						TaxiFrame:SetPoint(LeaPlusLC["FlightMapA"], UIParent, LeaPlusLC["FlightMapR"], LeaPlusLC["FlightMapX"], LeaPlusLC["FlightMapY"])
+					end
+				end)
 
-			-- Position flight map when shown
-			hooksecurefunc(TaxiFrame, "SetPoint", function(self, ...)
-				local a, void, r, x, y = TaxiFrame:GetPoint()
-				x = tonumber(string.format("%.2f", x))
-				y = tonumber(string.format("%.2f", y))
-				local xb = tonumber(string.format("%.2f", LeaPlusLC["FlightMapX"]))
-				local yb = tonumber(string.format("%.2f", LeaPlusLC["FlightMapY"]))
-				if a ~= LeaPlusLC["FlightMapA"] or r ~= LeaPlusLC["FlightMapR"] or x ~= xb or y ~= yb then
+				-- Set flight point buttons size
+				TaxiFrame:HookScript("OnShow", function()
+					for i = 1, NUM_TAXI_BUTTONS do
+						local button = _G["TaxiButton"..i]
+						if button and button:IsVisible() then
+							_G["TaxiButton" .. i]:SetSize(LeaPlusLC["LeaPlusTaxiIconSize"], LeaPlusLC["LeaPlusTaxiIconSize"])
+							if button:GetHighlightTexture() then button:GetHighlightTexture():SetSize(LeaPlusLC["LeaPlusTaxiIconSize"] * 2, LeaPlusLC["LeaPlusTaxiIconSize"] * 2) end
+							if button:GetPushedTexture() then button:GetPushedTexture():SetSize(LeaPlusLC["LeaPlusTaxiIconSize"] * 2, LeaPlusLC["LeaPlusTaxiIconSize"] * 2) end
+					   end
+					end
+				end)
+
+				-- Create configuration panel
+				local TaxiPanel = LeaPlusLC:CreatePanel("Enhance flight map", "TaxiPanel")
+
+				LeaPlusLC:MakeTx(TaxiPanel, "Map scale", 356, -72)
+				LeaPlusLC:MakeSL(TaxiPanel, "LeaPlusTaxiMapScale", "Drag to set the scale of the flight map.", 1, 3, 0.05, 356, -92, "%.0f")
+
+				LeaPlusLC:MakeTx(TaxiPanel, "Icon size", 356, -132)
+				LeaPlusLC:MakeSL(TaxiPanel, "LeaPlusTaxiIconSize", "Drag to set the size of the icons.", 8, 48, 1, 356, -152, "%.0f")
+
+				LeaPlusLC:MakeTx(TaxiPanel, "Position", 16, -72)
+				TaxiPanel.txt = LeaPlusLC:MakeWD(TaxiPanel, "Hold ALT and drag the flight map to move it.", 16, -92, 500)
+				TaxiPanel.txt:SetWordWrap(true)
+				TaxiPanel.txt:SetWidth(300)
+
+				-- Function to set flight map scale
+				local function SetFlightMapScale()
+					TaxiFrame:SetScale(LeaPlusLC["LeaPlusTaxiMapScale"])
+					LeaPlusCB["LeaPlusTaxiMapScale"].f:SetFormattedText("%.0f%%", LeaPlusLC["LeaPlusTaxiMapScale"] * 100)
+				end
+
+				-- Function to set icon size (used for reset and when slider changes)
+				local function SetFlightMapIconSize()
+					for i = 1, NUM_TAXI_BUTTONS do
+						local button = _G["TaxiButton"..i]
+						if button and button:IsVisible() then
+							_G["TaxiButton" .. i]:SetSize(LeaPlusLC["LeaPlusTaxiIconSize"], LeaPlusLC["LeaPlusTaxiIconSize"])
+							if button:GetHighlightTexture() then button:GetHighlightTexture():SetSize(LeaPlusLC["LeaPlusTaxiIconSize"] * 2, LeaPlusLC["LeaPlusTaxiIconSize"] * 2) end
+							if button:GetPushedTexture() then button:GetPushedTexture():SetSize(LeaPlusLC["LeaPlusTaxiIconSize"] * 2, LeaPlusLC["LeaPlusTaxiIconSize"] * 2) end
+					   end
+					end
+					LeaPlusCB["LeaPlusTaxiIconSize"].f:SetFormattedText("%.0f%%", (LeaPlusLC["LeaPlusTaxiIconSize"] / 16) * 100)
+				end
+
+				-- Set flight map scale when slider changes and on startup
+				LeaPlusCB["LeaPlusTaxiMapScale"]:HookScript("OnValueChanged", SetFlightMapScale)
+				LeaPlusCB["LeaPlusTaxiIconSize"]:HookScript("OnValueChanged", SetFlightMapIconSize)
+				SetFlightMapScale()
+
+				-- Help button tooltip
+				TaxiPanel.h.tiptext = L["This panel will close automatically if you enter combat."]
+
+				-- Back button handler
+				TaxiPanel.b:SetScript("OnClick", function()
+					TaxiPanel:Hide(); LeaPlusLC["PageF"]:Show(); LeaPlusLC["Page5"]:Show()
+					return
+				end)
+
+				-- Reset button handler
+				TaxiPanel.r:SetScript("OnClick", function()
+
+					-- Reset slider
+					LeaPlusLC["LeaPlusTaxiMapScale"] = 1.0
+					LeaPlusLC["LeaPlusTaxiIconSize"] = 16
+					SetFlightMapScale()
+					LeaPlusLC["FlightMapA"] = "TOPLEFT"
+					LeaPlusLC["FlightMapR"] = "TOPLEFT"
+					LeaPlusLC["FlightMapX"] = 16
+					LeaPlusLC["FlightMapY"] = -48
 					TaxiFrame:ClearAllPoints()
 					TaxiFrame:SetPoint(LeaPlusLC["FlightMapA"], UIParent, LeaPlusLC["FlightMapR"], LeaPlusLC["FlightMapX"], LeaPlusLC["FlightMapY"])
-				end
-			end)
 
-			-- Set flight point buttons size
-			TaxiFrame:HookScript("OnShow", function()
-				for i = 1, NUM_TAXI_BUTTONS do
-					local button = _G["TaxiButton"..i]
-					if button and button:IsVisible() then
-						_G["TaxiButton" .. i]:SetSize(LeaPlusLC["LeaPlusTaxiIconSize"], LeaPlusLC["LeaPlusTaxiIconSize"])
-						if button:GetHighlightTexture() then button:GetHighlightTexture():SetSize(LeaPlusLC["LeaPlusTaxiIconSize"] * 2, LeaPlusLC["LeaPlusTaxiIconSize"] * 2) end
-						if button:GetPushedTexture() then button:GetPushedTexture():SetSize(LeaPlusLC["LeaPlusTaxiIconSize"] * 2, LeaPlusLC["LeaPlusTaxiIconSize"] * 2) end
-				   end
-				end
-			end)
+					-- Refresh side panel
+					TaxiPanel:Hide(); TaxiPanel:Show()
 
-			-- Move close button
-			TaxiCloseButton:SetIgnoreParentScale(true)
-			TaxiCloseButton:ClearAllPoints()
-			TaxiCloseButton:SetPoint("TOPRIGHT", TaxiRouteMap, "TOPRIGHT", 0, 0)
+				end)
 
-			--UIPanelWindows["TaxiFrame"].width = 0
-
-			-- Create configuration panel
-			local TaxiPanel = LeaPlusLC:CreatePanel("Enhance flight map", "TaxiPanel")
-
-			LeaPlusLC:MakeTx(TaxiPanel, "Map scale", 356, -72)
-			LeaPlusLC:MakeSL(TaxiPanel, "LeaPlusTaxiMapScale", "Drag to set the scale of the flight map.", 1, 3, 0.05, 356, -92, "%.0f")
-
-			LeaPlusLC:MakeTx(TaxiPanel, "Icon size", 356, -132)
-			LeaPlusLC:MakeSL(TaxiPanel, "LeaPlusTaxiIconSize", "Drag to set the size of the icons.", 5, 30, 1, 356, -152, "%.0f")
-
-			LeaPlusLC:MakeTx(TaxiPanel, "Position", 16, -72)
-			TaxiPanel.txt = LeaPlusLC:MakeWD(TaxiPanel, "Hold ALT and drag the flight map to move it.", 16, -92, 500)
-			TaxiPanel.txt:SetWordWrap(true)
-			TaxiPanel.txt:SetWidth(300)
-
-			-- Function to set flight map scale
-			local function SetFlightMapScale()
-				TaxiFrame:SetScale(LeaPlusLC["LeaPlusTaxiMapScale"])
-				LeaPlusCB["LeaPlusTaxiMapScale"].f:SetFormattedText("%.0f%%", LeaPlusLC["LeaPlusTaxiMapScale"] * 100)
-			end
-
-			-- Function to set icon size (used for reset and when slider changes)
-			local function SetFlightMapIconSize()
-				for i = 1, NUM_TAXI_BUTTONS do
-					local button = _G["TaxiButton"..i]
-					if button and button:IsVisible() then
-						_G["TaxiButton" .. i]:SetSize(LeaPlusLC["LeaPlusTaxiIconSize"], LeaPlusLC["LeaPlusTaxiIconSize"])
-						if button:GetHighlightTexture() then button:GetHighlightTexture():SetSize(LeaPlusLC["LeaPlusTaxiIconSize"] * 2, LeaPlusLC["LeaPlusTaxiIconSize"] * 2) end
-						if button:GetPushedTexture() then button:GetPushedTexture():SetSize(LeaPlusLC["LeaPlusTaxiIconSize"] * 2, LeaPlusLC["LeaPlusTaxiIconSize"] * 2) end
-				   end
-				end
-				LeaPlusCB["LeaPlusTaxiIconSize"].f:SetFormattedText("%.0f%%", LeaPlusLC["LeaPlusTaxiIconSize"] * 10)
-			end
-
-			-- Set flight map scale when slider changes and on startup
-			LeaPlusCB["LeaPlusTaxiMapScale"]:HookScript("OnValueChanged", SetFlightMapScale)
-			LeaPlusCB["LeaPlusTaxiIconSize"]:HookScript("OnValueChanged", SetFlightMapIconSize)
-			SetFlightMapScale()
-
-			-- Help button tooltip
-			TaxiPanel.h.tiptext = L["This panel will close automatically if you enter combat."]
-
-			-- Back button handler
-			TaxiPanel.b:SetScript("OnClick", function()
-				TaxiPanel:Hide(); LeaPlusLC["PageF"]:Show(); LeaPlusLC["Page5"]:Show()
-				return
-			end)
-
-			-- Reset button handler
-			TaxiPanel.r:SetScript("OnClick", function()
-
-				-- Reset slider
-				LeaPlusLC["LeaPlusTaxiMapScale"] = 1.9
-				LeaPlusLC["LeaPlusTaxiIconSize"] = 10
-				SetFlightMapScale()
-				LeaPlusLC["FlightMapA"] = "TOPLEFT"
-				LeaPlusLC["FlightMapR"] = "TOPLEFT"
-				LeaPlusLC["FlightMapX"] = 0
-				LeaPlusLC["FlightMapY"] = 61
-				TaxiFrame:ClearAllPoints()
-				TaxiFrame:SetPoint(LeaPlusLC["FlightMapA"], UIParent, LeaPlusLC["FlightMapR"], LeaPlusLC["FlightMapX"], LeaPlusLC["FlightMapY"])
-
-				-- Refresh side panel
-				TaxiPanel:Hide(); TaxiPanel:Show()
-
-			end)
-
-			-- Show configuration panal when options panel button is clicked
-			LeaPlusCB["EnhanceFlightMapBtn"]:SetScript("OnClick", function()
-				if LeaPlusLC:PlayerInCombat() then
-					return
-				else
-					if IsShiftKeyDown() and IsControlKeyDown() then
-						-- Preset profile
-						LeaPlusLC["LeaPlusTaxiMapScale"] = 1.9
-						LeaPlusLC["LeaPlusTaxiIconSize"] = 10
-						LeaPlusLC["FlightMapA"] = "TOPLEFT"
-						LeaPlusLC["FlightMapR"] = "TOPLEFT"
-						LeaPlusLC["FlightMapX"] = 0
-						LeaPlusLC["FlightMapY"] = 61
-						SetFlightMapScale()
-						SetFlightMapIconSize()
+				-- Show configuration panal when options panel button is clicked
+				LeaPlusCB["EnhanceFlightMapBtn"]:SetScript("OnClick", function()
+					if LeaPlusLC:PlayerInCombat() then
+						return
 					else
-						TaxiPanel:Show()
-						LeaPlusLC:HideFrames()
+						if IsShiftKeyDown() and IsControlKeyDown() then
+							-- Preset profile
+							LeaPlusLC["LeaPlusTaxiMapScale"] = 1.0
+							LeaPlusLC["LeaPlusTaxiIconSize"] = 16
+							LeaPlusLC["FlightMapA"] = "TOPLEFT"
+							LeaPlusLC["FlightMapR"] = "TOPLEFT"
+							LeaPlusLC["FlightMapX"] = 16
+							LeaPlusLC["FlightMapY"] = -48
+							SetFlightMapScale()
+							SetFlightMapIconSize()
+						else
+							TaxiPanel:Show()
+							LeaPlusLC:HideFrames()
+						end
+					end
+				end)
+
+				-- Hide the configuration panel if combat starts
+				TaxiPanel:SetScript("OnUpdate", function()
+					if UnitAffectingCombat("player") then
+						TaxiPanel:Hide()
+					end
+				end)
+
+				-- Move the flight map
+				TaxiFrame:SetMovable(true)
+				TaxiFrame:RegisterForDrag("LeftButton")
+				TaxiFrame:SetScript("OnDragStart", function()
+					if IsAltKeyDown() then
+						TaxiFrame:StartMoving()
+					end
+				end)
+				TaxiFrame:SetScript("OnDragStop", function()
+					TaxiFrame:StopMovingOrSizing()
+					TaxiFrame:SetUserPlaced(false)
+					LeaPlusLC["FlightMapA"], void, LeaPlusLC["FlightMapR"], LeaPlusLC["FlightMapX"], LeaPlusLC["FlightMapY"] = TaxiFrame:GetPoint()
+				end)
+
+				-- ElvUI fixes
+				if LeaPlusLC.ElvUI then
+					if TaxiFrame.backdrop then
+						TaxiFrame:SetHitRectInsets(22, 44, 70, 88)
+						TaxiFrame.backdrop:SetAlpha(0)
 					end
 				end
-			end)
 
-			-- Hide the configuration panel if combat starts
-			TaxiPanel:SetScript("OnUpdate", function()
-				if UnitAffectingCombat("player") then
-					TaxiPanel:Hide()
-				end
-			end)
+			else
 
-			-- Move the flight map
-			TaxiFrame:SetMovable(true)
-			TaxiFrame:RegisterForDrag("LeftButton")
-			TaxiFrame:SetScript("OnDragStart", function()
-				if IsAltKeyDown() then
-					TaxiFrame:StartMoving()
-				end
-			end)
-			TaxiFrame:SetScript("OnDragStop", function()
-				TaxiFrame:StopMovingOrSizing()
-				TaxiFrame:SetUserPlaced(false)
-				LeaPlusLC["FlightMapA"], void, LeaPlusLC["FlightMapR"], LeaPlusLC["FlightMapX"], LeaPlusLC["FlightMapY"] = TaxiFrame:GetPoint()
-			end)
+				-- Hide flight map textures
+				local regions = {TaxiFrame:GetRegions()}
+				regions[2]:Hide()
+				regions[3]:Hide()
+				regions[4]:Hide()
+				regions[5]:Hide()
+				TaxiPortrait:Hide()
+				TaxiMerchant:Hide()
 
-			-- ElvUI fixes
-			if LeaPlusLC.ElvUI then
-				if TaxiFrame.backdrop then
-					border:ClearAllPoints()
-					border:SetPoint("TOPLEFT", 22, -70)
-					border:SetPoint("BOTTOMRIGHT", -44, 88)
-					TaxiFrame:SetHitRectInsets(22, 44, 70, 88)
-					TaxiFrame.backdrop:SetAlpha(0)
+				-- Create flight map border
+				local border = TaxiFrame:CreateTexture(nil, "BACKGROUND")
+				border:SetTexture("Interface\\DialogFrame\\UI-DialogBox-Background-Dark")
+				border:SetPoint("TOPLEFT", 18, -73)
+				border:SetPoint("BOTTOMRIGHT", -45, 83)
+				border:SetVertexColor(0, 0, 0, 1)
+
+				-- Set flight map properties
+				TaxiFrame:SetFrameStrata("FULLSCREEN_DIALOG")
+				TaxiFrame:SetHitRectInsets(18, 45, 73, 83)
+				TaxiFrame:SetClampedToScreen(true)
+				TaxiFrame:SetClampRectInsets(200, -200, -300, 300)
+
+				-- Position flight map when shown
+				hooksecurefunc(TaxiFrame, "SetPoint", function(self, ...)
+					local a, void, r, x, y = TaxiFrame:GetPoint()
+					x = tonumber(string.format("%.2f", x))
+					y = tonumber(string.format("%.2f", y))
+					local xb = tonumber(string.format("%.2f", LeaPlusLC["FlightMapX"]))
+					local yb = tonumber(string.format("%.2f", LeaPlusLC["FlightMapY"]))
+					if a ~= LeaPlusLC["FlightMapA"] or r ~= LeaPlusLC["FlightMapR"] or x ~= xb or y ~= yb then
+						TaxiFrame:ClearAllPoints()
+						TaxiFrame:SetPoint(LeaPlusLC["FlightMapA"], UIParent, LeaPlusLC["FlightMapR"], LeaPlusLC["FlightMapX"], LeaPlusLC["FlightMapY"])
+					end
+				end)
+
+				-- Set flight point buttons size
+				TaxiFrame:HookScript("OnShow", function()
+					for i = 1, NUM_TAXI_BUTTONS do
+						local button = _G["TaxiButton"..i]
+						if button and button:IsVisible() then
+							_G["TaxiButton" .. i]:SetSize(LeaPlusLC["LeaPlusTaxiIconSize"], LeaPlusLC["LeaPlusTaxiIconSize"])
+							if button:GetHighlightTexture() then button:GetHighlightTexture():SetSize(LeaPlusLC["LeaPlusTaxiIconSize"] * 2, LeaPlusLC["LeaPlusTaxiIconSize"] * 2) end
+							if button:GetPushedTexture() then button:GetPushedTexture():SetSize(LeaPlusLC["LeaPlusTaxiIconSize"] * 2, LeaPlusLC["LeaPlusTaxiIconSize"] * 2) end
+					   end
+					end
+				end)
+
+				-- Move close button
+				TaxiCloseButton:SetIgnoreParentScale(true)
+				TaxiCloseButton:ClearAllPoints()
+				TaxiCloseButton:SetPoint("TOPRIGHT", TaxiRouteMap, "TOPRIGHT", 0, 0)
+
+				--UIPanelWindows["TaxiFrame"].width = 0
+
+				-- Create configuration panel
+				local TaxiPanel = LeaPlusLC:CreatePanel("Enhance flight map", "TaxiPanel")
+
+				LeaPlusLC:MakeTx(TaxiPanel, "Map scale", 356, -72)
+				LeaPlusLC:MakeSL(TaxiPanel, "LeaPlusTaxiMapScale", "Drag to set the scale of the flight map.", 1, 3, 0.05, 356, -92, "%.0f")
+
+				LeaPlusLC:MakeTx(TaxiPanel, "Icon size", 356, -132)
+				LeaPlusLC:MakeSL(TaxiPanel, "LeaPlusTaxiIconSize", "Drag to set the size of the icons.", 5, 30, 1, 356, -152, "%.0f")
+
+				LeaPlusLC:MakeTx(TaxiPanel, "Position", 16, -72)
+				TaxiPanel.txt = LeaPlusLC:MakeWD(TaxiPanel, "Hold ALT and drag the flight map to move it.", 16, -92, 500)
+				TaxiPanel.txt:SetWordWrap(true)
+				TaxiPanel.txt:SetWidth(300)
+
+				-- Function to set flight map scale
+				local function SetFlightMapScale()
+					TaxiFrame:SetScale(LeaPlusLC["LeaPlusTaxiMapScale"])
+					LeaPlusCB["LeaPlusTaxiMapScale"].f:SetFormattedText("%.0f%%", LeaPlusLC["LeaPlusTaxiMapScale"] * 100)
 				end
+
+				-- Function to set icon size (used for reset and when slider changes)
+				local function SetFlightMapIconSize()
+					for i = 1, NUM_TAXI_BUTTONS do
+						local button = _G["TaxiButton"..i]
+						if button and button:IsVisible() then
+							_G["TaxiButton" .. i]:SetSize(LeaPlusLC["LeaPlusTaxiIconSize"], LeaPlusLC["LeaPlusTaxiIconSize"])
+							if button:GetHighlightTexture() then button:GetHighlightTexture():SetSize(LeaPlusLC["LeaPlusTaxiIconSize"] * 2, LeaPlusLC["LeaPlusTaxiIconSize"] * 2) end
+							if button:GetPushedTexture() then button:GetPushedTexture():SetSize(LeaPlusLC["LeaPlusTaxiIconSize"] * 2, LeaPlusLC["LeaPlusTaxiIconSize"] * 2) end
+					   end
+					end
+					LeaPlusCB["LeaPlusTaxiIconSize"].f:SetFormattedText("%.0f%%", LeaPlusLC["LeaPlusTaxiIconSize"] * 10)
+				end
+
+				-- Set flight map scale when slider changes and on startup
+				LeaPlusCB["LeaPlusTaxiMapScale"]:HookScript("OnValueChanged", SetFlightMapScale)
+				LeaPlusCB["LeaPlusTaxiIconSize"]:HookScript("OnValueChanged", SetFlightMapIconSize)
+				SetFlightMapScale()
+
+				-- Help button tooltip
+				TaxiPanel.h.tiptext = L["This panel will close automatically if you enter combat."]
+
+				-- Back button handler
+				TaxiPanel.b:SetScript("OnClick", function()
+					TaxiPanel:Hide(); LeaPlusLC["PageF"]:Show(); LeaPlusLC["Page5"]:Show()
+					return
+				end)
+
+				-- Reset button handler
+				TaxiPanel.r:SetScript("OnClick", function()
+
+					-- Reset slider
+					LeaPlusLC["LeaPlusTaxiMapScale"] = 1.9
+					LeaPlusLC["LeaPlusTaxiIconSize"] = 10
+					SetFlightMapScale()
+					LeaPlusLC["FlightMapA"] = "TOPLEFT"
+					LeaPlusLC["FlightMapR"] = "TOPLEFT"
+					LeaPlusLC["FlightMapX"] = 0
+					LeaPlusLC["FlightMapY"] = 61
+					TaxiFrame:ClearAllPoints()
+					TaxiFrame:SetPoint(LeaPlusLC["FlightMapA"], UIParent, LeaPlusLC["FlightMapR"], LeaPlusLC["FlightMapX"], LeaPlusLC["FlightMapY"])
+
+					-- Refresh side panel
+					TaxiPanel:Hide(); TaxiPanel:Show()
+
+				end)
+
+				-- Show configuration panal when options panel button is clicked
+				LeaPlusCB["EnhanceFlightMapBtn"]:SetScript("OnClick", function()
+					if LeaPlusLC:PlayerInCombat() then
+						return
+					else
+						if IsShiftKeyDown() and IsControlKeyDown() then
+							-- Preset profile
+							LeaPlusLC["LeaPlusTaxiMapScale"] = 1.9
+							LeaPlusLC["LeaPlusTaxiIconSize"] = 10
+							LeaPlusLC["FlightMapA"] = "TOPLEFT"
+							LeaPlusLC["FlightMapR"] = "TOPLEFT"
+							LeaPlusLC["FlightMapX"] = 0
+							LeaPlusLC["FlightMapY"] = 61
+							SetFlightMapScale()
+							SetFlightMapIconSize()
+						else
+							TaxiPanel:Show()
+							LeaPlusLC:HideFrames()
+						end
+					end
+				end)
+
+				-- Hide the configuration panel if combat starts
+				TaxiPanel:SetScript("OnUpdate", function()
+					if UnitAffectingCombat("player") then
+						TaxiPanel:Hide()
+					end
+				end)
+
+				-- Move the flight map
+				TaxiFrame:SetMovable(true)
+				TaxiFrame:RegisterForDrag("LeftButton")
+				TaxiFrame:SetScript("OnDragStart", function()
+					if IsAltKeyDown() then
+						TaxiFrame:StartMoving()
+					end
+				end)
+				TaxiFrame:SetScript("OnDragStop", function()
+					TaxiFrame:StopMovingOrSizing()
+					TaxiFrame:SetUserPlaced(false)
+					LeaPlusLC["FlightMapA"], void, LeaPlusLC["FlightMapR"], LeaPlusLC["FlightMapX"], LeaPlusLC["FlightMapY"] = TaxiFrame:GetPoint()
+				end)
+
+				-- ElvUI fixes
+				if LeaPlusLC.ElvUI then
+					if TaxiFrame.backdrop then
+						border:ClearAllPoints()
+						border:SetPoint("TOPLEFT", 22, -70)
+						border:SetPoint("BOTTOMRIGHT", -44, 88)
+						TaxiFrame:SetHitRectInsets(22, 44, 70, 88)
+						TaxiFrame.backdrop:SetAlpha(0)
+					end
+				end
+
 			end
 
 		end
@@ -13788,7 +13942,11 @@
 				LeaPlusLC:LoadVarChk("ShowTrainAllBtn", "On")				-- Enhance trainers train all button
 				LeaPlusLC:LoadVarChk("EnhanceFlightMap", "Off")				-- Enhance flight map
 				LeaPlusLC:LoadVarNum("LeaPlusTaxiMapScale", 1.9, 1, 3)		-- Enhance flight map scale
-				LeaPlusLC:LoadVarNum("LeaPlusTaxiIconSize", 10, 5, 30)		-- Enhance flight icon size
+				if LeaPlusLC.NewPatch then
+					LeaPlusLC:LoadVarNum("LeaPlusTaxiIconSize", 16, 8, 48)	-- Enhance flight icon size
+				else
+					LeaPlusLC:LoadVarNum("LeaPlusTaxiIconSize", 10, 5, 30)	-- Enhance flight icon size
+				end
 				LeaPlusLC:LoadVarAnc("FlightMapA", "TOPLEFT")				-- Enhance flight map anchor
 				LeaPlusLC:LoadVarAnc("FlightMapR", "TOPLEFT")				-- Enhance flight map relative
 				LeaPlusLC:LoadVarNum("FlightMapX", 0, -5000, 5000)			-- Enhance flight map X
@@ -16368,7 +16526,11 @@
 				LeaPlusDB["ShowTrainAllBtn"] = "On"				-- Show train all button
 				LeaPlusDB["EnhanceFlightMap"] = "On"			-- Enhance flight map
 				LeaPlusDB["LeaPlusTaxiMapScale"] = 1.9			-- Enhance flight map scale
-				LeaPlusDB["LeaPlusTaxiIconSize"] = 10			-- Enhance flight icon size
+				if LeaPlusLC.NewPatch then
+					LeaPlusDB["LeaPlusTaxiIconSize"] = 16		-- Enhance flight icon size
+				else
+					LeaPlusDB["LeaPlusTaxiIconSize"] = 10		-- Enhance flight icon size
+				end
 				LeaPlusDB["FlightMapA"] = "TOPLEFT"				-- Enhance flight map anchor
 				LeaPlusDB["FlightMapR"] = "TOPLEFT"				-- Enhance flight map relative
 				LeaPlusDB["FlightMapX"] = 0						-- Enhance flight map X
