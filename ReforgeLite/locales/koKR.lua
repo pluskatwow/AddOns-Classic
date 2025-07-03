@@ -21,6 +21,8 @@ L["Crit block"] = "결정적 방어"
 L["Debug"] = "디버그"
 --[[Translation missing --]]
 --[[ L["Destination stat color"] = ""--]] 
+--[[Translation missing --]]
+--[[ L["Enable spec profiles"] = ""--]] 
 L["Enter pawn string"] = "Pawn 문자열을 입력하세요"
 L["Enter the preset name"] = "프리셋 이름을 입력하세요"
 L["Enter WoWSims JSON"] = "WoWSims JSON을 입력하세요"

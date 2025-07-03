@@ -21,6 +21,8 @@ L["Crit block"] = "致命格檔"
 L["Debug"] = "偵錯"
 --[[Translation missing --]]
 --[[ L["Destination stat color"] = ""--]] 
+--[[Translation missing --]]
+--[[ L["Enable spec profiles"] = ""--]] 
 L["Enter pawn string"] = "輸入pawn字串"
 L["Enter the preset name"] = "輸入預設名稱"
 L["Enter WoWSims JSON"] = "输入 WoWSims JSON"

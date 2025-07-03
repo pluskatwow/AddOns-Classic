@@ -34,6 +34,8 @@ local L = addonTable.L
 --[[Translation missing --]]
 --[[ L["Destination stat color"] = ""--]] 
 --[[Translation missing --]]
+--[[ L["Enable spec profiles"] = ""--]] 
+--[[Translation missing --]]
 --[[ L["Enter pawn string"] = ""--]] 
 --[[Translation missing --]]
 --[[ L["Enter the preset name"] = ""--]] 

@@ -21,6 +21,8 @@ L["Crit block"] = "Крит блок"
 L["Debug"] = "Отладка"
 --[[Translation missing --]]
 --[[ L["Destination stat color"] = ""--]] 
+--[[Translation missing --]]
+--[[ L["Enable spec profiles"] = ""--]] 
 L["Enter pawn string"] = "Введите строку Pawn"
 L["Enter the preset name"] = "Введите имя шаблона"
 L["Enter WoWSims JSON"] = "Введите WoWSims JSON"

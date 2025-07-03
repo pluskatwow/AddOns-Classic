@@ -23,6 +23,8 @@ L["Crit block"] = "Crit block"
 --[[ L["Debug"] = ""--]] 
 --[[Translation missing --]]
 --[[ L["Destination stat color"] = ""--]] 
+--[[Translation missing --]]
+--[[ L["Enable spec profiles"] = ""--]] 
 L["Enter pawn string"] = "Introduzca cadena peon"
 L["Enter the preset name"] = "Introduzca el nombre del ajuste"
 L["Enter WoWSims JSON"] = "Ingrese WoWSims JSON"

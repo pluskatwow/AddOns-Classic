@@ -21,6 +21,8 @@ L["Crit block"] = "Blocage crit"
 L["Debug"] = "Debug"
 --[[Translation missing --]]
 --[[ L["Destination stat color"] = ""--]] 
+--[[Translation missing --]]
+--[[ L["Enable spec profiles"] = ""--]] 
 L["Enter pawn string"] = "Entrez le code de Pawn"
 L["Enter the preset name"] = "Entrez le nom du pré-établi"
 L["Enter WoWSims JSON"] = "Entrez le WoWSims JSON"
