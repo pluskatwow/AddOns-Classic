@@ -22,7 +22,7 @@ if wowversion < 20000 then
 	WoWClassicEra = true
 elseif wowversion < 30000 then 
 	WoWClassicTBC = true
-elseif wowversion < 50000 then 
+elseif wowversion < 60000 then  -- 暫時修正
 	WoWWOTLKC = true
 elseif wowversion > 90000 then
 	WoWRetail = true
