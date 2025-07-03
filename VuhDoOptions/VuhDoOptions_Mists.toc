@@ -4,10 +4,6 @@
 ## Author: Iza@Gilneas, humfras, Ivaria@Hyjal
 ## Version: 3.190-mopc
 ## Notes: VuhDo Options
-## Title-zhTW: |cffFF7F00[團隊]|r 框架 (巫毒)-設定選項
-## Notes-zhTW: VuhDo ['vu:du:] - Options |n|n巫毒治療框架的設定選項。|n|n|cffffd200使用方法: |r點小地圖按鈕開啟設定。
-## X-Category-zhTW: 團隊
-## DefaultState: disabled
 ## IconTexture: Interface\AddOns\VuhDo\Images\TemporaryPortrait-Female-BloodElf-VuhDo
 
 ## Category-enUS: Unit Frames
@@ -31,6 +27,10 @@
 
 ## Dependencies: VuhDo
 ## LoadOnDemand: 0
+
+## Title-zhTW: |cffFF7F00[團隊]|r 框架 (巫毒)-設定選項
+## Notes-zhTW: VuhDo ['vu:du:] - Options |n巫毒治療框架的設定選項。|n|cffffd200使用方法：|r點小地圖按鈕開啟設定。
+## DefaultState: disabled
 
 Libs\ChatThrottleLib\ChatThrottleLib.xml
 

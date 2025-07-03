@@ -170,9 +170,7 @@ function VUHDO_initBouquetComboModel()
 
 	table.sort(VUHDO_BOUQET_DETAILS_COMBO_MODEL,
 		function(anInfo, anotherInfo)
-			if anInfo[2] and anotherInfo[2] then -- ¼È®É­×¥¿
-				return anInfo[2] < anotherInfo[2];
-			end
+			return anInfo[2] < anotherInfo[2];
 		end
 	);
 
