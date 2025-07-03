@@ -45,6 +45,8 @@ local FindAura = AuraUtil.FindAura;
 local FindAuraByName = AuraUtil.FindAuraByName;
 local IsUsableItem = IsUsableItem or C_Item.IsUsableItem;
 local IsUsableSpell = IsUsableSpell or C_Spell.IsSpellUsable;
+local GetSpecialization = GetSpecialization or C_SpecializationInfo.GetSpecialization;
+local GetSpecializationInfo = GetSpecializationInfo or C_SpecializationInfo.GetSpecializationInfo;
 
 -- Number of seconds into the future to look for incoming heals
 -- This ensures we only include the next incoming tick of HoTs
@@ -2094,10 +2096,18 @@ end
 ---------------------------------
 -- CLASSIC COMPATIBILITY LAYER --
 ---------------------------------
+function VUHDO_isMists()
+
+	return WOW_PROJECT_ID == WOW_PROJECT_MISTS_CLASSIC;
+
+end
+
+
+
 function VUHDO_getSpecialization()
 
 	if not GetSpecialization then
-		return GetActiveTalentGroup();
+		return 1;
 	else
 		return GetSpecialization();
 	end
@@ -2109,9 +2119,7 @@ end
 function VUHDO_getSpecializationInfo(aSpecNum, ...)
 
 	if not GetSpecializationInfo then
-		local tSpecNum = aSpecNum or VUHDO_getSpecialization();
-
-		return tSpecNum, tSpecNum == 1 and "Primary" or (tSpecNum == 2 and "Secondary" or "Unknown"), _, _, GetTalentGroupRole(tSpecNum) or "NONE";
+		return 1, "Unknown", _, _, _, "NONE";
 	else
 		return GetSpecializationInfo(aSpecNum, ...);
 	end
@@ -2134,7 +2142,7 @@ end
 
 function VUHDO_getSpecializationRoleByID(...)
 
-	if not GetSpecializationRoleByID then
+	if VUHDO_isMists() or not GetSpecializationRoleByID then
 		return "NONE";
 	else
 		return GetSpecializationRoleByID(...);
@@ -2235,14 +2243,6 @@ function VUHDO_hasIncomingSummon(...)
 	else
 		return C_IncomingSummon.HasIncomingSummon(...);
 	end
-end
-
-
-
-function VUHDO_hasLFGRestrictions()
-
-	return IsInGroup(LE_PARTY_CATEGORY_INSTANCE);
-
 end
 
 
