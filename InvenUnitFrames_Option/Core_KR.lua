@@ -2472,12 +2472,13 @@ function Option:CreateClassBarMenu(menu, parent)
 			return IUF.db.classBar.useBlizzard
 		end,
 		function(v)
-			IUF.db.classBar.useBlizzard = false --비활성화
+			IUF.db.classBar.useBlizzard = v--false --비활성화
 			updateClassBar()
 		end
 	)
 	menu.blizzard:SetPoint("TOP", menu.pos, "BOTTOM", 0, -10)
 --]]
+
 -- 추가된 내용	
 	menu.druidMana = LBO:CreateWidget("CheckBox", parent, "드루이드 야드 변신중 마나 표시 끄기", "마나를 사용하지 않는 변신 폼일 때 마나를 표시 하지 않습니다.", nil, nil, nil,
 		function() return IUF.db.classBar.druidManaDisible end,
