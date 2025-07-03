@@ -152,7 +152,7 @@ function SpellActivationOverlayOptionsPanel_Init(self)
             ["WARRIOR"] = "Interface/Icons/ClassIcon_Warrior",
         };
         local classIcon = classIcons[classFile] or "Interface/Icons/INV_Misc_QuestionMark";
-        local classText = SAO:gradientText(className, gradientColors);
+        local classText = className -- SAO:gradientText(className, gradientColors);
         classInfoLabel:SetText(string.format("|T%s:16:16:0:0:512:512:32:480:32:480|t %s", classIcon, classText));
     else
         -- If CurrentClass is nil, it means the class is not supported
@@ -269,7 +269,7 @@ function SpellActivationOverlayOptionsPanel_Init(self)
 
     local reportButton = SpellActivationOverlayOptionsPanelSpellAlertReportButton;
     if SAO:CanReport() then
-        reportButton.Text:SetText("Report unsupported effects to Chatbox");
+        reportButton.Text:SetText("將不支援的效果輸出到聊天視窗");
         reportButton:SetChecked(SpellActivationOverlayDB.report ~= false); -- Default to true
     else
         reportButton:Hide();
