@@ -43,6 +43,15 @@ if (NRC.isClassic and C_Seasons and C_Seasons.GetActiveSeason() == 2) then
 	local sodPhases = {[25]=1,[40]=2,[50]=3,[60]=4};
 	NRC.sodPhase = sodPhases[(GetEffectivePlayerMaxLevel())];
 end
+if (NRC.expansionNum > 4) then
+	--MoP+ talent structure uses tiers instead of trees.
+	NRC.isTierTalents = true;
+	if (NRC.isMOP) then
+		NRC.talentRowCount = 6;
+	else
+		NRC.talentRowCount = 7;
+	end
+end
 NRC.comms = LibStub("AceComm-3.0");
 NRC.comms:Embed(NRC);
 NRC.LSM = LibStub("LibSharedMedia-3.0");
@@ -85,7 +94,7 @@ NRC.weaponEnchants = {};
 NRC.talents = {};
 NRC.talents2 = {};
 NRC.glyphs = {};
---NRC.glyphs2 = {};
+NRC.glyphs2 = {};
 NRC_Installed = true;
 if (ReadyCheckFrame) then
 	ReadyCheckFrame:SetFrameStrata("HIGH");

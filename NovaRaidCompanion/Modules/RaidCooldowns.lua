@@ -54,6 +54,33 @@ local bresCastCount = 0;
 local battleResSpells = NRC.battleResSpells;
 local bresPending = {};
 local raidEncounterActive;
+local cooldownsWithAura = {};
+if (NRC.cooldownsWithAura) then
+	for k, v in pairs(NRC.cooldownsWithAura) do
+		for k, v in pairs(v.spellIDs) do
+			--spellID -> table name for fast lookups during combat.
+			cooldownsWithAura[k] = v;
+		end
+	end
+end
+local resetBySpellID = {};
+if (NRC.resetBySpellID) then
+	for k, v in pairs(NRC.resetBySpellID) do
+		local resetID = v.resetBySpellID;
+		for k, v in pairs(v.spellIDs) do
+			--spellID -> table name for fast lookups during combat.
+			if (not resetBySpellID[resetID]) then
+				resetBySpellID[resetID] = {};
+			end
+			tinsert(resetBySpellID[resetID], k);
+		end
+	end
+end
+
+--Convert local table to full cooldown data.
+local function mapCooldownsWithAuraToData(spellID)
+
+end
 
 function NRC:updateRaidCooldownsShowDead()
 	showDead = NRC.config.raidCooldownsShowDead;
@@ -546,6 +573,7 @@ function NRC:loadRaidCooldownGroup()
 								title = v.title,
 								localizedName = v.localizedName,
 								castDetect = v.castDetect,
+								customCooldown = v.customCooldown,
 								merged = NRC.config["raidCooldown" .. string.gsub(k, " ", "") .. "Merged"],
 								frame = NRC.config["raidCooldown" .. string.gsub(k, " ", "") .. "Frame"],
 							};
@@ -618,6 +646,7 @@ function NRC:loadRaidCooldownChar(name, data, cooldownName)
 						title = v.title,
 						localizedName = v.localizedName,
 						castDetect = v.castDetect,
+						customCooldown = v.customCooldown,
 						merged = NRC.config["raidCooldown" .. string.gsub(k, " ", "") .. "Merged"],
 						frame = NRC.config["raidCooldown" .. string.gsub(k, " ", "") .. "Frame"],
 					};
@@ -702,6 +731,7 @@ function NRC:loadRaidCooldownCharFromCast(name, spellName, spellID, guid)
 				title = spellData.title,
 				localizedName = spellData.localizedName,
 				castDetect = spellData.castDetect,
+				customCooldown = spellData.customCooldown,
 				merged = NRC.config["raidCooldown" .. string.gsub(cooldownName, " ", "") .. "Merged"],
 				frame = NRC.config["raidCooldown" .. string.gsub(cooldownName, " ", "") .. "Frame"],
 			};
@@ -804,7 +834,7 @@ end
 
 --In wrath some cooldowns are reset after boss kill or wipe, if in combat and encounter lasted 30 seconds?
 --Not sure if this extends to cata yet.
-function NRC:removeRaidCooldownsEncounterEnd(success)
+function NRC:resetRaidCooldownsEncounterEnd(success)
 	if (NRC.isClassic or NRC.isTBC) then
 		return;
 	end
@@ -830,6 +860,30 @@ function NRC:removeRaidCooldownsEncounterEnd(success)
 		end
 	end
 	NRC:updateRaidCooldowns();
+end
+
+--Reset a single cooldown for a player.
+function NRC:resetSingleCooldown(guid, spellID)
+	if (NRC.data.raidCooldowns[guid]) then
+		--Reset cooldown list.
+		for k, v in pairs(NRC.cooldownList) do
+			for s, spellName in pairs(v.spellIDs) do
+				if (s == spellID) then
+					for g, charData in pairs(v.chars) do
+						if (g == guid) then
+							charData.endTime = 0;
+							if (NRC.data.raidCooldowns[guid] and NRC.data.raidCooldowns[guid][v.spellName]) then
+								--Reset db too.
+								NRC.data.raidCooldowns[guid][v.spellName].endTime = 0;
+							end
+							NRC:updateRaidCooldowns();
+							return;
+						end
+					end
+				end
+			end
+		end
+	end
 end
 
 function NRC:loadPartyNeckBuffs()
@@ -1016,6 +1070,17 @@ function NRC:adjustCooldownFromTalentsAndGear(spell, name, timestamp, guid, spel
 		end
 		--Now we also check gear for tier bonuses.
 		timestamp = NRC:getSetBonusCooldownReduction(guid, spellID, timestamp);
+		--And glyphs.
+		local data3 = NRC.cooldowns[spell].glyphCooldownAdjust;
+		if (data3) then
+			for k, v in pairs(data3) do
+				if (NRC:hasGlyph(name, k)) then
+					timestamp = timestamp - v;
+					break;
+				end
+			end
+		end
+		
 	end
 	return timestamp;
 end
@@ -1047,6 +1112,37 @@ function NRC:pushCooldownCastDetect(sourceGUID, sourceName, spellName, spellID)
 	end
 end
 
+local function getCooldownTimeForSpell(spellID, cooldown, customCooldown)
+	if (customCooldown) then
+		--If we get customCooldown data from the func below then just check that.
+		if (customCooldown[spellID]) then
+			--Custom cooldown found for this spellID, override the default cooldown.
+			cooldown = customCooldown[spellID];
+		end
+	else
+		--Otherwise iterate coolowns and find it.
+		for spell, spellData in pairs(NRC.cooldownList) do
+			if (spellData.spellIDs and next(spellData.spellIDs)) then
+				for trackedSpellID, spellName in pairs(spellData.spellIDs) do
+					if (trackedSpellID == spellID) then
+						if (spellData.customCooldown) then
+							if (spellData.customCooldown[spellID]) then
+								--Custom cooldown found for this spellID, override the default cooldown.
+								cooldown = spellData.customCooldown[spellID];
+							end
+						end
+						break;
+					end
+				end
+			end
+		end
+	end
+	return GetServerTime() + cooldown;
+end
+function NRC:getCooldownTimeForSpell(spellID, cooldown, customCooldown)
+	return getCooldownTimeForSpell(spellID, cooldown, customCooldown);
+end
+
 --If a cooldown is used then update our data.
 --This should probably use some kind of neater cache later on.
 --cooldownTime arg is only used by spells that have talents effecting cooldown time (like reincarnation).
@@ -1062,7 +1158,8 @@ function NRC:updateCooldownList(sourceGUID, sourceName, destGUID, destName, dest
 								--If we supplied a cooldown arg then use that instead.
 								charData.endTime = GetServerTime() + cooldownTime;
 							else
-								charData.endTime = GetServerTime() + spellData.cooldown;
+								--charData.endTime = GetServerTime() + spellData.cooldown;
+								charData.endTime = getCooldownTimeForSpell(spellID, spellData.cooldown, spellData.customCooldown);
 							end
 							charData.endTime = NRC:adjustCooldownFromTalentsAndGear(spellData.spellName, sourceName, charData.endTime, sourceGUID, spellID);
 							charData.destName = destName;
@@ -1320,13 +1417,15 @@ function NRC:updateRaidCooldowns()
 					end
 					lineSubFrame.fs:SetText(name);
 					local endTime = charData.endTime or 0;
-					if (endTime < lowestCD) then
+					if (endTime < lowestCD and endTime ~= 0) then
+						--If not dead.
 						if (spellData.spellName == "Reincarnation" or not isDead[guid]) then
 							lowestCD = endTime;
 						end
 					end
 					local timeLeft = endTime - GetServerTime();
 					if (isDead[guid] and showDead and spellData.spellName ~= "Reincarnation") then
+						--If dead then show a skull on the subframe for mouseover.
 						if (timeLeft > 0) then
 							local minutes = string.format("%02.f", math.floor(timeLeft / 60));
 							local seconds = string.format("%02.f", math.floor(timeLeft - minutes * 60));
@@ -1431,7 +1530,7 @@ function NRC:updateRaidCooldowns()
 				local readyCountText = "";
 				if (readyCount == 0) then
 					if (NRC.db.global.raidCooldownsNumType == 2) then
-						readyCountText = "|cFFFF2222" .. readyCount .. "|r|cFF00C800/" .. subFrameCount .. "|r";
+						readyCountText = "|cFFFF2222" .. readyCount .. "|r|cFF00C800/" .. subFrameCount .. "|r"
 					else
 						readyCountText = "|cFFFF2222" .. readyCount .. "|r";
 					end
@@ -1449,7 +1548,13 @@ function NRC:updateRaidCooldowns()
 					end
 				end
 				lineFrame.texture:SetTexture(spellData.icon);
-				local endTime = lowestCD or 0;
+				local endTime;
+				if (lowestCD == 9999999999) then
+					--If lowestCD is still default then we have no cd's used but we could be dead which messes up the display, bit of a hacky fix here.
+					endTime = 0;
+				else
+					endTime = lowestCD or 0;
+				end
 				local timeLeft = endTime - GetServerTime();
 				if (LOCALE_koKR or LOCALE_zhCN or LOCALE_zhTW) then
 					lineFrame.fs2:SetPoint("RIGHT", -6, 0);
@@ -1469,7 +1574,11 @@ function NRC:updateRaidCooldowns()
 						local seconds = string.format("%02.f", math.floor(timeLeft - minutes * 60));
 						lineFrame.fs2:SetText(minutes .. ":" .. seconds);
 					else
-						lineFrame.fs2:SetText("|cFF00C800" .. L["Ready"]);
+						if (readyCount == 0) then
+							lineFrame.fs2:SetText("|cFFFF2222" .. L["Ready"]);
+						else
+							lineFrame.fs2:SetText("|cFF00C800" .. L["Ready"]);
+						end
 					end
 				end
 				--lineFrame.fs:SetText(spellName .. "  " .. readyCountText);
@@ -1921,10 +2030,15 @@ local function combatLogEventUnfiltered(...)
 	end
 	--print(CombatLogGetCurrentEventInfo())
 	if (subEvent == "SPELL_CAST_SUCCESS") then
-		if (isSOD and castDetectSpells[spellID] and (not castDetectCache[sourceGUID]
+		if (castDetectSpells[spellID] and (not castDetectCache[sourceGUID]
 			or (castDetectCache[sourceGUID] and not castDetectCache[sourceGUID][spellName]))) then
 			if (NRC:inOurGroup(sourceGUID)) then
 				NRC:loadRaidCooldownCharFromCast(sourceName, spellName, spellID, sourceGUID);
+			end
+		end
+		if (resetBySpellID[spellID]) then
+			for k, v in pairs(resetBySpellID[spellID]) do
+				NRC:resetSingleCooldown(sourceGUID, v);
 			end
 		end
 		if (trackedSpellsCache[spellID]) then
@@ -1977,9 +2091,9 @@ local function combatLogEventUnfiltered(...)
 						end
 					end
 					--NRC:sendSpellUsed(spellID, cooldownTime, UnitName("player"), "SHAMAN");
-					NRC:sendSpellUsed(spellID, cooldownTime);
+					NRC:sendSpellUsed(spellID, getCooldownTimeForSpell(spellID, cooldownTime));
 				else
-					NRC:sendSpellUsed(spellID, cooldownTime, destName, destClass);
+					NRC:sendSpellUsed(spellID, getCooldownTimeForSpell(spellID, cooldownTime), destName, destClass);
 				end
 				--If this is our own spell add it to database for sharing later.
 				if (not NRC.data.raidCooldowns[sourceGUID]) then
@@ -2016,6 +2130,52 @@ local function combatLogEventUnfiltered(...)
 		--if (spellID == 0) then
 		--	checkSpecialCooldown(spellID);
 		--end
+	elseif (subEvent == "SPELL_AURA_APPLIED") then
+		if (cooldownsWithAura[spellID]) then
+			if (castDetectSpells[spellID] and (not castDetectCache[sourceGUID]
+				or (castDetectCache[sourceGUID] and not castDetectCache[sourceGUID][spellName]))) then
+				if (NRC:inOurGroup(sourceGUID)) then
+					NRC:loadRaidCooldownCharFromCast(sourceName, spellName, spellID, sourceGUID);
+				end
+			end
+			if (trackedSpellsCache[spellID]) then
+				--If in a group update our local cache for cooldown frames.
+				local destClass;
+				if (destGUID == "" and sourceGUID == UnitGUID("player")) then
+					--If there's no guid then it's most likely a spell we cast on ourself.
+					destGUID = UnitGUID("player");
+					destName = UnitName("player") .. "-" .. GetNormalizedRealmName();
+				end
+				if (destGUID and destGUID ~= "") then
+					 _, destClass = GetPlayerInfoByGUID(destGUID);
+				end
+				if (not selfOnly) then
+					NRC:updateCooldownList(sourceGUID, sourceName, destGUID, destName, destClass, spellID);
+				end
+				--If we cast this spell then upate raid members not in range with this cooldown usage.
+				--Note: Shaman reincarnation is not in the combat log in TBC, but is on retail?
+				if (sourceGUID == UnitGUID("player")) then
+					--Add our self to db even if not in group so our timer can be shared if we join one later.
+					local cooldownName, _, cooldownTime = NRC:getCooldownFromSpellID(spellID);
+					NRC:sendSpellUsed(spellID, getCooldownTimeForSpell(spellID, cooldownTime), destName, destClass);
+					--If this is our own spell add it to database for sharing later.
+					if (not NRC.data.raidCooldowns[sourceGUID]) then
+						NRC.data.raidCooldowns[sourceGUID] = {};
+					end
+					if (not NRC.data.raidCooldowns[sourceGUID][cooldownName]) then
+						NRC.data.raidCooldowns[sourceGUID][cooldownName] = {};
+					end
+					if (destName == "") then
+						destName = nil;
+					end
+					NRC.data.raidCooldowns[sourceGUID][cooldownName].endTime = GetServerTime() + cooldownTime;
+					NRC.data.raidCooldowns[sourceGUID][cooldownName].spellName = spellName;
+					NRC.data.raidCooldowns[sourceGUID][cooldownName].spellID = spellID;
+					NRC.data.raidCooldowns[sourceGUID][cooldownName].destName = destName;
+					NRC.data.raidCooldowns[sourceGUID][cooldownName].destClass = destClass;
+				end
+			end
+		end
 	end
 end
 
@@ -2785,11 +2945,12 @@ f:SetScript('OnEvent', function(self, event, ...)
 		if (encounterLength > 30) then
 			local instance, instanceType = IsInInstance();
 			if (instance and instanceType == "raid") then
-				NRC:removeRaidCooldownsEncounterEnd();
+				NRC:resetRaidCooldownsEncounterEnd();
 			end
 		end
 	elseif (event == "GROUP_FORMED" or event == "GROUP_JOINED") then
 		NRC:checkMyTalents();
+		NRC.checkMyGlyphs();
 		C_Timer.After(2, function()
 			NRC:raidCooldownsScanGroup();
 		end)
