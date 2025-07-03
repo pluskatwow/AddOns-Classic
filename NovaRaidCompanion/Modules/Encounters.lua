@@ -15,6 +15,7 @@ local Unitname = UnitName;
 local UnitGUID = UnitGUID;
 local GetItemInfo = GetItemInfo or C_Item.GetItemInfo;
 local GetItemInfoInstant = GetItemInfoInstant or C_Item.GetItemInfoInstant;
+local GetItemGem = GetItemGem or C_Item.GetItemGem;
 local GetItemCount = GetItemCount or C_Item.GetItemCount;
 local GetSpellLink = GetSpellLink or C_Spell.GetSpellLink;
 local staticPopupFrame = NRC:createStaticPopupAttachment("NRCStaticPopupFrame", 320, 38, 0, 0);
@@ -1022,7 +1023,7 @@ end
 
 local lastMetaWarning, lastMetaStatus = 0;
 function NRC:checkMetaGem()
-	if (not NRC.config.checkMetaGem) then
+	if (not NRC.config.checkMetaGem or (GetServerTime() - NRC.loadTime) < 120) then
 		return;
 	end
 	local metaGemName, metaGemLink, metaGemTexture, metaGemActive = NRC:getMetaGem();

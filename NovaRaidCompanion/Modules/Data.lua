@@ -389,7 +389,7 @@ function NRC:dataGroupJoined()
 	if (next(data) ~= nil) then
 		data = NRC.serializer:Serialize(data);
 		NRC.lastDataSent = GetServerTime();
-		NRC:debug("Sending my raid data.");
+		--NRC:debug("Sending my raid data.");
 		NRC:sendComm(distribution, "g " .. version .. " " .. data);
 	end
 end
@@ -889,6 +889,9 @@ f:RegisterEvent("GROUP_LEFT");
 f:RegisterEvent("UNIT_RESISTANCES");
 f:RegisterEvent("UNIT_INVENTORY_CHANGED");
 f:RegisterEvent("CHARACTER_POINTS_CHANGED");
+if (C_EventUtils.IsEventValid("PLAYER_SPECIALIZATION_CHANGED")) then
+	f:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED");
+end
 if (C_EventUtils.IsEventValid("GLYPH_ADDED")) then
 	f:RegisterEvent("GLYPH_ADDED");
 	f:RegisterEvent("GLYPH_UPDATED");
@@ -939,6 +942,9 @@ f:SetScript('OnEvent', function(self, event, ...)
 		NRC.weaponEnchants = {};
 		NRC:checkMyEnchants(true);
 		--NRC.talents = {};
+		--NRC.talents2 = {};
+		--NRC.glyphs = {};
+		--NRC.glyphs2 = {};
 		--NRC:stopRaidCacheTicker();
 	elseif (event == "PLAYER_REGEN_ENABLED") then
 		NRC:checkMyRes();
@@ -950,13 +956,25 @@ f:SetScript('OnEvent', function(self, event, ...)
 		end
 	elseif (event == "UNIT_INVENTORY_CHANGED") then
 		NRC:throddleEventByFunc("UNIT_INVENTORY_CHANGED", 3, "checkMyEnchants");
+	elseif (event == "PLAYER_SPECIALIZATION_CHANGED") then
+		myTalentsChanged = true;
+		NRC:checkMyTalents();
+		NRC.checkMyGlyphs();
+		NRC:throddleEventByFunc("CHARACTER_POINTS_CHANGED", 1, "sendTalents");
+		NRC:throddleEventByFunc("GLYPH_UPDATED", 1, "sendGlyphs");
 	elseif (event == "CHARACTER_POINTS_CHANGED" or event == "PLAYER_TALENT_UPDATE") then
 		myTalentsChanged = true;
 		NRC:checkMyTalents();
-		NRC:throddleEventByFunc("CHARACTER_POINTS_CHANGED", 10, "sendTalents");
+		NRC.checkMyGlyphs();
+		C_Timer.After(2, function()
+			NRC:throddleEventByFunc("CHARACTER_POINTS_CHANGED", 8, "sendTalents");
+		end)
 	elseif (event == "GLYPH_ADDED" or event == "GLYPH_UPDATED" or event == "GLYPH_REMOVED") then
-		NRC:throddleEventByFunc("GLYPH_UPDATED", 5, "sendGlyphs");
-		NRC:throddleEventByFunc("CHARACTER_POINTS_CHANGED", 6, "sendTalents");
+		NRC:checkMyTalents();
+		NRC.checkMyGlyphs();
+		C_Timer.After(2, function()
+			NRC:throddleEventByFunc("GLYPH_UPDATED", 3, "sendGlyphs");
+		end)
 	end
 end)
 
@@ -1161,7 +1179,7 @@ function NRC:sendTalents()
 	--NRC:debug("sending talents update");
 	local data = NRC.serializer:Serialize(talents);
 	NRC:sendGroupComm("tal " .. NRC.version .. " " .. data);
-	if (myTalentsChanged and NRC.groupCache[me]) then
+	if (myTalentsChanged and IsInGroup()) then
 		myTalentsChanged = nil;
 		NRC:loadRaidCooldownChar(me, NRC.groupCache[me]);
 	end
@@ -1184,7 +1202,7 @@ end
 function NRC:checkMyTalents()
 	--if (IsInGroup()) then
 		local me = UnitName("player");
-		NRC.talents[me] = NRC:createTalentString();
+		NRC.talents[me], NRC.talents2[me] = NRC:createTalentString();
 		NRC:updateIssuesCache(UnitGUID("player"));
 	--end
 end
@@ -1196,7 +1214,7 @@ function NRC:sendGlyphs(sender)
 	local glyphs = NRC:createGlyphString();
 	local me = UnitName("player");
 	NRC.glyphs[me] = glyphs;
-	NRC:debug("sending glyphs update");
+	--NRC:debug("sending glyphs update");
 	local data = NRC.serializer:Serialize(glyphs);
 	if (sender) then
 		local name, realm = strsplit("-", sender, 2);
@@ -1229,10 +1247,11 @@ function NRC:receivedGlyphs(data, sender, distribution, isWhisper)
 end
 
 function NRC:checkMyGlyphs()
-	if (IsInGroup()) then
+	--if (IsInGroup()) then
 		local me = UnitName("player");
-		NRC.glyphs[me] = NRC:createGlyphString();
-	end
+		NRC.glyphs[me], NRC.glyphs2[me] = NRC:createGlyphString();
+		NRC:updateIssuesCache(UnitGUID("player"));
+	--end
 end
 
 --Send raid data only, no settings etc.

@@ -7,10 +7,13 @@ local L = LibStub("AceLocale-3.0"):GetLocale("NovaRaidCompanion");
 local sanctifiedString = L["Sanctified"];
 local uniformString = L["Scarlet Uniform"];
 local tonumber = tonumber;
-local GetItemInfo = GetItemInfo;
+local GetItemInfo = GetItemInfo or C_Item.GetItemInfo;
 local isSOD = NRC.isSOD;
+local isMOP = NRC.isMOP;
 local expansionNum = NRC.expansionNum;
 local strmatch = strmatch;
+local isTierTalents = NRC.isTierTalents;
+local talentRowCount = NRC.talentRowCount;
 
 local enchantNames = {};
 NRC.gearCache = {};
@@ -1025,6 +1028,7 @@ function NRC:recalcEquipmentFrame(firstOpen)
 			if (guid == UnitGUID("player")) then
 				NRC:buildMyInventoryFromInspect();
 				NRC:checkMyTalents();
+				NRC.checkMyGlyphs();
 			else
 				NRC:inspect(guid, true);
 			end
@@ -1156,7 +1160,7 @@ local queueRunning;
 local inspectingGUID;
 local inspectFrameTalents;
 local inspectFrameTalentsGUID;
-
+local glyphSpellIDs = NRC.glyphSpellIDs;
 local f = CreateFrame("Frame", "NRCGroup");
 f:RegisterEvent("PLAYER_ENTERING_WORLD");
 f:RegisterEvent("GROUP_ROSTER_UPDATE");
@@ -1177,6 +1181,27 @@ f:SetScript('OnEvent', function(self, event, ...)
 					if (guid) then
 						NRC:inspect(guid);
 					end
+				end
+			--elseif (spellID == 113873 or glyphSpellIDs[spellID]) then
+			elseif (spellID == 113873) then
+				--Remove talent has been cast in MoP+, inspect after a short time to see which talent has been trained.
+				--There is no talent learnt event for group members.
+				--We also check for glyphs being swapped, sadly we need every glyph spellID to detect this.
+				--We need the actual glyph being applied ID https://www.wowhead.com/mop-classic/spell=124417/black-ice
+				--Haven't created the glyph spellIDs db yet, maybe lter.
+				if (unit ~= "player") then
+					C_Timer.After(5, function()
+						local guid = UnitGUID(unit);
+						if (guid) then
+							NRC:inspect(guid);
+						end
+					end)
+					C_Timer.After(30, function()
+						local guid = UnitGUID(unit);
+						if (guid) then
+							NRC:inspect(guid);
+						end
+					end)
 				end
 			end
 			if (NRC.specialHealingSpells and NRC.specialHealingSpells[spellID]) then
@@ -1362,11 +1387,11 @@ end
 
 function NRC:receivedInspect(guid)
 	inspectFrameTalentsGUID = guid;
-	--NRC:debug("received inspect", guid);
+	local _, _, _, _, _, name = GetPlayerInfoByGUID(guid);
+	--NRC:debug("received inspect", name);
 	if (not NRC:inOurGroup(guid)) then
 		return;
 	end
-	local name = UnitName(guid);
 	--local inspected = NRC:getGroupInspectCount() .. "/" .. GetNumGroupMembers();
 	lastAttempt = 0;
 	for k, v in pairs(inspectQueue) do
@@ -1378,6 +1403,7 @@ function NRC:receivedInspect(guid)
 	if (guid) then
 		inspectSuccess[guid] = GetServerTime();
 		talentString = NRC:addTalentStringFromInspect(guid);
+		NRC:addGlyphStringFromInspect(guid);
 		NRC:buildInventoryFromInspect(guid);
 	end
 	--If the inspect result is from our queue.
@@ -1401,7 +1427,7 @@ end
 
 --Add talents to cache.
 function NRC:addTalentStringFromInspect(guid)
-	local talentString, talentString2 = NRC:createTalentStringFromInspect(guid);
+	local talentString, talentString2 = NRC:createTalentStringFromInspect(guid, true);
 	if (talentString) then
 		local _, _, _, _, _, name, realm = GetPlayerInfoByGUID(guid);
 		local nameRealm = name .. "-" ..  realm;
@@ -1425,30 +1451,103 @@ function NRC:addTalentStringFromInspect(guid)
 	end
 end
 
-function NRC:createTalentStringFromInspect(guid)
+--Add talents to cache.
+function NRC:addGlyphStringFromInspect(guid)
+	local glyphString, glyphString2 = NRC:createGlyphStringFromInspect(guid, true);
+	if (glyphString) then
+		local _, _, _, _, _, name, realm = GetPlayerInfoByGUID(guid);
+		local nameRealm = name .. "-" ..  realm;
+		if (NRC.groupCache[name]) then
+			--NRC:debug("added glyphs from inspect", name);
+			NRC.glyphs[name] = glyphString;
+			NRC:loadRaidCooldownChar(name, NRC.groupCache[name]);
+		elseif (NRC.groupCache[nameRealm]) then
+			NRC.glyphs[nameRealm] = glyphString;
+			NRC:loadRaidCooldownChar(nameRealm, NRC.groupCache[nameRealm]);
+		end
+		if (glyphString2) then
+			if (NRC.groupCache[name]) then
+				--NRC:debug("added glyphs from inspect", name);
+				NRC.glyphs2[name] = glyphString2;
+			elseif (NRC.groupCache[nameRealm]) then
+				NRC.glyphs2[nameRealm] = glyphString2;
+			end
+		end
+		return glyphString;
+	end
+end
+
+function NRC:createTalentStringFromInspect(guid, isInspect)
+	local talentString, talentString2;
 	if (NRC.isRetail) then
 		return "1-0-0-0";
-	end
-	local talentString, talentString2;
-	local unit = NRC:getUnitFromGUID(guid);
-	local _, class = GetPlayerInfoByGUID(guid);
-	local classID;
-	for i = 1, GetNumClasses() do
-		local className, classFile, id = GetClassInfo(i);
-		if (class == classFile) then
-			classID = id;
-			break;
+	elseif (isTierTalents) then
+		local unit = NRC:getUnitFromGUID(guid);
+		local _, _, classID = UnitClass(unit);
+		talentString = tostring(classID) .. "-";
+		talentString2 = tostring(classID) .. "-";
+		local activeSpec = C_SpecializationInfo.GetActiveSpecGroup(isInspect);
+		local offSpec = (activeSpec == 1 and 2 or 1);
+		for row = 1, MAX_NUM_TALENT_TIERS do
+			--GetTalentTierInfo() didn't seem to work with inspect, atleast on the beta for now.
+			--local tierAvailable, selectedTalentColumn, tierUnlockLevel = GetTalentTierInfo(row, activeSpec, true, unit);
+			--Use a different route.
+			local selectedTalentColumn = 0;
+			local talentInfoQuery = {};
+			talentInfoQuery.tier = row;
+			talentInfoQuery.groupIndex = activeSpec;
+			talentInfoQuery.isInspect = isInspect;
+			talentInfoQuery.target = unit;
+			for column = 1, NUM_TALENT_COLUMNS do
+				talentInfoQuery.column = column;
+				local talentInfo = C_SpecializationInfo.GetTalentInfo(talentInfoQuery);
+				if (talentInfo and talentInfo.selected) then
+					selectedTalentColumn = column;
+				end
+			end
+			talentString = talentString .. selectedTalentColumn;
 		end
-	end
-	--Fallback just incase, less reliable mapping units to group until I get NRC:getUnitFromGUID() working better.
-	if (unit and not classID) then
-		_, _, classID = UnitClass(unit);
-	end
-	if (not classID) then
-		return;
-	end
-	--Seems all 3 clients are using the new out of order system now.
-	--if (NRC.isWrath or NRC.isTBC or NRC.isClassic) then
+		local specID = C_SpecializationInfo.GetSpecialization(isInspect, nil, activeSpec);
+		talentString = talentString .. "-" .. specID;
+		for row = 1, talentRowCount do
+			local selectedTalentColumn = 0;
+			local talentInfoQuery = {};
+			talentInfoQuery.tier = row;
+			talentInfoQuery.groupIndex = offSpec;
+			talentInfoQuery.isInspect = isInspect;
+			talentInfoQuery.target = unit;
+			for column = 1, NUM_TALENT_COLUMNS do
+				talentInfoQuery.column = column;
+				local talentInfo = C_SpecializationInfo.GetTalentInfo(talentInfoQuery);
+				if (talentInfo and talentInfo.selected) then
+					selectedTalentColumn = column;
+				end
+			end
+			talentString2 = talentString2 .. selectedTalentColumn;
+		end
+		local specID2 = C_SpecializationInfo.GetSpecialization(isInspect, nil, offSpec);
+		talentString2 = talentString2 .. "-" .. specID2;
+		--GetInspectSpecialization()
+		--NRC:debug(talentString, talentString2)
+	else
+		local unit = NRC:getUnitFromGUID(guid);
+		local _, class = GetPlayerInfoByGUID(guid);
+		local classID;
+		for i = 1, GetNumClasses() do
+			local className, classFile, id = GetClassInfo(i);
+			if (class == classFile) then
+				classID = id;
+				break;
+			end
+		end
+		--Fallback just incase, less reliable mapping units to group until I get NRC:getUnitFromGUID() working better.
+		if (unit and not classID) then
+			_, _, classID = UnitClass(unit);
+		end
+		if (not classID) then
+			return;
+		end
+		--Seems all 3 clients are using the new out of order system now.
 		if (unit or classID) then
 			local data = {
 				classID = classID,
@@ -1462,13 +1561,13 @@ function NRC:createTalentStringFromInspect(guid)
 			if (classID) then
 				talentString = tostring(classID);
 				talentString2 = tostring(classID);
-				local activeSpec = GetActiveTalentGroup(true);
+				local activeSpec = GetActiveTalentGroup(isInspect);
 				local offSpec = (activeSpec == 1 and 2 or 1);
 				for tab = 1, GetNumTalentTabs() do
 					data[tab] = {};
 					data2[tab] = {};
 					for i = 1, numTalents do
-						local name, _, row, column, rank = GetTalentInfo(tab, i, true, nil, activeSpec);
+						local name, _, row, column, rank = GetTalentInfo(tab, i, isInspect, nil, activeSpec);
 						--This was changed because there were bugs in cata with GetTalentInfo().
 						--Arcane mage has an empty entry at talent 21, and the real 21 was at index 22.	
 						--[[if (name) then
@@ -1490,7 +1589,7 @@ function NRC:createTalentStringFromInspect(guid)
 						end
 					end
 					for i = 1, numTalents do
-						local name, _, row, column, rank = GetTalentInfo(tab, i, true, nil, offSpec);
+						local name, _, row, column, rank = GetTalentInfo(tab, i, isInspect, nil, offSpec);
 						--[[if (name) then
 							data2[tab][i] = {
 								rank = rank,
@@ -1514,43 +1613,105 @@ function NRC:createTalentStringFromInspect(guid)
 			talentString = NRC:createTalentStringFromTable(data);
 			talentString2 = NRC:createTalentStringFromTable(data2);
 		end
-		--if (talentString and not strfind(talentString, "0%-0%-0")) then
-			return talentString, talentString2;
-		--end
-	--[[else
-		if (unit or classID) then
-			--Number of talents varies by class, but if we get a rough num for this expansion and add 20 it should cover it.
-			--We stop iteration when we reach nil (end of talent tree) anyway.
-			local numTalents = GetNumTalents(1) + 20;
-			if (classID) then
-				talentString = tostring(classID);
-				for tab = 1, GetNumTalentTabs() do
-					local found;
-					local treeString = "";
-					for i = 1, numTalents do
-						local name, _, _, _, rank = GetTalentInfo(tab, i, true);
-						if (name) then
-							treeString = treeString .. rank;
-							if (rank and rank > 0) then
-								found = true;
-							end
-						else
-							break;
-						end
-					end
-					treeString = strmatch(treeString, "^(%d-)0*$");
-					if (found) then
-						talentString = talentString .. "-" .. treeString;
-					else
-						talentString = talentString .. "-0";
-					end
-				end
-			end
+	end
+	return talentString, talentString2;
+end
+
+--First 3 major, second 3 minor.
+function NRC:createGlyphStringFromInspect(guid, isInspect)
+	--In cata and mop the returns structure changes.
+	--And there's no glyph inspect anwyay in previous expansions?
+	--For our own glyphs we use an older glyph func in Talents.lua
+	if (NRC.expansionNum < 5) then
+		return "";
+	end
+	local unit = NRC:getUnitFromGUID(guid);
+	local _, _, classID = UnitClass(unit);
+	local glyphString, glyphString2 = classID, classID;
+	local activeSpec = C_SpecializationInfo.GetActiveSpecGroup(isInspect);
+	local offSpec = (activeSpec == 1 and 2 or 1);
+	local temp = {};
+	local count = 0;
+	local glyphMap = { --First 3 major, second 3 minor.
+		[1] = 2, --Major slot 1.
+		[2] = 4, --Major slot 2.
+		[3] = 6, --Major slot 3.
+		[4] = 1, --Minor slot 1.
+		[5] = 3, --Minor slot 2.
+		[6] = 5, --Minor slot 3.
+	};
+	--Active spec.
+	for k, v in ipairs(glyphMap) do
+		local enabled, type, index, spellID, icon = GetGlyphSocketInfo(v, activeSpec, isInspect, unit);
+		glyphString = glyphString .. "-" .. (spellID or 0);
+	end
+	--Offspec.
+	for k, v in ipairs(glyphMap) do
+		local enabled, type, index, spellID, icon = GetGlyphSocketInfo(v, offSpec, isInspect, unit);
+		glyphString2 = glyphString2 .. "-" .. (spellID or 0);
+	end
+	--This old way below would sort the glyphs into order except there was a problems.
+	--If the middle slot (2) was empty then the next slot (3) would move down to 2 and create inconsistancies in the display slots.
+	--Now I use a glyphMap above to keep things in the right slots instead.
+	--[[for i = 1, GetNumGlyphSockets() do
+		local enabled, type, index, spellID, icon = GetGlyphSocketInfo(i, activeSpec, isInspect, unit);
+		if (type == 1) then
+			count = count + 1;
+			temp[count] = spellID or 0;
 		end
-		--if (talentString and not strfind(talentString, "0%-0%-0")) then
-			return talentString;
-		--end
+	end
+	table.sort(temp, function(a, b) return a > b end);
+	--Make sure filled slots are first.
+	for i = 1, 3 do
+		glyphString = glyphString .. "-" .. (temp[i] or 0);
+	end
+	temp = {};
+	count = 0;
+	for i = 1, GetNumGlyphSockets() do
+		local enabled, type, index, spellID, texture = GetGlyphSocketInfo(i, activeSpec, isInspect, unit);
+		if (type == 2) then
+			count = count + 1;
+			temp[count] = spellID or 0;
+		end
+	end
+	table.sort(temp, function(a, b) return a > b end);
+	for i = 1, 3 do
+		glyphString = glyphString .. "-" .. (temp[i] or 0);
+	end
+	---Offspec.
+	temp = {};
+	count = 0;
+	--Active spec.
+	for i = 1, GetNumGlyphSockets() do
+		local enabled, type, index, spellID, icon = GetGlyphSocketInfo(i, offSpec, isInspect, unit);
+		if (type == 1) then
+			count = count + 1;
+			temp[count] = spellID or 0;
+		end
+	end
+	table.sort(temp, function(a, b) return a > b end);
+	--Make sure filled slots are first.
+	for i = 1, 3 do
+		glyphString2 = glyphString2 .. "-" .. (temp[i] or 0);
+	end
+	temp = {};
+	count = 0;
+	for i = 1, GetNumGlyphSockets() do
+		local enabled, type, index, spellID, texture = GetGlyphSocketInfo(i, offSpec, isInspect, unit);
+		if (type == 2) then
+			count = count + 1;
+			temp[count] = spellID or 0;
+		end
+	end
+	table.sort(temp, function(a, b) return a > b end);
+	for i = 1, 3 do
+		glyphString2 = glyphString2 .. "-" .. (temp[i] or 0);
 	end]]
+	--We're only using current spec glyph string atm, probably add dual spec support later.
+	--glyphString2 isn't used by any funcs yet.
+	--On the inspect frame we only display glyphs for main spec.
+	--NRC:debug(glyphString, glyphString2)
+	return glyphString, glyphString2;
 end
 
 local inspectTalentsCheckBox, inspectTalentsFrame;
@@ -1559,7 +1720,9 @@ local function openInspectTalentsFrame()
 		return;
 	end
 	if (not inspectTalentsFrame) then
-		if (NRC.isWrath) then
+		if (NRC.isMOP) then
+			inspectTalentsFrame = NRC:createTalentTiersFrame("NRCInspectTalentFrame", 644, 408, 0, 0, 3);
+		elseif (NRC.isWrath) then
 			inspectTalentsFrame = NRC:createTalentFrame("NRCInspectTalentFrame", 870, 540, 0, 0, 3);
 		else
 			inspectTalentsFrame = NRC:createTalentFrame("NRCInspectTalentFrame", 870, 480, 0, 0, 3);
@@ -1570,7 +1733,19 @@ local function openInspectTalentsFrame()
 				InspectFrameCloseButton:Click();
 			end
 		end)
+		inspectTalentsFrame:SetScript("OnHide", function(self)
+			inspectTalentsFrame.name = nil;
+			inspectTalentsFrame.talentString = nil;
+			inspectTalentsFrame.talentString2 = nil;
+			inspectTalentsFrame.showOffspec = nil;
+			inspectTalentsFrame.glyphString = nil;
+			inspectTalentsFrame.glyphString2 = nil;
+			inspectTalentsFrame.isInspect = nil;
+			inspectTalentsFrame.fromRaidStatus = nil;
+		end)
+		inspectTalentsFrame.onUpdateFunction = "updateTalentFrame";
 		inspectTalentsFrame.fs:SetText("|cFFFFFF00Nova Raid Companion");
+		inspectTalentsFrame.isInspectFrame = true;
 		inspectTalentsFrame:ClearAllPoints();
 	end
 	--local guid = inspectFrameTalentsGUID;
@@ -1590,18 +1765,20 @@ local function openInspectTalentsFrame()
 				break;
 			end
 		end]]
-		local talentString, talentString2 = NRC:createTalentStringFromInspect(guid);
+		local talentString, talentString2 = NRC:createTalentStringFromInspect(guid, true);
 		if (talentString) then
-			local isError = NRC:updateTalentFrame(name, talentString, inspectTalentsFrame, talentString2);
+			local glyphString, glyphString2 = NRC:createGlyphStringFromInspect(guid, true);
+			--local isError = NRC:updateTalentFrame(name, talentString, inspectTalentsFrame, talentString2, nil, glyphString, glyphString2);
+			NRC:openTalentFrame(name, talentString, inspectTalentsFrame, talentString2, nil, glyphString, glyphString2, nil, true);
 			inspectTalentsFrame:SetScale(0.875);
-			if (not isError) then
-				inspectTalentsFrame:Show();
-			end
+			--if (not isError) then
+				--inspectTalentsFrame:Show();
+			--end
 		end
 		if (realm and realm ~= "" and realm ~= NRC.realm) then
 			name = name .. "-" .. realm;
 		end
-		if (NRC.expansionNum > 2) then
+		if (NRC.expansionNum > 2 and NRC.expansionNum < 5) then
 			local isEnemy;
 			local targetName = UnitName("target");
 			if (name == targetName) then
@@ -1658,23 +1835,29 @@ function NRC:hookTalentsFrame()
 		end
 	end)
 	--Move checkbox depending on which tab is shown.
-	if (InspectPaperDollFrame) then
-		InspectPaperDollFrame:HookScript("OnShow", function(self)
-			inspectTalentsCheckBox:SetPoint("TOPRIGHT", InspectFrame, -105, -53);
+	if (NRC.expansionNum > 4) then
+		InspectFrame:HookScript("OnShow", function(self)
+			inspectTalentsCheckBox:SetPoint("TOPRIGHT", InspectFrame, -80, -40);
 		end)
 	else
-		NRC:debug("Missing InspectPaperDollFrame frame.");
-	end
-	if (InspectPVPFrame) then
-		--Doesn't exist in era/sod.
-		InspectPVPFrame:HookScript("OnShow", function(self)
-			inspectTalentsCheckBox:SetPoint("TOPRIGHT", InspectFrame, -105, -38);
-		end)
-	end
-	if (InspectTalentFrame) then
-		InspectTalentFrame:HookScript("OnShow", function(self)
-			inspectTalentsCheckBox:SetPoint("TOPRIGHT", InspectFrame, -105, -34);
-		end)
+		if (InspectPaperDollFrame) then
+			InspectPaperDollFrame:HookScript("OnShow", function(self)
+				inspectTalentsCheckBox:SetPoint("TOPRIGHT", InspectFrame, -105, -53);
+			end)
+		else
+			NRC:debug("Missing InspectPaperDollFrame frame.");
+		end
+		if (InspectPVPFrame) then
+			--Doesn't exist in era/sod.
+			InspectPVPFrame:HookScript("OnShow", function(self)
+				inspectTalentsCheckBox:SetPoint("TOPRIGHT", InspectFrame, -105, -38);
+			end)
+		end
+		if (InspectTalentFrame) then
+			InspectTalentFrame:HookScript("OnShow", function(self)
+				inspectTalentsCheckBox:SetPoint("TOPRIGHT", InspectFrame, -105, -34);
+			end)
+		end
 	end
 end
 

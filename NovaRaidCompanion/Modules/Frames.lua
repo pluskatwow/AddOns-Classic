@@ -2717,7 +2717,7 @@ function NRC:createTalentFrame(name, width, height, x, y, borderSpacing)
 			frame.lastUpdate = GetTime();
 			if (frame.onUpdateFunction) then
 				--If we declare an update function for this frame to run when shown.
-				NRC[frame.onUpdateFunction]();
+				NRC[frame.onUpdateFunction](self, nil, nil, frame);
 			end
 		end
 	end)
@@ -3070,6 +3070,368 @@ function NRC:createTalentFrame(name, width, height, x, y, borderSpacing)
 	end]]
 	frame.glyphs:SetScale(0.9);
 	frame.glyphs:Hide();
+	frame:Hide();
+	return frame;
+end
+
+function NRC:createTalentTiersFrame(name, width, height, x, y, borderSpacing)
+	local frame = CreateFrame("Frame", name, UIParent, "BackdropTemplate");
+	if (borderSpacing) then
+		frame.borderFrame = CreateFrame("Frame", "$parentBorderFrame", frame, "BackdropTemplate");
+		frame.borderFrame:SetPoint("TOP", 0, borderSpacing);
+		frame.borderFrame:SetPoint("BOTTOM", 0, -borderSpacing);
+		frame.borderFrame:SetPoint("LEFT", -borderSpacing, 0);
+		frame.borderFrame:SetPoint("RIGHT", borderSpacing, 0);
+		frame:SetBackdrop({
+			bgFile = "Interface\\Buttons\\WHITE8x8",
+			insets = {top = 0, left = 2, bottom = 2, right = 2},
+		});
+		frame.borderFrame:SetBackdrop({
+			--edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+			edgeFile = "Interface\\Addons\\NovaRaidCompanion\\Media\\UI-Tooltip-Border-FullTopRight",
+			tileEdge = true,
+			edgeSize = 16,
+			insets = {top = 2, left = 2, bottom = 2, right = 2},
+		});
+		frame:SetBackdropColor(0, 0, 0, 0.8);
+	else
+		frame:SetBackdrop({
+			bgFile = "Interface\\Buttons\\WHITE8x8",
+			insets = {top = 0, left = 0, bottom = 0, right = 0},
+			edgeFile = [[Interface/Buttons/WHITE8X8]], 
+			edgeSize = 4,
+		});
+		frame:SetBackdropColor(0, 0, 0, 0.8);
+		frame:SetBackdropBorderColor(1, 1, 1, 0.2);
+	end
+	--frame:SetToplevel(true);
+	frame:SetMovable(true);
+	frame:EnableMouse(true);
+	frame:SetUserPlaced(false);
+	frame:SetToplevel(true);
+	frame:SetSize(width, height);
+	frame:SetFrameStrata("MEDIUM");
+	frame:SetFrameLevel(10);
+	if (x and y) then
+		frame:SetPoint("TOP", UIParent, "CENTER", x, y);
+	end
+	frame.fs = frame:CreateFontString("$parentFS", "ARTWORK");
+	frame.fs:SetPoint("TOPLEFT", 5, -5);
+	frame.fs:SetFontObject(Game11Font);
+	frame.fs2 = frame:CreateFontString("$parentFS2", "ARTWORK");
+	frame.fs2:SetPoint("TOP", -6, -5);
+	frame.fs2:SetFontObject(NRC_Game14Font);
+	frame.fs3 = frame:CreateFontString("$parentFS3", "ARTWORK");
+	frame.fs3:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -30, -5);
+	frame.fs3:SetFontObject(Game13Font);
+	frame.titleTexture = frame:CreateTexture(nil, nil);
+	frame.titleTexture:SetSize(16, 16);
+	frame.titleTexture:SetPoint("RIGHT", frame.fs2, "LEFT", -8, -1.1);
+	frame.titleTexture2 = frame:CreateTexture(nil, nil);
+	frame.titleTexture2:SetSize(16, 16);
+	frame.titleTexture2:SetPoint("LEFT", frame.fs2, "RIGHT", 8, -1.1);
+	frame.fs4 = frame:CreateFontString("$parentFS4", "ARTWORK");
+	frame.fs4:SetPoint("RIGHT", frame.titleTexture, "LEFT", -8, 1.1);
+	frame.fs4:SetFontObject(NRC_Game14Font);
+	--Click button to be used for whatever, set onclick in the frame data func.
+	frame.button = CreateFrame("Button", "$parentButton", frame, "UIPanelButtonTemplate");
+	frame.button:SetFrameLevel(15);
+	frame.button:SetPoint("LEFT", frame.fs2, "RIGHT", 10, 0);
+	frame.button:SetWidth(150);
+	frame.button:SetHeight(18);
+	frame.button:Hide();
+	--Top right X close button.
+	frame.closeButton = CreateFrame("Button", "$parentClose", frame, "UIPanelCloseButton");
+	frame.closeButton:SetPoint("TOPRIGHT", 3.45, 3.2);
+	frame.closeButton:SetWidth(26);
+	frame.closeButton:SetHeight(26);
+	frame.closeButton:SetFrameLevel(15);
+	frame.closeButton:SetScript("OnClick", function(self, arg)
+		frame:Hide();
+	end)
+	frame.lastUpdate = 0;
+	frame:SetScript("OnUpdate", function(self)
+		--Update throddle.
+		if (GetTime() - frame.lastUpdate > 1) then
+			frame.lastUpdate = GetTime();
+			if (frame.onUpdateFunction) then
+				--If we declare an update function for this frame to run when shown.
+				NRC[frame.onUpdateFunction](self, nil, nil, frame);
+			end
+		end
+	end)
+	
+	--We need to load the templates.
+	C_AddOns.LoadAddOn("Blizzard_TalentUI");
+	--Base frame used for positioning and size to sit the blizzard talent frame on, this saves changing anchors etc in the xml.
+	frame.talentFrameBase = CreateFrame("Frame", "$parentTalentsBase", frame);
+	--This is the right size for the Blizzard template to fit properly, don't change this.
+	--If the frame needs resizing just change the scale.
+	frame.talentFrameBase:SetSize(637, 380);
+	--Move the base frame up a bit to fit properly in out talents frame.
+	frame.talentFrameBase:SetPoint("BOTTOM", frame, "BOTTOM", 0, 5);
+	frame.talentFrame = CreateFrame("Frame", "$parentTalents", frame.talentFrameBase, "NRC_PlayerTalentFrameTalents");
+	frame.talentFrame:SetAllPoints();
+	frame.updateTalentsDisplay = function(class, classID, talents)
+		local talentLevels = CLASS_TALENT_LEVELS[class] or CLASS_TALENT_LEVELS["DEFAULT"];
+		for i = 1, MAX_NUM_TALENT_TIERS do
+			_G[name.. "TalentsBaseTalentsTalentRow" .. i].level:SetText(talentLevels[i]);
+		end
+		frame.resetTalentFrame();
+		local talentData = NRC:getTalentData(class);
+		if (talentData and talents) then
+			for row, rowData in ipairs(talentData) do
+				for column, talent in ipairs(rowData) do
+					--TalentBaseFrame.lua
+					local button = _G[name.. "TalentsBaseTalentsTalentRow" .. row .. "Talent" .. column];
+					if (button) then
+						button:SetID(talent.talentID);
+						SetItemButtonTexture(button, talent.icon);
+						if (button.name ~= nil) then
+							button.name:SetText(talent.name);
+						end
+						--Highlighting the trained talent.
+						local trained = tonumber(strsub(talents, row, row));
+						if (trained == column) then
+							SetDesaturation(_G[button:GetName() .. "IconTexture"], false);
+							_G[button:GetName() .. "Selection"]:SetShown(true);
+						else
+							--SetDesaturation(_G[button:GetName() .. "IconTexture"], true);
+							_G[button:GetName() .. "Selection"]:SetShown(false);
+						end
+					end
+				end
+			end
+		end
+	end;
+	frame.hideAllTalentFrames = function()
+		
+	end
+	frame.disableAllTalentFrames = function()
+		
+	end
+	frame.resetTalentFrame = function()
+		frame.titleTexture:SetTexture();
+		for row = 1, MAX_NUM_TALENT_TIERS do
+			for column = 1, NUM_TALENT_COLUMNS do
+				local button = _G[name.. "TalentsBaseTalentsTalentRow" .. row .. "Talent" .. column];
+				if (button ~= nil) then
+					SetDesaturation(button.icon, true);
+					SetItemButtonTexture(button);
+					button.name:SetText("");
+					_G[button:GetName() .. "Selection"]:SetShown(false);
+				end
+			end
+		end
+	end
+	
+	frame.glyphs = CreateFrame("Frame", frame:GetName() .. "Glyphs", frame, "TooltipBorderedFrameTemplate");
+	frame.glyphs:SetHyperlinksEnabled(true);
+	frame.glyphs:SetScript("OnHyperlinkEnter", ChatFrame_OnHyperlinkShow);
+	frame.glyphs:SetScript("OnHyperlinkLeave", function(self, link, text, button)
+		--GameTooltip:Hide();
+		ItemRefTooltip:Hide();
+	end)
+	frame.glyphs:SetPoint("TOPLEFT", frame, "TOPRIGHT", 1, 2);
+	frame.glyphs.fsTitle = frame.glyphs:CreateFontString("$parentFSTitle", "ARTWORK");
+	frame.glyphs.fsTitle:SetPoint("TOP", 0, -5);
+	frame.glyphs.fsTitle:SetFontObject(Game15Font);
+	frame.glyphs.fsTitle:SetText("|cFFFF6900Glyphs");
+	frame.glyphs.fsMajor = frame.glyphs:CreateFontString("$parentMajor", "ARTWORK");
+	frame.glyphs.fsMajor:SetPoint("TOPLEFT", 10, -30);
+	frame.glyphs.fsMajor:SetFontObject(NRC_Game14Font);
+	frame.glyphs.fsMajor:SetJustifyH("LEFT");
+	frame.glyphs.fsMajor:SetText("|cFFFFFF00Major:");
+	frame.glyphs.fs1 = frame.glyphs:CreateFontString("$parentFS1", "ARTWORK");
+	frame.glyphs.fs1:SetPoint("TOPLEFT", 10, -48);
+	frame.glyphs.fs1:SetFontObject(Game13Font);
+	frame.glyphs.fs1:SetJustifyH("LEFT");
+	frame.glyphs.fs2 = frame.glyphs:CreateFontString("$parentFS2", "ARTWORK");
+	frame.glyphs.fs2:SetPoint("TOPLEFT", 10, -66);
+	frame.glyphs.fs2:SetFontObject(Game13Font);
+	frame.glyphs.fs2:SetJustifyH("LEFT");
+	frame.glyphs.fs3 = frame.glyphs:CreateFontString("$parentFS3", "ARTWORK");
+	frame.glyphs.fs3:SetPoint("TOPLEFT", 10, -84);
+	frame.glyphs.fs3:SetFontObject(Game13Font);
+	frame.glyphs.fs3:SetJustifyH("LEFT");
+	frame.glyphs.fsMinor = frame.glyphs:CreateFontString("$parentMinor", "ARTWORK");
+	frame.glyphs.fsMinor:SetPoint("TOPLEFT", 10, -110);
+	frame.glyphs.fsMinor:SetFontObject(NRC_Game14Font);
+	frame.glyphs.fsMinor:SetJustifyH("LEFT");
+	frame.glyphs.fsMinor:SetText("|cFFFFFF00Minor:");
+	frame.glyphs.fs4 = frame.glyphs:CreateFontString("$parentFS4", "ARTWORK");
+	frame.glyphs.fs4:SetPoint("TOPLEFT", 10, -128);
+	frame.glyphs.fs4:SetFontObject(Game13Font);
+	frame.glyphs.fs4:SetJustifyH("LEFT");
+	frame.glyphs.fs5 = frame.glyphs:CreateFontString("$parentFS5", "ARTWORK");
+	frame.glyphs.fs5:SetPoint("TOPLEFT", 10, -146);
+	frame.glyphs.fs5:SetFontObject(Game13Font);
+	frame.glyphs.fs5:SetJustifyH("LEFT");
+	frame.glyphs.fs6 = frame.glyphs:CreateFontString("$parentFS6", "ARTWORK");
+	frame.glyphs.fs6:SetPoint("TOPLEFT", 10, -164);
+	frame.glyphs.fs6:SetFontObject(Game13Font);
+	frame.glyphs.fs6:SetJustifyH("LEFT");
+	--[[frame.glyphs.updateGlyphs = function(text)
+		if (not text or text == "") then
+			frame.glyphs:Hide();
+		else
+			frame.glyphs.fs2:SetText(text);
+			frame.glyphs:SetSize(frame.glyphs.fs2:GetWrappedWidth() + 20, (frame.glyphs.fsMajor:GetHeight() * 2) + (frame.glyphs.fs1:GetHeight() * 6) + 34);
+			frame.glyphs:Show();
+		end
+	end]]
+	frame.glyphs:SetScale(0.9);
+	frame.glyphs:Hide();
+	
+	--Graphical version of glyphs frame.
+	C_AddOns.LoadAddOn("Blizzard_GlyphUI");
+	frame.glyphs2 = CreateFrame("Frame", frame:GetName() .. "GlyphsFrame", frame, "TooltipBorderedFrameTemplate");
+	frame.glyphs2:SetSize(438, 415); --This seems to be about the right dimensions so the default background and glyph slot dimensions/positions line up.
+	frame.glyphs2:SetScale(0.5)
+	frame.glyphs2.overlay = CreateFrame("Frame", "$parentOverlay", frame.glyphs2, "NRC_GlyphFrame");
+	frame.glyphs2.overlay:SetAllPoints();
+	frame.glyphs2.overlay:Show();
+	frame.glyphs2:SetPoint("BOTTOMLEFT", frame, "BOTTOMRIGHT", 1, 0);
+	local glyphsFrameName = frame.glyphs2.overlay:GetName();
+	--Hide some blizzard stuff.
+	frame.glyphs2.overlay.levelOverlay1:Hide();
+	frame.glyphs2.overlay.levelOverlay2:Hide();
+	frame.glyphs2.overlay.levelOverlayText1:Hide();
+	frame.glyphs2.overlay.levelOverlayText2:Hide();
+	--Minor.
+	--[[_G[glyphsFrameName .. "Glyph1"]:SetPoint("CENTER", 178, -13);
+	_G[glyphsFrameName .. "Glyph3"]:SetPoint("CENTER", -43, -13);
+	_G[glyphsFrameName .. "Glyph5"]:SetPoint("CENTER", 68, -206);
+	--Major.
+	_G[glyphsFrameName .. "Glyph2"]:SetPoint("CENTER", 68, 100);
+	_G[glyphsFrameName .. "Glyph4"]:SetPoint("CENTER", -87, -165);
+	_G[glyphsFrameName .. "Glyph6"]:SetPoint("CENTER", 218, -165);]]
+	
+	--Minor.
+	_G[glyphsFrameName .. "Glyph1"]:SetPoint("CENTER", 110, 43);
+	_G[glyphsFrameName .. "Glyph3"]:SetPoint("CENTER", -111, 43);
+	_G[glyphsFrameName .. "Glyph5"]:SetPoint("CENTER", 0, -150);
+	--Major.
+	_G[glyphsFrameName .. "Glyph2"]:SetPoint("CENTER", 0, 156);
+	_G[glyphsFrameName .. "Glyph4"]:SetPoint("CENTER", -155, -109);
+	_G[glyphsFrameName .. "Glyph6"]:SetPoint("CENTER", 151, -109);
+	
+	--These funcs below have taken some parts from funcs in the Blizzard_GlyphUI.
+	frame.updateGlyphSlot = function(self, spellID, glyphType, clear)
+		GlyphFrameGlyph_SetGlyphType(self, glyphType); --This sets up the correct ring and highlight position for this glyph type.
+		self.spellID = spellID;
+		self.glyph:SetTexture();
+		self.highlight:Hide();
+		self.ring:SetDesaturated(true);
+		if (spellID and spellID ~= 0) then
+			local icon;
+			local spell = Spell:CreateFromSpellID(spellID)
+			if (spell and not spell:IsSpellEmpty()) then
+				spell:ContinueOnSpellLoad(function()
+					icon = C_Spell.GetSpellTexture(spellID);
+					if (icon) then
+						SetPortraitToTexture(self.glyph, icon);
+					else
+						self.glyph:SetTexture("Interface\\Spellbook\\UI-Glyph-Rune1");
+					end
+				end);
+				self.highlight:Show();
+				self.ring:SetDesaturated(false);
+			end
+		end
+		self:Show();
+	end
+	frame.onShowGlyph = function(self, glyphSlotID)
+		if (self.spellID and self.spellID ~= 0) then
+			GameTooltip:SetOwner(UIParent, "ANCHOR_NONE");
+			--GameTooltip_SetDefaultAnchor(GameTooltip, UIParent);
+			GameTooltip:SetSpellByID(self.spellID);
+			local glyphString;
+			if (self.glyphType == GLYPH_TYPE_MINOR or self.glyphType == GLYPH_TYPE_MAJOR) then
+				glyphString = GLYPH_STRING[self.glyphType];
+			end
+			if (not glyphString) then
+				glyphString = "Unknown Glyph Type";
+			end
+			GameTooltip:AppendText("\n|cff71d5ff" .. glyphString);
+			GameTooltip:Show();
+			GameTooltip:ClearAllPoints();
+			GameTooltip:SetPoint("TOPLEFT", self, "TOPRIGHT", 10, 50);
+		else
+			GameTooltip:SetOwner(UIParent, "ANCHOR_NONE");
+			GameTooltip:SetText("|cFFFFFFFF" .. EMPTY);
+			GameTooltip:Show();
+			GameTooltip:ClearAllPoints();
+			GameTooltip:SetPoint("TOPLEFT", self, "TOPRIGHT", 0, 50);
+		end
+	end
+	frame.onLeaveGlyph = function(self, spellID, glyphType, clear)
+		GameTooltip:Hide();
+	end
+	--Using the original blizzard templates so disable some of the handlers.
+	for i = 1, 6 do
+		_G[glyphsFrameName .. "Glyph" .. i]:SetScript("OnLoad", function() end);
+		_G[glyphsFrameName .. "Glyph" .. i]:SetScript("OnShow", function() end);
+		_G[glyphsFrameName .. "Glyph" .. i]:SetScript("OnClick", function() end);
+		_G[glyphsFrameName .. "Glyph" .. i]:SetScript("OnEnter", function() frame.onShowGlyph(_G[glyphsFrameName .. "Glyph" .. i], i) end);
+		_G[glyphsFrameName .. "Glyph" .. i]:SetScript("OnLeave", function() frame.onLeaveGlyph(_G[glyphsFrameName .. "Glyph" .. i], i) end);
+		_G[glyphsFrameName .. "Glyph" .. i]:SetScript("OnUpdate", function() end);
+
+		--_G[glyphsFrameName .. "Glyph" .. i .. "Ring"]:Hide();
+		--_G[glyphsFrameName .. "Glyph" .. i .. "Highlight"]:Hide();
+	end
+	frame.updateGlyphsDisplay = function(glyphString)
+		local classID, glyphs = strsplit("-", glyphString, 2);
+		if (glyphs) then
+			glyphs = {strsplit("-", glyphs)};
+			for i = 1, 3 do
+				--Major glyphs, slots 2/4/6.
+				--Map glyph to correct frame number, firs 3 in our glyphs table are major and last 3 minor.
+				local frameNum;
+				if (i == 1) then
+					frameNum = 2;
+				elseif (i == 2) then
+					frameNum = 4;
+				else
+					frameNum = 6;
+				end
+				local glyphFrame = _G[glyphsFrameName .. "Glyph" .. frameNum];
+				local spellID = glyphs[i];
+				if (spellID) then
+					frame.updateGlyphSlot(glyphFrame, tonumber(spellID), 1);
+				else
+					frame.updateGlyphSlot(glyphFrame);
+				end
+			end
+			for i = 4, 6 do
+				--Minor glyphs, slots 1/3/5.
+				local frameNum;
+				if (i == 4) then
+					frameNum = 1;
+				elseif (i == 5) then
+					frameNum = 3;
+				else
+					frameNum = 5;
+				end
+				local glyphFrame = _G[glyphsFrameName .. "Glyph" .. frameNum];
+				local spellID = glyphs[i];
+				if (spellID) then
+					frame.updateGlyphSlot(glyphFrame, tonumber(spellID), 2);
+				else
+					frame.updateGlyphSlot(glyphFrame);
+				end
+			end
+		end
+	end;
+	frame.resetGlyphFrame = function()
+		for i = 1, 6 do
+			local glyphFrame = _G[glyphsFrameName .. "Glyph" .. i];
+			frame.updateGlyphSlot(glyphFrame, nil, nil, true);
+		end
+	end
+	frame.glyphs2:Hide();
+	
+	
 	frame:Hide();
 	return frame;
 end
@@ -5492,7 +5854,7 @@ function NRC:createGridFrame2(name, width, height, x, y, borderSpacing)
 					--		textureCount = 4;
 					--	end
 					--end
-					for i = 2, textureCount do
+					f.createBuffTexture = function(i)
 						f["texture" .. i] = f:CreateTexture(frame:GetName() .. "Texture" .. i .. "_" .. gridName, "ARTWORK");
 						f["texture" .. i]:SetPoint("CENTER", 0, 0);
 						f["texture" .. i]:HookScript("OnHide", function(self)
@@ -5502,6 +5864,10 @@ function NRC:createGridFrame2(name, width, height, x, y, borderSpacing)
 							end
 						end)
 						tinsert(textures, f["texture" .. i]);
+					end
+					
+					for i = 2, textureCount do
+						f.createBuffTexture(i);
 					end
 					f.textures = textures;
 					f.hideAllTextures = function()

@@ -5633,6 +5633,8 @@ function NRC:loadDatabase()
 	self.db.global[NRC.realm][NRC.faction].myChars[UnitName("player")].level = UnitLevel("player");
 	self.db.global[NRC.realm][NRC.faction].myChars[UnitName("player")].race = UnitRace("player");
 	self.db.global[NRC.realm][NRC.faction].myChars[UnitName("player")].faction = UnitFactionGroup("player");
+	self.db.global[NRC.realm][NRC.faction].myChars[UnitName("player")].guid = UnitGUID("player");
+	self.db.global[NRC.realm][NRC.faction].myChars[UnitName("player")].realm = GetRealmName();
 	--local defaults = {	
 	--};
 	--for k, v in pairs(defaults) do
@@ -5754,19 +5756,24 @@ end
 
 function NRC:checkNewVersion()
 	--NRC.db.global.versions = {};
-	local newVersionNotes = 1.67;
+	local newVersionNotes = 1.68;
 	if (NRC.version and NRC.version == newVersionNotes) then
 		if (not NRC.db.global.versions[NRC.version]) then
 			--if (NRC.isClassic) then
 				local notes = {
-					--"|cFF00FF00[General Changes]|r",
-					"Extended the flask/potions raid status column to show 8 consumes up from 4, this was quite a big rewrite please let me know of any issues.",
-					"Added SoD Scarlet Uniform crafted pieces to sanctified count.",
-					"Fixed Power Infusion options not working in the priest config section, you can now disable them if you like.",
-					"Added Cata twilight dungeon buffs to show on the raid status frame beside player names (left click minimap button).",
-					"Fixed meta gem is disabled warning msg in cata.",
-					"Removed Jostled Chalice Fragment from showing in the loot log.",
-					"Many small bug fixes and improvements.",
+					"|cFF00FF00[General]|r",
+					"Fixed cooldown frames sometimes displaying a long number if a player is dead.",
+					"Fixed an issue sometimes preventing raid status snapshot from opening properly in the raid log.",
+					"Fixed death count during raids.",
+					"Many small improvements/bug fixes.",
+					"|cFF00FF00[Mists of Pandaria Stuff]|r",
+					"Added a glyph detection system that can adjust cooldowns to if certain glyphs are being used.",
+					"Added system to detect cheat death/purgatory style death saves, they can now be selected in the class cooldowns list for MoP.",
+					"Added system to reset certain cooldowns for a player if they use Cold Snap or the like.",
+					"Added all MoP class cooldowns that are worth being tracked to the addon database ready for launch.",
+					"Added all MoP consumes and buffs to database to be displayed in the raid status and consumes log.",
+					"Added all MoP class talents data so viewing any players talents will still work from the raid status window and when inspecting.",
+					"Added a MoP version of the talents display frame that also includes a glyphs display since they can be inspected now too in MoP (for when you inspect someone or click a player to view talents in the raid status/log snapshot).",
 				};
 				loadNewVersionFrame(NRC.version, notes, "Nova Raid Companion", "Interface\\AddOns\\NovaRaidCompanion\\Media\\nrc_icon2", 0, 300);
 			--end
@@ -5775,6 +5782,27 @@ function NRC:checkNewVersion()
 			NRC.db.global.versions = {};
 			--Set this version has been loaded before.
 			NRC.db.global.versions[NRC.version] = GetServerTime();
+		end
+	end
+end
+
+--This is just a backup system and could be incorrect without a realm specified.
+--Jut using this for chars that were recorded instance data before we started recording guid at logon, rare case and it's only used for a buffs snapshot display.
+function NRC:getGUIDFromMyAltName(name)
+	for realm, realmData in pairs(NRC.db.global) do
+		if (type(realmData) == "table" and realmData ~= "minimapIcon" and realmData ~= "versions" and realmData ~= "data"
+				and realmData ~= "instances" and realmData ~= "trades" and realmData ~= "npcData") then
+			for faction, factionData in pairs(realmData) do
+				if (faction == "Alliance" or faction == "Horde") then
+					if (factionData.myChars) then
+						for char, charData in pairs(factionData.myChars) do
+							if (char == name) then
+								return charData.guid;
+							end
+						end
+					end
+				end
+			end
 		end
 	end
 end
