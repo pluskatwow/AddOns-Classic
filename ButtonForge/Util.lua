@@ -857,7 +857,7 @@ end
 	hard disabled by a const param, it will also disable in the presence of Bartender which I know it doesn't function properly with
 --]]
 function Util.CreateBlizzardBarWrappers()
-	if (IsAddOnLoaded("Bartender4") or Const.DisableAutoAlignAgainstDefaultBars) then
+	if (C_AddOns.IsAddOnLoaded("Bartender4") or Const.DisableAutoAlignAgainstDefaultBars) then  -- changed for Mists 5.5.0 05/15/2025
 		return;
 	end
 
@@ -1897,7 +1897,7 @@ function Util.SetCursor(Command, Data, Subvalue, Subsubvalue)
 			end
 		end;
 	elseif (Command == "item") then
-		PickupItem(Data);
+		C_Item.PickupItem(Data); -- changed for Mists 5.5.0 05/17/2025
 	elseif (Command == "macro") then
 		PickupMacro(Data);
 	elseif (Command == "mount") then
@@ -2427,7 +2427,7 @@ function Util.CacheBagItems()
 		  -- for s = 1, C_Container.GetContainerNumSlots(b) do -- changed for Cata 04/04/2024
 			for s =  C_Container.GetContainerNumSlots(b), 1, -1 do -- changed for Cata 04/04/2024
 			ItemId = C_Container.GetContainerItemID(b, s);
-			ItemName = GetItemInfo(ItemId or "");
+			ItemName = C_Item.GetItemInfo(ItemId or "");  -- changed for Mists 05/15/2025
 			if (ItemName ~= nil and ItemName ~= "") then
 				BagItemNameIndexes[ItemName] = {b, s};
 				BagItemIdIndexes[ItemId] = {b, s};
@@ -2449,7 +2449,7 @@ function Util.CacheInvItems()
 	local ItemName;
 	for s = 32, 0, -1 do
 		ItemId = GetInventoryItemID("player", s);
-		ItemName = GetItemInfo(ItemId or "");
+		ItemName = C_Item.GetItemInfo(ItemId or "");  -- changed for Mists 05/15/2025
 		if (ItemName ~= nil and ItemName ~= "") then
 			InvItemNameIndexes[ItemName] = s;
 			InvItemIdIndexes[ItemId] = s;
@@ -3122,4 +3122,23 @@ function Util.GetBindingText(Key)
 	end
 
 	return table.concat(s, "-");
+end
+
+
+local ldb = LibStub:GetLibrary("LibDataBroker-1.1", true)
+if not ldb then return end
+
+local plugin = ldb:NewDataObject("Button Forge", {
+	type = "launcher",
+	text = "",
+	icon = "Interface\\AddOns\\ButtonForge\\Images\\Configure",
+})
+
+function plugin.OnClick(self, button)
+	if button == "LeftButton" then
+		ConfigureLayer:Show();
+	end
+	if button == "RightButton" then
+		ConfigureLayer:Hide();
+	end	
 end
