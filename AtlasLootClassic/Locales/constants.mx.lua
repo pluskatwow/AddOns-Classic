@@ -53,6 +53,10 @@ AL["Bow"] = "Arco"
 --[[Translation missing --]]
 --[[ AL["Cancel"] = "Cancel"--]] 
 --[[Translation missing --]]
+--[[ AL["Cataclysmic %s"] = "Cataclysmic %s"--]] 
+--[[Translation missing --]]
+--[[ AL["Cataclysmic (Elite) %s"] = "Cataclysmic (Elite) %s"--]] 
+--[[Translation missing --]]
 --[[ AL["Change item note"] = "Change item note"--]] 
 AL["Chat Link"] = "Enlace de Chat"
 --[[Translation missing --]]

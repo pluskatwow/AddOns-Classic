@@ -7,6 +7,7 @@ if not AL then return end
 AL["|cff33ff99Rank:|r %s"] = "|cff33ff99Grade:|r %s"
 AL["Battlegrounds"] = "Champs de bataille"
 AL["Class Sets"] = "Ensembles de classes"
+AL["Gladiator"] = "gladiateur"
 AL["Gladiator Mount"] = "Monture de gladiateur"
 AL["Honor"] = "Honneur"
 AL["Insignia"] = "Insigne"

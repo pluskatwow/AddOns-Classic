@@ -1,10 +1,10 @@
-## Interface: 40402
+## Interface: 50500
 ## Author: Snowflame0
-## Version: v4.3.0-beta
+## Version: v5.0.0-beta1
 ## Dependencies: AtlasLootClassic
 ## LoadOnDemand: 1
 
-## Title: AtlasLootClassic |cFFFF5733Cata|r |cFF0099FF[Collections]|r
+## Title: AtlasLootClassic |cFF33FFBDMoP|r |cFF0099FF[Collections]|r
 ## Notes: AtlasLoot Collections loot tables
 
 ## Title-deDE: AtlasLootClassic |cFFFF5733Cata|r |cFF0099FF[Sammlungen]|r
@@ -40,3 +40,4 @@ data.lua
 data-tbc.lua
 data-wrath.lua
 data-cata.lua
+data-mop.lua

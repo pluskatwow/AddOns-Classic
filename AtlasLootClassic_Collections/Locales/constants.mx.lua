@@ -98,6 +98,8 @@ AL["Midsummer Festival"] = "Festival de Fuego del Solsticio de Verano"
 --[[Translation missing --]]
 --[[ AL["Molten Front"] = "Molten Front"--]] 
 AL["Noblegarden"] = "Jardín Noble"
+--[[Translation missing --]]
+--[[ AL["Obsidian Fragment"] = "Obsidian Fragment"--]] 
 AL["One-Handed Weapons"] = "Armas de una mano"
 --[[Translation missing --]]
 --[[ AL["P1"] = "P1"--]] 
