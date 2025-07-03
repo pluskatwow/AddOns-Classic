@@ -2472,12 +2472,13 @@ function Option:CreateClassBarMenu(menu, parent)
 			return IUF.db.classBar.useBlizzard
 		end,
 		function(v)
-			IUF.db.classBar.useBlizzard = false --비활성화
+			IUF.db.classBar.useBlizzard = v--false --비활성화
 			updateClassBar()
 		end
 	)
 	menu.blizzard:SetPoint("TOP", menu.pos, "BOTTOM", 0, -10)
 --]]
+
 -- 추가된 내용	
 	menu.druidMana = LBO:CreateWidget("CheckBox", parent, "德魯伊野性變身時隱藏法力值", "當使用非消耗法力的變身形態時，不顯示法力值。", nil, nil, nil,
 		function() return IUF.db.classBar.druidManaDisible end,
