@@ -1,7 +1,7 @@
-## Interface: 50500, 50500
+## Interface: 50500
 ## Title: TotemTimers
 ## Author:  Xianghar
-## Version: 4.0.11
+## Version: 5.0.0
 ## SavedVariables: TotemTimers_GlobalSettings, TotemTimers_Profiles
 ## OptionalDeps: Masque
 ## LoadManagers: AddonLoader
@@ -24,7 +24,7 @@ localization\localization.tw.lua
 XiTimers.lua
 XiTimers.xml
 
-cata\TotemData.lua
+mists\TotemData.lua
 TotemTimers.xml
 TotemTimers.lua
 
@@ -39,7 +39,7 @@ TTActionBars.lua
 DefaultSettings.lua
 Settings.lua
 SetupTimers.lua
-MultiSpell.lua
+# MultiSpell.lua
 SetupTrackers.lua
 Ankh.lua
 Shield.lua
