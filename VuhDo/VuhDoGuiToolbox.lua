@@ -109,9 +109,8 @@ end
 
 --
 function VUHDO_mayMoveHealPanels()
-
-	return not InCombatLockdown() and (VUHDO_IS_PANEL_CONFIG or not VUHDO_CONFIG["LOCK_PANELS"]);
-
+	return (VUHDO_IS_PANEL_CONFIG or not VUHDO_CONFIG["LOCK_PANELS"])
+		and (not InCombatLockdown() or not VUHDO_CONFIG["LOCK_IN_FIGHT"]);
 end
 
 
