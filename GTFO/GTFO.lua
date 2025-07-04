@@ -111,7 +111,7 @@ elseif (buildNumber <= 30000) then
 elseif (buildNumber <= 40000) then
 	GTFO.WrathMode = true;
 	GTFO.VersionNumber = GTFO.WrathVersionNumber;
-elseif (buildNumber <= 50000) then
+elseif (buildNumber <= 60000) then
 	GTFO.CataclysmMode = true;
 	GTFO.VersionNumber = GTFO.CataclysmVersionNumber;
 else
