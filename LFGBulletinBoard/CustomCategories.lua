@@ -24,7 +24,9 @@ local CHARACTER_SPECIFIC_SYMBOL = "\42" -- "*"
 
 local isClassicEra = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
 local isCataclysm = WOW_PROJECT_ID == WOW_PROJECT_CATACLYSM_CLASSIC
+local isMists = WOW_PROJECT_ID == WOW_PROJECT_MISTS_CLASSIC
 local isSoD = isClassicEra and C_Seasons.GetActiveSeason() == Enum.SeasonID.SeasonOfDiscovery
+local ExpansionEnum  = (Addon.Enum --[[@as AddonEnum]]).Expansions
 
 ---@alias Locale "enUS"|"enGB"|"deDE"|"ruRU"|"frFR"|"zhTW"|"zhCN"|"ptBR"|"esES"|"koKR"
 
@@ -36,13 +38,14 @@ local isSoD = isClassicEra and C_Seasons.GetActiveSeason() == Enum.SeasonID.Seas
 ---@field sortIdx number # ties broken by key alphabetically. preset value is relatively arbitrary.
 ---@field isHidden boolean? # `true` if the filter should be hidden from UI. (used instead of deletion for saved presets)
 ---@field isDisabled boolean # `true` if the preset should be completely disabled for the current client (used by presets only)
+---@field includeItemLinks boolean? # `true` if the filter should parse item links for keys words
 
 ---@type {[string]: CustomFilter}
 local presets = {
-    RDF = { -- Random Dungeon Finder
+    RDF = { -- Random Dungeon Finder (Wotlk+)
         name = LFG_TYPE_RANDOM_DUNGEON,
         tags = {
-            enUS = "rdf random dungeons spam heroics gamma gammas",
+            enUS = "rdf random dungeons spam heroics gamma gammas celestial",
             -- deDE = nil,
             -- ruRU = nil,
             -- frFR = nil,
@@ -53,8 +56,18 @@ local presets = {
         },
         key = "RDF",
         levels = CopyTable(HIDDEN_LEVEL_RANGE),
-        isDisabled = not isCataclysm,
+        isDisabled = ExpansionEnum.Current < ExpansionEnum.Wrath,
         sortIdx = 1,
+    },
+    CHALLENGE_MODES = { -- Mists Challenge Mode dungeons
+        name = CHALLENGE_MODE,
+        tags = {
+            enUS = "challenge cm",
+        },
+        key = "CHALLENGE_MODES",
+        levels = CopyTable(HIDDEN_LEVEL_RANGE),
+        isDisabled = ExpansionEnum.Current ~= ExpansionEnum.Mists,
+        sortIdx = 2,
     },
     BLOOD = { -- Bloodmoon Event (SoD)
         name = "血月",
@@ -312,7 +325,7 @@ local removeFilterFromRequestList = function(key) ---@param key string
     end
     if anyRemoved then
         Addon.RequestList = requestList
-        Addon.UpdateList()
+        Addon.ChatRequests.UpdateRequestList()
     end
 end
 
@@ -462,6 +475,29 @@ local createMoveFilterButton = function(parent, direction)
     button:SetHighlightTexture([[Interface\Buttons\UI-Common-MouseHilight]], "ADD");
     return button;
 end
+local createSettingsDropdownButton = function(parent)
+    local buttonName = "$parentSettingsDropdownButton"
+    local button = CreateFrame("DropdownButton", buttonName, parent);
+    button.menuMixin = MenuStyle2Mixin
+    Mixin(button, ButtonStateBehaviorMixin)
+    button:SetSize(15, 15);
+    button:SetScript("OnMouseDown", button.OnMouseDown)
+    button:SetScript("OnMouseUp", button.OnMouseUp)
+    button:SetScript("OnEnable", button.OnEnable)
+    button:SetScript("OnDisable", button.OnDisable)
+    button.icon = button:CreateTexture("$parentIcon", "OVERLAY")
+    button.icon:SetAtlas("OptionsIcon-Brown")
+    button.icon:SetAllPoints()
+    button:SetDisplacedRegions(1, -1, button.icon)
+    button:SetupMenu(function(_, rootDescription)
+        local categoryData = GroupBulletinBoardDB.CustomFilters[button.filterKey]
+        if not categoryData then return end
+        local isSelected = function() return not categoryData.includeItemLinks end
+        local setSelected = function() categoryData.includeItemLinks = isSelected() end
+        rootDescription:CreateCheckbox(Addon.L.IGNORE_ITEM_LINKS, isSelected, setSelected)
+    end)
+    return button;
+end
 local displayLocales = {"enUS", "deDE", "ruRU", "frFR", "zhTW", "zhCN", "esES", "ptBR"}
 local isLocaleUserEnabled = function(locale)
     assert(GroupBulletinBoardDB, "GroupBulletinBoardDB not yet loaded. Call this function after initialization.", locale)
@@ -511,6 +547,9 @@ local FilterSettingsPool = {
             parent:HookScript("OnShow", function()
                 Addon.UpdateAdditionalFiltersPanel(parent)
             end)
+            ---@type DropdownButton|{icon: Texture, filterKey: string}
+            options.settingsDropdown = createSettingsDropdownButton(options)
+            options.settingsDropdown:SetPoint("LEFT", options.header, "RIGHT", 4, 1)
             self.entries[key] = options
         end
         return self:InitFilterOptions(self.entries[key])
@@ -570,6 +609,8 @@ local FilterSettingsPool = {
        
         options.header:SetText(dbEntry.name)
         options.header:SetTextColor(hColor:GetRGBA())
+        options.settingsDropdown:SetShown(filterEnabled)
+        options.settingsDropdown.filterKey = dbEntry.key
         options.rename:SetScript("OnClick", function()
             StaticPopup_Show("GBB_RENAME_CATEGORY", nil, nil, {
                 settings = self,
@@ -692,7 +733,7 @@ local FilterSettingsPool = {
         local createBtn = self.create 
             or CreateFrame("Button", "$parentCreateFilter", parent, "UIPanelButtonTemplate");
         ---@cast createBtn UIPanelButtonTemplate
-        createBtn:SetText(NEW)
+        createBtn:SetText(CREATE or ADD)
         createBtn:FitToText()
         createBtn:SetScript("OnClick", function()
             StaticPopup_Show("GBB_CREATE_CATEGORY", nil, nil, {panel = parent})

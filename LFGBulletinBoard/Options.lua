@@ -4,14 +4,7 @@ local TOCNAME,
 local ChannelIDs
 local isClassicEra = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
 local isCataclysm = WOW_PROJECT_ID == WOW_PROJECT_CATACLYSM_CLASSIC
-local PROJECT_EXPANSION_ID = {
-	[WOW_PROJECT_CLASSIC] = GBB.Enum.Expansions.Classic,
-	[WOW_PROJECT_BURNING_CRUSADE_CLASSIC] = GBB.Enum.Expansions.BurningCrusade,
-	[WOW_PROJECT_WRATH_CLASSIC] = GBB.Enum.Expansions.Wrath,
-	-- note: global not defined in classic era client
-	[WOW_PROJECT_CATACLYSM_CLASSIC or 0] = GBB.Enum.Expansions.Cataclysm,
-}
-local EXPANSION_PROJECT_ID = tInvert(PROJECT_EXPANSION_ID)
+
 ---hack to remove "World of Warcraft: " from classic on esES/esMX clients
 local EXPANSION_NAME0 = EXPANSION_NAME0:gsub("World of Warcraft: ", "")
 local EXPANSION_FILTER_NAME = {
@@ -19,6 +12,7 @@ local EXPANSION_FILTER_NAME = {
 	[GBB.Enum.Expansions.BurningCrusade] = SUBTITLE_FORMAT:format(FILTERS, EXPANSION_NAME1),
 	[GBB.Enum.Expansions.Wrath] = SUBTITLE_FORMAT:format(FILTERS, EXPANSION_NAME2),
 	[GBB.Enum.Expansions.Cataclysm] = SUBTITLE_FORMAT:format(FILTERS, EXPANSION_NAME3),
+	[GBB.Enum.Expansions.Mists] = SUBTITLE_FORMAT:format(FILTERS, EXPANSION_NAME4),
 }
 
 ---@type {[number]: CheckButton[]} # Used by GetNumActiveFilters
@@ -105,8 +99,8 @@ local function fixSecondaryTagFilters()
 end
 
 local function ResetFilters()
-	if GBB.ShouldReset and (not GBB.DBChar["ResetVersion"] or GBB.DBChar["ResetVersion"] ~= GBB.Version) then
-		GBB.DBChar["ResetVersion"] = GBB.Version
+	if GBB.ShouldReset and (not GBB.DBChar["ResetVersion"] or GBB.DBChar["ResetVersion"] ~= GBB.Metadata.Version) then
+		GBB.DBChar["ResetVersion"] = GBB.Metadata.Version
 		for k, _ in pairs(GBB.dungeonSort) do
 			if GBB.DBChar["FilterDungeon"..k] ~= nil then
 				GBB.DBChar["FilterDungeon"..k] = nil
@@ -136,7 +130,7 @@ end
 ---@param expansionID ExpansionID
 local function GenerateExpansionPanel(expansionID)
 	GBB.OptionsBuilder.AddNewCategoryPanel(EXPANSION_FILTER_NAME[expansionID], false, true)
-	local isCurrentXpac = expansionID == PROJECT_EXPANSION_ID[WOW_PROJECT_ID];
+	local isCurrentXpac = expansionID == GBB.GetExpansionEnumForProjectID(WOW_PROJECT_ID);
 	local filters = {} ---@type CheckButton[]
 	filtersByExpansionID[expansionID] = filters
 	local dungeons = GBB.GetSortedDungeonKeys(
@@ -277,7 +271,7 @@ function GBB.OptionsUpdate()
 	fixSecondaryTagFilters()
 	GBB.CreateTagList()
 	GBB.MinimapButton.UpdatePosition()
-	GBB.ClearNeeded = true
+	GBB.ChatRequests.UpdateRequestList(true)
 end
 
 --- Setup the options panels, creating and initializing settings widgets and their saved variables.
@@ -311,7 +305,7 @@ function GBB.OptionsInit ()
 	-- Main/General settings panel
 	----------------------------------------------------------
 	GBB.OptionsBuilder.AddNewCategoryPanel(GBB.L["CfgTitle"],false,true)
-	--GBB.OptionsBuilder.AddVersion('|cff00c0ff' .. GBB.Version .. '|r')
+	--GBB.OptionsBuilder.AddVersion('|cff00c0ff' .. GBB.Metadata.Version .. '|r')
 	GBB.OptionsBuilder.AddHeaderToCurrentPanel(GBB.L["HeaderSettings"])
 	GBB.OptionsBuilder.Indent(10)
 	GBB.OptionsBuilder.AddCheckBoxToCurrentPanel(GBB.DB.MinimapButton,"visible",true,GBB.L["Cboxshowminimapbutton"])
@@ -505,17 +499,15 @@ function GBB.OptionsInit ()
 	----------------------------------------------------------
 	-- Expansion specific filters
 	----------------------------------------------------------
-	if not isClassicEra then 
-		--- Cata Filters
-		GenerateExpansionPanel(GBB.Enum.Expansions.Cataclysm)
-		--- Wrath Filters
-		GenerateExpansionPanel(GBB.Enum.Expansions.Wrath)
-		--- TBC Filters
-		GenerateExpansionPanel(GBB.Enum.Expansions.BurningCrusade)
+	local clientExpansionID = GBB.GetExpansionEnumForProjectID(WOW_PROJECT_ID);
+	local expansionsEnumLookup = tInvert(GBB.Enum.Expansions)
+	-- generate panels from current client expansion down to classic era.
+	for expansionID = clientExpansionID, 0, -1 do
+		local expansion = expansionsEnumLookup[expansionID]
+		if expansion then
+			GenerateExpansionPanel(GBB.Enum.Expansions[expansion])
+		end
 	end
-	-- Vanilla Filters
-	GenerateExpansionPanel(GBB.Enum.Expansions.Classic)
-		
 	----------------------------------------------------------
 	-- Custom Filters/Categories
 	----------------------------------------------------------
@@ -621,14 +613,11 @@ function GBB.OptionsInit ()
 	-- About panel
 	----------------------------------------------------------
 	GBB.OptionsBuilder.AddNewCategoryPanel(GBB.L["PanelAbout"])
-	local addonMetadata = function(field) -- move from deprecated `GetAddOnMetadata`
-		return C_AddOns.GetAddOnMetadata(TOCNAME, field)
-	end
 	GBB.OptionsBuilder.AddHeaderToCurrentPanel(WrapTextInColorCode(('%s %s by %s'), 'FFFF1C1C')
-		:format(addonMetadata("Title"), addonMetadata("Version"), addonMetadata("Author"))
+		:format(GBB.Metadata.Title, GBB.Metadata.Version, GBB.Metadata.Author)
 	);
 	GBB.OptionsBuilder.Indent(10)
-	GBB.OptionsBuilder.AddTextToCurrentPanel(addonMetadata("Notes"))		
+	GBB.OptionsBuilder.AddTextToCurrentPanel(GBB.Metadata.Notes)
 	GBB.OptionsBuilder.Indent(-10)
 	
 	GBB.OptionsBuilder.AddHeaderToCurrentPanel(GBB.L["HeaderInfo"])
