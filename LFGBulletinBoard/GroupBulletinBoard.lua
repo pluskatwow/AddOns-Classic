@@ -3,9 +3,6 @@ local TOCNAME,
 	GBB = ...;
 
 GroupBulletinBoard_Addon=GBB
-
-GBB.Version=GetAddOnMetadata(TOCNAME, "Version") 
-GBB.Title=GetAddOnMetadata(TOCNAME, "Title") 
 GBB.Icon= "Interface\\Icons\\spell_holy_prayerofshadowprotection"
 --"Interface\\FriendsFrame\\Battlenet-Portrait"
 GBB.MiniIcon= "Interface\\Icons\\spell_holy_prayerofshadowprotection"
@@ -24,10 +21,7 @@ local PartyChangeEvent={ "GROUP_JOINED", "GROUP_ROSTER_UPDATE", "RAID_ROSTER_UPD
 
 -------------------------------------------------------------------------------------
 
--- GBB.RequestForPopup
-
--- GBB.DataBrockerInitalized
-GBB.MSGPREFIX="LFG Bulletin Board: "
+GBB.MSGPREFIX="[LFG Bulletin Board]: "
 GBB.TAGBAD="---"
 GBB.TAGSEARCH="+++"
 
@@ -88,71 +82,6 @@ end
 
 function GBB.Split(msg)
 	return GBB.Tool.Split( string.gsub(string.lower(msg), "[%p%s%c]", "+") , "+")
-end
-
----Splits a message into multiple parts, removing punctuation and whitespace.
----@param msg string The message to split.
----@return string[] A table of strings, each representing a word from the message.
-function GBB.GetMessageWordList(msg)
-	local message = string.lower(msg)
-	local validatedMessage = string.gsub(message, "[´`]","'")
-	validatedMessage =  string.gsub(validatedMessage,"''","'")
-	local strippedMessage = GBB.Tool.stripChars(validatedMessage)
-	
-	local results = GBB.Tool.iMerge( 	
-		GBB.Tool.Split( string.gsub(message, "[%p%s%c]", "+") , "+"),
-		GBB.Tool.Split( string.gsub(message, "[%p%c]", "") , " "),
-		-- GBB.Tool.Split( string.gsub(message, "[%c%s]", "+") , "+"), 
-		GBB.Tool.Split( string.gsub(message, "[%p%s%c%d]", "+") , "+"),
-		
-		GBB.Tool.Split( string.gsub(validatedMessage, "[%p%s%c]", "+") , "+"),
-		GBB.Tool.Split( string.gsub(validatedMessage, "[%p%c]", "") , " "),
-		-- GBB.Tool.Split( string.gsub(validatedMessage, "[%c%s]", "+") , "+"), 
-		GBB.Tool.Split( string.gsub(validatedMessage, "[%p%s%c%d]", "+") , "+"),
-		
-		GBB.Tool.Split( string.gsub(strippedMessage, "[%p%s%c]", "+") , "+"),
-		GBB.Tool.Split( string.gsub(strippedMessage, "[%p%c]", "") , " "),
-		-- GBB.Tool.Split( string.gsub(stippedMessage, "[%c%s]", "+") , "+"), 
-		GBB.Tool.Split( string.gsub(strippedMessage, "[%p%s%c%d]", "+") , "+")
-	);
-	local additionalResults = {}
-	
-	--[[
-	local lastTag
-	for it,tag in ipairs(GBB.Tool.Split( string.gsub(msg, "[%p%c%s]", "+") , "+")) do
-		
-		if lastTag~=nil then
-			tinsert(additionalResults, lastTag.."X"..tag)
-		end
-		lastTag=tag
-	end
-	]]--
-	
-	-- split words with suffixes and add them to the results
-	for _, word in ipairs(results) do
-		for _, suffix in ipairs(GBB.suffixTags) do
-			local suffixLength = string.len(suffix)
-			--trim end of word with the length of current suffix
-			local wordEnding = word:sub(-suffixLength)
-			if word ~= suffix 
-			and wordEnding == suffix 
-			then				
-				local baseWord = word:sub(1, -suffixLength - 1)
-				tinsert(additionalResults, baseWord);
-				tinsert(additionalResults, suffix)
-			end
-		end
-	end
-	
-	results=GBB.Tool.iMerge(results,additionalResults)
-	--[[for it,tag in ipairs(result) do
-		if string.len(tag)==1 then
-			result[it]=nil
-		end
-	end
-	]]--
-	
-	return results	
 end
 
 function GBB.LevelRange(dungeon,short)
@@ -324,8 +253,7 @@ function GBB.ShowWindow()
 		GBB.UpdateGroupList()
     end
 	GroupBulletinBoardFrame:Show()
-	GBB.ClearNeeded=true	 
-	GBB.UpdateList()
+	GBB.ChatRequests.UpdateRequestList(true)
 	GBB.ResizeFrameList()
 end
 
@@ -370,117 +298,148 @@ end
 -- Bulletin Board Settings Button Setup
 --------------------------------------------------------------------------------
 
-local getSettingsButtonMenuDescription do
-	local isSavedVarSelected = function(table, var)
-		return function() return table[var] end;
+---@class BulletinBoardSettingsButton: Button
+local SettingsButtonMixin = {}
+function SettingsButtonMixin:OnLoad()
+	local getSettingsVarHandleTable = function(settingsTable)
+		return setmetatable({}, { ---@type table<string, SavedVarHandle>
+			__index = function(t, k)
+				-- note: make sure the saved vars defaults has been setup before access within this menu
+				local value = OptionsUtil.GetSavedVarHandle(settingsTable, k)
+				rawset(t, k, value); return value;
+			end
+		})
 	end
-	local toggleSavedVar = function(table, var)
-		return function() table[var] = (not table[var]) end;
+	local getSettingValue = function(setting) return setting:GetValue() end
+	local getInverseSettingValue = function(setting) return not getSettingValue(setting) end
+	local toggleSettingValue = function(setting) setting:SetValue(not getSettingValue(setting)) end
+	local accountSettings = getSettingsVarHandleTable(GBB.DB)
+
+	---Helper for older saved variables that use the `Cbox` prefix convention for their associated labels.
+	---@param variableName string `GBB.DB[variableName]`
+	---@param label string? display text. falls back to `GBB.L["Cbox"..variableName]`
+	local getAccountVarCheckBoxArgs = function(variableName, label)
+		local setting = accountSettings[variableName]
+		return (label or GBB.L["Cbox"..variableName]), getSettingValue, toggleSettingValue, setting
 	end
-	local getSavedVarCheckBoxArgs = function(table, var)
-		return GBB.L["Cbox"..var], isSavedVarSelected(table, var), toggleSavedVar(table, var)
+
+	---@param subDesc RootMenuDescriptionProxy|ElementMenuDescriptionProxy
+	local makeSubElementsSmall = function(subDesc)
+		for _, desc in subDesc:EnumerateElementDescriptions() do
+			desc:AddInitializer(function(frame)
+				if frame.fontString then frame.fontString:SetFontObject("GameFontNormalSmall") end
+			end)
+		end
 	end
-    local windowSettings = setmetatable({}, { ---@type table<string, SavedVarHandle>
-        __index = function(t, k)
-            local value = OptionsUtil.GetSavedVarHandle(GBB.DB.WindowSettings, k)
-            assert(value, "windowSettings: handle is nil. Don't index table until after ADDON_LOADED", k)
-            rawset(t, k, value); return value;
-        end
-    })
-    local isBoardFrameLocked = function() return not windowSettings.isMovable:GetValue() end
-    local toggleBoardFrameLock = function()
-        windowSettings.isMovable:SetValue(not windowSettings.isMovable:GetValue())
-    end
-    local isBoardFrameNonInteractive = function() return not windowSettings.isInteractive:GetValue() end
-    local setBoardFrameNonInteractive = function()
-        windowSettings.isInteractive:SetValue(not windowSettings.isInteractive:GetValue())
-    end
-    local setBoardFrameOpacity = function(opacity)
-		windowSettings.opacity:SetValue(opacity)
-    end
-    local opacityRadioButtonArgs = function(opacity)
-        local isSelected = function()
-            return floor(GroupBulletinBoardFrame:GetAlpha()*10)/10 == opacity
-        end
-        local onSelected = setBoardFrameOpacity
-        local displayText = ("%d%%"):format(opacity * 100)
-        return displayText, isSelected, onSelected, opacity
-    end
-	getSettingsButtonMenuDescription = function(clickType)
+
+	---@param clickType "LeftButton"|"RightButton"
+	local buildDescriptionForClickType = function(clickType)
 		local description = MenuUtil.CreateRootMenuDescription(MenuStyle2Mixin)
-		---@cast description RootMenuDescriptionProxy
 		description:CreateButton(FILTERS, function() OptionsUtil.OpenCategoryPanel(2) end)
 		if clickType == "RightButton" then
 			do -- Notification Settings
-				local submenu = description:CreateButton(COMMUNITIES_NOTIFICATION_SETTINGS)
-				-- sound
-				submenu:CreateCheckbox(getSavedVarCheckBoxArgs(GBB.DB, "NotifySound"))
-				-- chat
-				submenu:CreateCheckbox(getSavedVarCheckBoxArgs(GBB.DB, "NotifyChat"))
+				local subDesc = description:CreateButton(COMMUNITIES_NOTIFICATION_SETTINGS, nop)
+				subDesc:CreateCheckbox(getAccountVarCheckBoxArgs("NotifySound")) -- sound
+				subDesc:CreateCheckbox(getAccountVarCheckBoxArgs("NotifyChat")) -- chat
+				makeSubElementsSmall(subDesc)
+			end
+			do -- Request Entry Settings
+				local subDesc = description:CreateButton(GBB.L.REQUESTS_SETTINGS, nop)
+				subDesc:CreateCheckbox(getAccountVarCheckBoxArgs("ShowTotalTime")) -- total time vs last updated
+				subDesc:CreateCheckbox(getAccountVarCheckBoxArgs("OrderNewTop")) -- sort by most recent vs oldest
+				subDesc:CreateCheckbox(getAccountVarCheckBoxArgs("EnableShowOnly")) -- limit requests per category
+				subDesc:CreateCheckbox(getAccountVarCheckBoxArgs("RemoveRealm")) -- remove realm from player names
+				subDesc:CreateCheckbox(getAccountVarCheckBoxArgs("DontTrunicate")) -- don't truncate requests
+				subDesc:CreateCheckbox(GBB.L["CboxFilterTravel"], -- filter travel requests (character specific setting)
+					getSettingValue, toggleSettingValue, OptionsUtil.GetSavedVarHandle(GBB.DBChar, "FilterDungeonTRAVEL")
+				)
+				subDesc:CreateDivider():SetFinalInitializer(function(frame) frame:SetHeight(5) end)
+				subDesc:CreateTitle(GBB.L.LAYOUT_OPTIONS)
+				-- "Chat Style" & "Compact Style" layout, respectively.
+				subDesc:CreateCheckbox(getAccountVarCheckBoxArgs("ChatStyle"))
+				subDesc:CreateCheckbox(getAccountVarCheckBoxArgs("CompactStyle"))
+				makeSubElementsSmall(subDesc)
 			end
 		end
-        do -- Board window/frame settings
-            description:CreateDivider()
-            description:CreateTitle(GBB.L.WINDOW_SETTINGS)
-            description:CreateCheckbox(LOCK_WINDOW, isBoardFrameLocked, toggleBoardFrameLock)
-            description:CreateCheckbox(MAKE_UNINTERACTABLE, isBoardFrameNonInteractive, setBoardFrameNonInteractive)
-            local opacityOptions = description:CreateButton(OPACITY)
-            -- todo: add a slider
-            for _, opacity in ipairs({1, .8, .6, .5, .4, .2, .1}) do
-                opacityOptions:CreateRadio(opacityRadioButtonArgs(opacity)):SetResponse(MenuResponse.Refresh)
-            end
-            description:CreateDivider()
-        end
+		do -- Board window/frame settings
+			local windowSettings = getSettingsVarHandleTable(GBB.DB.WindowSettings)
+			description:CreateDivider()
+			description:CreateTitle(GBB.L.WINDOW_SETTINGS)
+			description:CreateCheckbox(LOCK_WINDOW, -- Lock window
+				getInverseSettingValue, toggleSettingValue, windowSettings.isMovable
+			)
+			description:CreateCheckbox(MAKE_UNINTERACTABLE, -- Make non-interactive (click-through)
+				getInverseSettingValue, toggleSettingValue, windowSettings.isInteractive
+			)
+			local opacityOptions = description:CreateButton(OPACITY) -- Opacity
+			-- todo: add a slider
+			local setBoardFrameOpacity = function(opacity)
+				windowSettings.opacity:SetValue(opacity)
+			end
+			local opacityRadioButtonArgs = function(opacity)
+				local isSelected = function()
+					return floor(GroupBulletinBoardFrame:GetAlpha()*10)/10 == opacity
+				end
+				local displayText = ("%d%%"):format(opacity * 100)
+				return displayText, isSelected, setBoardFrameOpacity, opacity
+			end
+			for _, opacity in ipairs({1, .8, .6, .5, .4, .2, .1}) do
+				opacityOptions:CreateRadio(opacityRadioButtonArgs(opacity)):SetResponse(MenuResponse.Refresh)
+			end
+			description:CreateDivider()
+		end
 		description:CreateButton(ALL_SETTINGS, function() OptionsUtil.OpenCategoryPanel(1) end)
-        description:CreateButton(GBB.L.BtnCancel, nop):SetResponse(MenuResponse.CloseMenu)
-        return description
+		description:CreateButton(GBB.L.BtnCancel, nop):SetResponse(MenuResponse.CloseMenu)
+		return description
 	end
+	self.descriptions = {
+		LeftButton = buildDescriptionForClickType("LeftButton"),
+		RightButton = buildDescriptionForClickType("RightButton"),
+	}
+	self.owner = self -- using the button itself for now, but can be moved to any other region if needed.
+	self.menuAnchor = AnchorUtil.CreateAnchor("TOPRIGHT", self.owner, "BOTTOMRIGHT")
+	self.HandlesGlobalMouseEvent = function() return true end -- prevents clicks on button from closing the menus
+	self:SetScript("OnMouseDown", self.OnMouseDown)
+	self:SetScript("OnEnter", self.OnEnter)
+	self:SetScript("OnLeave", self.OnLeave)
 end
--- note: mostly lazily loaded until after first click because button doesnt exist until after ADDON_LOADED
--- todo: move load order in .toc
-local settingsButtonMenuContext = {
-	menuAnchor = nil, ---@type AnchorMixin?
-	lastDescription = nil, ---@type RootMenuDescriptionProxy?
-	clickDescriptions = {
-		LeftButton = nil, ---@type RootMenuDescriptionProxy?
-		RightButton = nil, ---@type RootMenuDescriptionProxy?
-	},
-	OpenMenu = function(self, owner, menuDescription)
-		local menu = Menu.GetManager():OpenMenu(owner, menuDescription, self.menuAnchor)
-		owner.HandlesGlobalMouseEvent = function() return true end
-		menu:SetClosedCallback(function() self.lastDescription = nil end)
-		self.lastDescription = menuDescription
-		return menu
-	end,
-    Initialize = function(self, owner)
-        self.clickDescriptions.RightButton = getSettingsButtonMenuDescription("RightButton")
-        self.clickDescriptions.LeftButton = getSettingsButtonMenuDescription("LeftButton")
-        self.menuAnchor = AnchorUtil.CreateAnchor("TOPRIGHT", owner, "BOTTOMRIGHT")
-    end,
-    CloseMenu = function(self, menu)
-        assert(menu, "CloseMenu: menu is nil")
-        Menu.GetManager():CloseMenu(menu)
-    end
-}
-
--- Toggles a quick settings dropdown menu depending on the click type.
-local function SettingsButton_OnMouseDown(self, clickType)
-	if not settingsButtonMenuContext.menuAnchor then -- first click
-		settingsButtonMenuContext:Initialize(self)
-	end
+function SettingsButtonMixin:OpenMenu(menuDescription)
+	local menu = Menu.GetManager():OpenMenu(self.owner, menuDescription, self.menuAnchor)
+	menu:SetClosedCallback(function() self.lastDescription = nil end)
+	self.lastDescription = menuDescription
+	return menu
+end
+function SettingsButtonMixin:CloseMenu(menu)
+	assert(menu, "CloseMenu: menu is nil")
+	Menu.GetManager():CloseMenu(menu)
+end
+function SettingsButtonMixin:OnMouseDown(clickType)
 	local currentOpenMenu = Menu.GetManager():GetOpenMenu()
-    local incomingDescription = settingsButtonMenuContext.clickDescriptions[clickType]
-                                or settingsButtonMenuContext.clickDescriptions.LeftButton -- default to left click
-    -- Simmulate a toggle button:
-	-- Close menu curently open click menu if it exists
-	if currentOpenMenu and incomingDescription == settingsButtonMenuContext.lastDescription then
-		settingsButtonMenuContext:CloseMenu(currentOpenMenu)
+	-- default to left click description
+	local incomingDescription = self.descriptions[clickType] or self.descriptions.LeftButton
+	-- Simulate a toggle button: Close menu currently open click menu if it exists
+	if currentOpenMenu and incomingDescription == self.lastDescription then
+		self:CloseMenu(currentOpenMenu)
+		self:OnLeave() -- clear tooltip
 		PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_OFF)
-    else  -- open menu when: No menu is currently open, or switching click menus
+	else  -- open menu when: No menu is currently open, or switching click menus
 		PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON)
-        settingsButtonMenuContext:OpenMenu(self, incomingDescription)
-    end
+		self:OpenMenu(incomingDescription)
+		self:OnEnter() -- update tooltip
+	end
 end
+function SettingsButtonMixin:OnEnter()
+	-- show tooltip after left-clicked, __only__
+	if self.lastDescription == self.descriptions.LeftButton then
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+		GameTooltip:AddLine(SETTINGS, 1, 1, 1)
+		GameTooltip:AddLine(GBB.L.RIGHT_CLICK_FOR_MORE_OPTIONS,
+			GREEN_FONT_COLOR.r, GREEN_FONT_COLOR.g, GREEN_FONT_COLOR.b, true
+		)
+		GameTooltip:Show()
+	else GameTooltip:Hide() end
+end
+function SettingsButtonMixin:OnLeave() GameTooltip:Hide() end
 --------------------------------------------------------------------------------
 -- Tag Lists
 --------------------------------------------------------------------------------
@@ -594,10 +553,72 @@ function GBB.CreateTagList ()
 		print("Messages with these keywords may not be categorized as expected. Priority given to the last in list.")
 	end
 end
+--------------------------------------------------------------------------------
+-- Minimap button context Menu setup
+--------------------------------------------------------------------------------
 
-
---Initalize / Event
--------------------------------------------------------------------------------------
+local minimapMenuGeneratorCache = {}
+local function getMinimapMenuDescriptionGenerator(showMinimapOptions)
+	local settings = {
+		notifySound = OptionsUtil.GetSavedVarHandle(GBB.DB, "NotifySound"),
+		notifyChat = OptionsUtil.GetSavedVarHandle(GBB.DB, "NotifyChat"),
+		minimapLock = OptionsUtil.GetSavedVarHandle(GBB.DB.MinimapButton, "lock"),
+		minimapLockDistance = OptionsUtil.GetSavedVarHandle(GBB.DB.MinimapButton, "lockDistance"),
+	}
+	local GetSettingValue = function(setting) return setting:GetValue() end
+	local ToggleSettingValue = function(setting) setting:SetValue(not GetSettingValue(setting)) end
+	local getSettingsCheckboxArgs = function(label, setting)
+		return label, GetSettingValue, ToggleSettingValue, setting
+	end
+	local function makeElementsSmall(subDesc)
+		if not subDesc:HasElements() then return end
+		for _, desc in subDesc:EnumerateElementDescriptions() do
+			desc:AddInitializer(function(frame)
+				if frame.fontString then frame.fontString:SetFontObject("GameFontNormalSmall") end
+			end)
+			makeElementsSmall(desc)
+		end
+	end
+	local createThinDivider = function(rootDesc)
+		rootDesc:CreateDivider():SetFinalInitializer(function(frame) frame:SetHeight(4) end)
+	end
+	return function(_, rootDesc) ---@param rootDesc RootMenuDescriptionProxy
+		rootDesc:CreateTitle(GBB.Metadata.Title)
+		rootDesc:CreateButton(SETTINGS, OptionsUtil.OpenCategoryPanel, 1) -- open main settings
+		do -- Notification Settings
+			local subDesc = rootDesc:CreateButton(COMMUNITIES_NOTIFICATION_SETTINGS, nop)
+			subDesc:CreateCheckbox(getSettingsCheckboxArgs(GBB.L["CboxNotifySound"], settings.notifySound))
+			subDesc:CreateCheckbox(getSettingsCheckboxArgs(GBB.L["CboxNotifyChat"], settings.notifyChat))
+		end
+		createThinDivider(rootDesc)
+		if showMinimapOptions ~= false then -- Minimap Button Settings
+			rootDesc:CreateCheckbox(getSettingsCheckboxArgs(GBB.L["CboxLockMinimapButton"], settings.minimapLock))
+			if GBB.MinimapButton.isLibDBIconAvailable and GBB.DB.MinimapButton.UseLibDBIcon then
+				-- disable distance lock toggle whenever the minimap is using LibDBIcon
+				rootDesc:CreateCheckbox(GBB.L["CboxLockMinimapButtonDistance"], function() return true end, nop)
+					:SetEnabled(false)
+			else
+				rootDesc:CreateCheckbox(
+					getSettingsCheckboxArgs(GBB.L["CboxLockMinimapButtonDistance"], settings.minimapLockDistance)
+				)
+			end
+			createThinDivider(rootDesc)
+		end
+		rootDesc:CreateButton(CANCEL, nop):SetResponse(MenuResponse.CloseMenu)
+		makeElementsSmall(rootDesc)
+	end
+end
+function GBB.CreateMinimapContextMenu(frame, showMinimapOptions)
+	local menuDescription = minimapMenuGeneratorCache[showMinimapOptions]
+	if not menuDescription then
+		menuDescription = getMinimapMenuDescriptionGenerator(showMinimapOptions)
+		minimapMenuGeneratorCache[showMinimapOptions] = menuDescription
+	end
+	MenuUtil.CreateContextMenu(frame, menuDescription)
+end
+--------------------------------------------------------------------------------
+-- Initialize / Event
+--------------------------------------------------------------------------------
 
 local function hooked_createTooltip(self)
 	local name, unit = self:GetUnit()
@@ -635,44 +656,13 @@ local function hooked_createTooltip(self)
 	end
 end
 
-function GBB.Popup_Minimap(frame,showMinimapOptions)
-	local txt="nil"
-	if type(frame)=="table" then txt=frame:GetName() or "nil" end
-	if not GBB.PopupDynamic:Wipe(txt..(showMinimapOptions and "notminimap" or "minimap")) then
-		return
-	end
-
-	GBB.PopupDynamic:AddItem(GBB.L["HeaderSettings"],false, OptionsUtil.OpenCategoryPanel, 1)
-	
-	GBB.PopupDynamic:AddItem("",true)
-	GBB.PopupDynamic:AddItem(GBB.L["CboxFilterTravel"],false,GBB.DBChar,"FilterDungeonTRAVEL")
-	
-	GBB.PopupDynamic:AddItem("",true)
-	GBB.PopupDynamic:AddItem(GBB.L["CboxNotifyChat"],false,GBB.DB,"NotifyChat")
-	GBB.PopupDynamic:AddItem(GBB.L["CboxNotifySound"],false,GBB.DB,"NotifySound")
-	
-	if showMinimapOptions ~= false then
-		GBB.PopupDynamic:AddItem("",true)
-		GBB.PopupDynamic:AddItem(GBB.L["CboxLockMinimapButton"],false,GBB.DB.MinimapButton,"lock")
-		-- disable whenever the minimap is in LibDBIcon mode
-		if GBB.MinimapButton.isLibDBIconAvailable and GBB.DB.MinimapButton.UseLibDBIcon then
-			GBB.PopupDynamic:AddItem(GBB.L['CboxLockMinimapButtonDistance'], true, {true}, 1);
-		else
-			GBB.PopupDynamic:AddItem(GBB.L['CboxLockMinimapButtonDistance'], false, GBB.DB.MinimapButton, 'lockDistance')
-		end
-	end
-	GBB.PopupDynamic:AddItem("",true)
-	GBB.PopupDynamic:AddItem(GBB.L["BtnCancel"], false, nil, nil, nil, true)
-		
-	GBB.PopupDynamic:Show(frame,0,0)
-end
-
 function GBB.Init()
     ---@class BulletinBoardFrame: Frame
     local GroupBulletinBoardFrame = GroupBulletinBoardFrame
 	GroupBulletinBoardFrame:SetResizeBounds(400,170)
 	GroupBulletinBoardFrame:SetClampedToScreen(true)
-	GBB.UserLevel=UnitLevel("player")
+	GBB.UserLevel = UnitLevel("player")
+	GBB.Tool.RegisterEvent("PLAYER_LEVEL_UP", function() GBB.UserLevel = UnitLevel("player") end)
 	GBB.UserName=(UnitFullName("player"))
 	GBB.ServerName=GetRealmName()
 	GBB.RealLevel = {} -- recently seen player levels
@@ -740,27 +730,18 @@ function GBB.Init()
 
 	-- Load LFGList tool module
 	GBB.LfgTool:Load()
+	-- Load Chat Request List module
+	GBB.ChatRequests:Load()
 
-	-- Reset Request-List
-	GBB.RequestList={}
-	GBB.FramesEntries={}
-
-	-- Timer-Stuff
-	GBB.MAXTIME=time() +60*60*24*365 --add a year!
-	
-	GBB.ClearNeeded=true
-	GBB.ClearTimer=GBB.MAXTIME	
-	
 	GBB.LFG_Timer=time()+GBB.LFG_UPDATETIME
 	GBB.LFG_Successfulljoined=false
 
     local HeaderContainer = GroupBulletinBoardFrameHeaderContainer
     do -- setup the header "Title"/"Close"/ "Settings" buttons
-        HeaderContainer.Title:SetText(string.format(GBB.TxtEscapePicture,GBB.MiniIcon).." ".. GBB.Title)
+        HeaderContainer.Title:SetText(string.format(GBB.TxtEscapePicture,GBB.MiniIcon).." ".. GBB.Metadata.Title)
         HeaderContainer.CloseButton:SetScript("OnClick", GBB.HideWindow)
-        HeaderContainer.SettingsButton:SetScript("OnMouseDown", SettingsButton_OnMouseDown)
-        -- hack: hide settings button popup whenever the board frame is hidden
-        HeaderContainer.SettingsButton:HookScript("OnHide", function() GBB.PopupDynamic:Wipe("SettingsButtonMenu") end)
+		Mixin(HeaderContainer.SettingsButton, SettingsButtonMixin)
+		SettingsButtonMixin.OnLoad(HeaderContainer.SettingsButton)
         -- HeaderContainerRefreshButton setup in LFGToolList.lua (only because its loaded after xml)
     end
 
@@ -893,11 +874,10 @@ function GBB.Init()
 			if button=="LeftButton" then 
 				GBB.ToggleWindow()
 			else
-				GBB.Popup_Minimap(self.button,true)
-				--GBB.Options.Open(2)
+				GBB.CreateMinimapContextMenu(self.button, true)
 			end
 		end,
-		GBB.Title
+		GBB.Metadata.Title
 	)
 
 	---@type EditBox # making this local isnt required, just here for the luals linter
@@ -907,7 +887,7 @@ function GBB.Init()
 	GroupBulletinBoardFrameResultsFilter:SetFontObject(GBB.DB.FontSize);
 	GroupBulletinBoardFrameResultsFilter:SetTextColor(1, 1, 1, 1);
 	GroupBulletinBoardFrameResultsFilter:HookScript("OnTextChanged", function(self) 
-		GBB.UpdateList()
+		GBB.ChatRequests.UpdateRequestList()
 		-- cache filters early
 		self.filterPatterns = { };
 		local filterText = self:GetText()
@@ -929,10 +909,10 @@ function GBB.Init()
 		tinsert(UISpecialFrames, GroupBulletinBoardFrame:GetName()) --enable ESC-Key to close
 	end
 	
-	GBB.Tool.EnableSize(GroupBulletinBoardFrame,8,nil,function()	
+	local setBorderResizingEnabled = GBB.Tool.EnableSize(GroupBulletinBoardFrame,8,nil,function()
 		GBB.ResizeFrameList()
 		GBB.SaveAnchors()
-		GBB.UpdateList()
+		GBB.ChatRequests.UpdateRequestList()
 		GBB.LfgTool.OnFrameResized()
 		end
 	)
@@ -951,15 +931,22 @@ function GBB.Init()
 			--- `1` if the board is fully opaque; `0` if the board is fully transparent; default=`1`
 			opacity = OptionsUtil.GetSavedVarHandle(GBB.DB.WindowSettings, "opacity", 1),
         }
-        windowSettings.isMovable:AddUpdateHook(setBulletinBoardMovableState)
-        setBulletinBoardMovableState(windowSettings.isMovable:GetValue())
-        local setBulletinBoardInteractiveState = function(isInteractive)
-            GBB.UpdateRequestListInteractiveState()
+		-- Handle updates to isMovable
+		local setMovableStates = function(isMovable)
+			setBulletinBoardMovableState(isMovable)
+			setBorderResizingEnabled(isMovable)
+		end
+        windowSettings.isMovable:AddUpdateHook(setMovableStates)
+        setMovableStates(windowSettings.isMovable:GetValue())
+		-- Handle updates to isInteractive
+        local setInteractiveStates = function(isInteractive)
+            GBB.ChatRequests.UpdateInteractiveState()
             GBB.LfgTool:UpdateInteractiveState()
             GroupBulletinBoardFrame:EnableMouse(isInteractive and windowSettings.isMovable:GetValue())
         end
-        windowSettings.isInteractive:AddUpdateHook(setBulletinBoardInteractiveState)
-        setBulletinBoardInteractiveState(windowSettings.isInteractive:GetValue())
+        windowSettings.isInteractive:AddUpdateHook(setInteractiveStates)
+        setInteractiveStates(windowSettings.isInteractive:GetValue())
+		-- Handle updates to opacity
 		local setBulletinBoardOpacity = function(opacity)
 			GroupBulletinBoardFrame:SetAlpha(opacity)
 		end
@@ -973,7 +960,6 @@ function GBB.Init()
 	
 	GBB.Initalized=true
 	
-	GBB.PopupDynamic=GBB.Tool.CreatePopup(GBB.OptionsUpdate)
 	GBB.InitGroupList()
 
 	local TabEnum; ---@type {ChatRequests: number?, RecentPlayers: number?, LFGTool: number?}
@@ -1091,7 +1077,7 @@ function GBB.Init()
 	local Enum = GBB.Enum; Enum.Tabs = TabEnum
 
 	GameTooltip:HookScript("OnTooltipSetUnit", hooked_createTooltip)
-	print("|cFFFF1C1C Loaded: "..GetAddOnMetadata(TOCNAME, "Title") .." ".. GetAddOnMetadata(TOCNAME, "Version") .." by "..GetAddOnMetadata(TOCNAME, "Author"))
+	print(("|cFFFF1C1C Loaded: %s %s by %s"):format(GBB.Metadata.Title, GBB.Metadata.Version, GBB.Metadata.Author))
 end
 
 
@@ -1182,19 +1168,6 @@ local function Event_CHAT_MSG_SYSTEM(arg1)
 	end	
 end
 
-local function Event_CHAT_MSG_CHANNEL(msg,name,_3,_4,_5,_6,_7,channelID,channel,_10,_11,guid)
-	if not GBB.Initalized then return end
-	--print("channel:"..tostring(channelID))
-	if GBB.DBChar and GBB.DBChar.channel and GBB.DBChar.channel[channelID] then
-		GBB.ParseMessage(msg,name,guid,channel)
-	end
-end
-
-local function Event_GuildMessage(msg,name,_3,_4,_5,_6,_7,channelID,channel,_10,_11,guid)
-	Event_CHAT_MSG_CHANNEL(msg,name,_3,_4,_5,_6,_7,20,GBB.L.GuildChannel,_10,_11,guid)
-end
-
-
 local function Event_ADDON_LOADED(arg1)
 	if arg1 == TOCNAME then
 		GBB.Init()
@@ -1205,8 +1178,7 @@ local function Event_ADDON_LOADED(arg1)
 			if button=="LeftButton" then 
 				GBB.ToggleWindow()
 			else
-				GBB.Popup_Minimap(clickedframe,false)
-				--GBB.Options.Open(2)
+				GBB.CreateMinimapContextMenu(clickedframe, false)
 			end
 		end
 	)
@@ -1215,9 +1187,6 @@ end
 function GBB.OnLoad()	
 	GBB.Tool.RegisterEvent("ADDON_LOADED",Event_ADDON_LOADED)
 	GBB.Tool.RegisterEvent("CHAT_MSG_SYSTEM",Event_CHAT_MSG_SYSTEM)
-	GBB.Tool.RegisterEvent("CHAT_MSG_CHANNEL",Event_CHAT_MSG_CHANNEL)
-	GBB.Tool.RegisterEvent("CHAT_MSG_GUILD",Event_GuildMessage)
-	GBB.Tool.RegisterEvent("CHAT_MSG_OFFICER",Event_GuildMessage)
 	
 	for i,event in ipairs(PartyChangeEvent) do
 		GBB.Tool.RegisterEvent(event,GBB.UpdateGroupList)
@@ -1246,7 +1215,7 @@ function GBB.OnUpdate(elapsed)
 
 		if GBB.ElapsedSinceListUpdate > 1 then
 			if GBB.GetSelectedTab() == GBB.Enum.Tabs.ChatRequests then
-				GBB.UpdateList()
+				GBB.ChatRequests.UpdateRequestList()
 			end
 			GBB.ElapsedSinceListUpdate = 0;
 		else
