@@ -62,4 +62,3 @@ L["Tanking model"] = "坦克模式"
 L["Weight after cap"] = "超過上限後比重"
 L["Window Settings"] = "視窗設定"
 
-L["EquipPredicate"] = ITEM_SPELL_TRIGGER_ONEQUIP .. " "
