@@ -62,4 +62,3 @@ L["ticks"] = "ticks"
 L["Weight after cap"] = "Weight after cap"
 L["Window Settings"] = "Window Settings"
 
-L["EquipPredicate"] = ""

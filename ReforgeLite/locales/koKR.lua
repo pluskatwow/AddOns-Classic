@@ -71,4 +71,3 @@ L["Weight after cap"] = "조건 값 이후 가중치"
 --[[Translation missing --]]
 --[[ L["Window Settings"] = ""--]] 
 
-L["EquipPredicate"] = ITEM_SPELL_TRIGGER_ONEQUIP .. " "

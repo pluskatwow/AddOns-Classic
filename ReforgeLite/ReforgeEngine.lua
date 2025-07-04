@@ -5,6 +5,7 @@ local ReforgeLite = addonTable.ReforgeLite
 local L = addonTable.L
 local DeepCopy = addonTable.DeepCopy
 local playerClass, playerRace = addonTable.playerClass, addonTable.playerRace
+local statIds = addonTable.statIds
 
 local GetItemStats = addonTable.GetItemStatsUp
 
@@ -29,47 +30,61 @@ function ReforgeLite:GetStatMultipliers()
   return result
 end
 
+local CASTER_SPEC = {[statIds.EXP] = {[statIds.HIT] = 1}}
+local HYBRID_SPEC = {[statIds.SPIRIT] = {[statIds.HIT] = 1}, [statIds.EXP] = {[statIds.HIT] = 1}}
+local STAT_CONVERSIONS = {
+  DRUID = {
+    specs = {
+      [SPEC_DRUID_BALANCE] = HYBRID_SPEC,
+      [4] = CASTER_SPEC -- Resto
+    }
+  },
+  MAGE = { base = CASTER_SPEC },
+  MONK = {
+    specs = {
+      [SPEC_MONK_MISTWEAVER] = {[statIds.SPIRIT] = {[statIds.HIT] = 0.5, [statIds.EXP] = 0.5}}
+    }
+  },
+  PALADIN = {
+    specs = {
+      [1] = CASTER_SPEC -- Holy
+    }
+  },
+  PRIEST = {
+    base = CASTER_SPEC,
+    specs = {
+      [SPEC_PRIEST_SHADOW] = HYBRID_SPEC -- Shadow
+    }
+  },
+  SHAMAN = {
+    specs = {
+      [1] = HYBRID_SPEC, -- Ele
+      [SPEC_SHAMAN_RESTORATION] = CASTER_SPEC -- Resto
+    }
+  },
+  WARLOCK = { base = CASTER_SPEC },
+}
+
 function ReforgeLite:GetConversion()
-  local spec = C_SpecializationInfo.GetSpecialization()
+  local classConversionInfo = STAT_CONVERSIONS[playerClass]
+  if not classConversionInfo then return end
+
   local result = {}
-  if playerClass == "PRIEST" then
-    result[addonTable.statIds.EXP] = {[addonTable.statIds.HIT] = 1}
-    if IsPlayerSpell(47573) then
-      result[addonTable.statIds.SPIRIT] = {[addonTable.statIds.HIT] = 1}
-    end
-  elseif playerClass == "MAGE" then
-    result[addonTable.statIds.EXP] = {[addonTable.statIds.HIT] = 1}
-  elseif playerClass == "WARLOCK" then
-    result[addonTable.statIds.EXP] = {[addonTable.statIds.HIT] = 1}
-  elseif playerClass == "DRUID" then
-      if IsPlayerSpell(33596) then
-        result[addonTable.statIds.SPIRIT] = {[addonTable.statIds.HIT] = 1}
-      end
-    if spec == 1 or spec == 4 then
-      result[addonTable.statIds.EXP] = {[addonTable.statIds.HIT] = 1}
-    end
-  elseif playerClass == "SHAMAN" then
-      if IsPlayerSpell(30674) then
-        result[addonTable.statIds.SPIRIT] = {[addonTable.statIds.HIT] = 1}
-      end
-    if spec == 1 or spec == 3 then
-      result[addonTable.statIds.EXP] = {[addonTable.statIds.HIT] = 1}
-    end
-  elseif playerClass == "MONK" then
-    if spec == 2 then
-      result[addonTable.statIds.SPIRIT] = {[addonTable.statIds.HIT] = 0.5, [addonTable.statIds.EXP] = 0.5}
-    end
-  elseif playerClass == "PALADIN" then
-    if spec == 1 then
-      result[addonTable.statIds.EXP] = {[addonTable.statIds.HIT] = 1}
-    end
+
+  if classConversionInfo.base then
+    addonTable.MergeTables(result, classConversionInfo.base)
   end
-  return result
+
+  local spec = C_SpecializationInfo.GetSpecialization()
+  if spec and classConversionInfo.specs and classConversionInfo.specs[spec] then
+    addonTable.MergeTables(result, classConversionInfo.specs[spec])
+  end
+
+  self.conversion = result
 end
 
 
 function ReforgeLite:UpdateMethodStats (method)
-  local conv = self:GetConversion()
   local mult = self:GetStatMultipliers()
   local oldstats = {}
   method.stats = {}
@@ -109,7 +124,7 @@ function ReforgeLite:UpdateMethodStats (method)
     method.stats[s] = Round(method.stats[s] * f)
   end
 
-  for src, c in pairs(conv) do
+  for src, c in pairs(self.conversion) do
     for dst, f in pairs(c) do
       method.stats[dst] = method.stats[dst] + Round((method.stats[src] - oldstats[src]) * f)
     end
@@ -270,7 +285,7 @@ function ReforgeLite:InitReforgeClassic()
   data.initial = {}
 
   data.mult = self:GetStatMultipliers()
-  data.conv = self:GetConversion()
+  data.conv = DeepCopy(self.conversion)
 
   for i = 1, 2 do
     for point = 1, #data.caps[i].points do
