@@ -38,6 +38,7 @@ local GetContainerItemLink = GetContainerItemLink or C_Container.GetContainerIte
 local IsQuestFlaggedCompleted = IsQuestFlaggedCompleted or C_QuestLog.IsQuestFlaggedCompleted;
 local GetQuestInfo = C_QuestLog.GetQuestInfo or C_QuestLog.GetTitleForQuestID;
 local GetSpellInfo = NIT.GetSpellInfo;
+local GetItemCount = GetItemCount or C_Item.GetItemCount;
 NIT.currentInstanceID = 0;
 --This is for a system that records before and after honor for bgs honor gained calced.
 --Didn't have to end up using it becaus another way was worked out that didn't work at the start of expansion.
@@ -286,7 +287,6 @@ f:SetScript('OnEvent', function(self, event, ...)
 			C_Timer.After(5, function()
 				NIT:fixCooldowns();
 			end)
-			NIT:trimTrades();
 		end
 		if (isLogon or isReload) then
 			--Need to add a delay for pet data to load properly at logon.
@@ -529,7 +529,8 @@ end)
 --Trim records to maxRecordsKept, can set records shown to max 500 in options, 100 is default.
 function NIT:trimDatabase()
 	local max = NIT.db.global.maxRecordsKept;
-	for i, v in pairs(NIT.data.instances) do
+	--Iterate in reverse when removing elements.
+	for i = #NIT.data.instances, 1, -1 do
 		if (i > max) then
 			table.remove(NIT.data.instances, i);
 		end
@@ -538,7 +539,8 @@ end
 
 function NIT:trimTrades()
 	local max = NIT.db.global.maxTradesKept;
-	for i, v in pairs(NIT.data.trades) do
+	--Iterate in reverse when removing elements.
+	for i = #NIT.data.trades, 1, -1 do
 		if (i > max) then
 			table.remove(NIT.data.trades, i);
 		end
@@ -1298,10 +1300,13 @@ function NIT:enteredInstance(isReload, isLogon, checkAgain)
 		if (difficultyID == 208) then
 			instanceType = "party";
 			type = "delve";
-		end
+		else
+		  instanceType = "party";
+      type = "scenario";
+    end
 	end
-	if (instance == true and ((instanceType == "party") or (instanceType == "raid")
-			or (type == "bg") or (type == "arena"))) then
+	if (instance == true and (instanceType == "party" or instanceType == "raid"
+			or type == "bg" or type == "arena")) then
 		local instanceName, instanceType, difficultyID, difficultyName, maxPlayers, dynamicDifficulty,
 				isDynamic, instanceID, instanceGroupSize, LfgDungeonID = GetInstanceInfo();
 		if (NIT.inInstance and NIT.lastInstanceName ~= instanceName) then
@@ -1322,6 +1327,8 @@ function NIT:enteredInstance(isReload, isLogon, checkAgain)
 			instanceNameMsg = instanceNameMsg .. " |cFF9CD6DE(|r|cFFa335eeM|r|cFF9CD6DE)|r";
 		elseif (type == "delve") then
 			instanceNameMsg = instanceNameMsg .. " |cFF9CD6DE(|r|cFF00C800D|r|cFF9CD6DE)|r";
+		elseif (type == "scenario") then
+      instanceNameMsg = instanceNameMsg .. " |cFF9CD6DE(|r|cFFFF2222H|r|cFF9CD6DE)|r";
 		end
 		if (isGhost) then
 			--This never worked and doesn't need to anyway.
@@ -1484,7 +1491,7 @@ function NIT:enteredInstance(isReload, isLogon, checkAgain)
 			--NIT.data.instances[NIT.lastInstanceID] = t;
 			NIT.currentInstanceID = instanceID;
 			isGhost = false;
-			NIT:trimDatabase();
+			--NIT:trimDatabase();
 			NIT:addInstanceCount(instanceID);
 			local type = "unknown";
 			if (instanceID and NIT.zones[instanceID] and NIT.zones[instanceID].type) then
@@ -2121,7 +2128,7 @@ function NIT:getInstanceLockoutInfo(char)
 	end
 	for k, v in ipairs(NIT.data.instances) do
 		if (not NIT.perCharOnly or target == v.playerName) then
-			if (v.isPvp or v.type == "delve" or (NIT.noRaidLockouts and v.instanceID and NIT.zones[v.instanceID] and NIT.zones[v.instanceID].noLockout)) then
+			if (v.isPvp or v.type == "delve" or v.type == "scenario" or (NIT.noRaidLockouts and v.instanceID and NIT.zones[v.instanceID] and NIT.zones[v.instanceID].noLockout)) then
 				--NIT:debug("skipping raid", v.instanceID);
 			else
 				count = count + 1;
