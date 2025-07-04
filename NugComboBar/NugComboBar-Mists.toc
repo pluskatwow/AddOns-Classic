@@ -1,4 +1,4 @@
-## Interface: 11500
+## Interface: 50500
 ## Title: NugComboBar
 ## Notes: Combopoints counter
 ## Author: d87
@@ -16,3 +16,4 @@ Libs\AceDB-3.0\AceDB-3.0.xml
 NugComboBar.lua
 skin.lua
 config.lua
+config.mists.lua
