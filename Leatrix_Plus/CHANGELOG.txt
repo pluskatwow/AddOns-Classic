@@ -1,4 +1,9 @@
-﻿5.0.00 - 4th July 2025
+﻿5.0.01 - 5th July 2025
+- The 'Enhance dressup' option ('Interace') now also hides model controls for the Blizzard shop.
+- The 'Auction house extras' option ('Interface') has been removed since it's now included in the game.
+- Various fixes for Mists of Pandaria Classic.
+
+5.0.00 - 4th July 2025
 - Updated for Mists of Pandaria game patch 5.5.0.
 - You can now hold down control and left click the Leatrix Plus minimap button to toggle target tracking.
 
