@@ -19,10 +19,13 @@ Cell.isVanilla = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
 -- Cell.isWrath = WOW_PROJECT_ID == WOW_PROJECT_WRATH_CLASSIC and LE_EXPANSION_LEVEL_CURRENT == LE_EXPANSION_WRATH_OF_THE_LICH_KING
 Cell.isWrath = WOW_PROJECT_ID == WOW_PROJECT_WRATH_CLASSIC
 Cell.isCata = WOW_PROJECT_ID == WOW_PROJECT_CATACLYSM_CLASSIC
+Cell.isMists = WOW_PROJECT_ID == WOW_PROJECT_MISTS_CLASSIC
 Cell.isTWW = LE_EXPANSION_LEVEL_CURRENT == LE_EXPANSION_WAR_WITHIN
 
 if Cell.isRetail then
     Cell.flavor = "retail"
+elseif Cell.isMists then
+    Cell.flavor = "mists"
 elseif Cell.isCata then
     Cell.flavor = "cata"
 elseif Cell.isWrath then
@@ -573,6 +576,28 @@ function F.TInsert(t, v)
         end
         i = i + 1
     until done
+end
+
+function F.TInsertIfNotExists(t, ...)
+    local n = select("#", ...)
+    if n == 0 then return end
+
+    if n == 1 then
+        local v = ...
+        if not F.TContains(t, v) then
+            tinsert(t, v)
+        end
+    else
+        local values = F.ConvertTable(t, true)
+        for i = 1, n do
+            local v = select(i, ...)
+            if not values[v] then
+                tinsert(t, v)
+            end
+        end
+        values = nil
+    end
+
 end
 
 function F.TRemove(t, v)
@@ -2413,4 +2438,11 @@ function SlashCmdList.CELLRC()
             debug:Show()
         end
     end
+end
+
+---------------------------------------------------------------------
+-- spec data
+---------------------------------------------------------------------
+if Cell.isMists then
+
 end
