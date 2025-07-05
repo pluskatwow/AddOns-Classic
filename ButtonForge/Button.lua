@@ -840,7 +840,9 @@ function Button:SetEnvCompanion(MountID)
 		self.MountSpellName	= GetSpellInfo(self.MountSpellID);
 		self.Widget:SetAttribute("type", "macro");
 		self.Widget:SetAttribute("typerelease", "macro");
-		self.Widget:SetAttribute("macrotext", "/cast "..self.MountSpellName);
+		if self.MountSpellName then -- changed for Mists 5.5.0 07/05/2025
+		  self.Widget:SetAttribute("macrotext", "/cast "..self.MountSpellName); 
+		end  
 	end
 
 	

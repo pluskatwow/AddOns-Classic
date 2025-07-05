@@ -5,7 +5,7 @@ Author: Massiner of Nathrezim
 Contributor: xfsbill
 Past Contributors: DT85, DandierSphinx
 
-Version: 1.0.25
+Version: 1.0.26
 
 Description: Graphically create as many Action Bars and Buttons in the game as you choose
 
@@ -23,6 +23,8 @@ Restrictions:
 
 
 History:
+
+05-Jul-2025   v1.0.26  - Fix for self.MountSpellName nil error at button.lua 843
  
 18-May-2025   v1.0.25  - Modifed for MoP (Mists Classic) 5.5.0, Data Broker support added.
 
