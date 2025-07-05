@@ -1,5 +1,5 @@
 ﻿----------------------------------------------------------------------
--- 	Leatrix Plus 5.0.00 (4th July 2025)
+-- 	Leatrix Plus 5.0.01 (5th July 2025)
 ----------------------------------------------------------------------
 
 --	01:Functions 02:Locks   03:Restart 40:Player   45:Rest
@@ -19,7 +19,7 @@
 	local void
 
 	-- Version
-	LeaPlusLC["AddonVer"] = "5.0.00"
+	LeaPlusLC["AddonVer"] = "5.0.01"
 
 	-- Get locale table
 	local void, Leatrix_Plus = ...
@@ -612,7 +612,6 @@
 		or	(LeaPlusLC["EnhanceTrainers"]		~= LeaPlusDB["EnhanceTrainers"])		-- Enhance trainers
 		or	(LeaPlusLC["EnhanceFlightMap"]		~= LeaPlusDB["EnhanceFlightMap"])		-- Enhance flight map
 		or	(LeaPlusLC["ShowVolume"]			~= LeaPlusDB["ShowVolume"])				-- Show volume slider
-		or	(LeaPlusLC["AhExtras"]				~= LeaPlusDB["AhExtras"])				-- Show auction controls
 		or	(LeaPlusLC["ShowCooldowns"]			~= LeaPlusDB["ShowCooldowns"])			-- Show cooldowns
 		or	(LeaPlusLC["DurabilityStatus"]		~= LeaPlusDB["DurabilityStatus"])		-- Show durability status
 		or	(LeaPlusLC["ShowPetSaveBtn"]		~= LeaPlusDB["ShowPetSaveBtn"])			-- Show pet save button
@@ -4030,6 +4029,13 @@
 					StaticPopup1Button1:Enable()
 					local link = select(3, GetCursorInfo())
 					if link then
+						-- Custom link for battle pets
+						local linkType, linkOptions, name = LinkUtil.ExtractLink(link)
+						if linkType == "battlepet" then
+							local speciesID, level, breedQuality = strsplit(":", linkOptions)
+							local qualityColor = BAG_ITEM_QUALITY_COLORS[tonumber(breedQuality)]
+							link = qualityColor:WrapTextInColorCode(name .. " |n" .. L["Level"] .. " " .. level .. L["Battle Pet"])
+						end
 						StaticPopup1Text:SetText(gsub(StaticPopup1Text:GetText(), gsub(TypeDeleteLine, "@", ""), "") .. "|n" .. link)
 					end
 				else
@@ -4039,6 +4045,13 @@
 					StaticPopup1Button1:Enable()
 					local link = select(3, GetCursorInfo())
 					if link then
+						-- Custom link for battle pets
+						local linkType, linkOptions, name = LinkUtil.ExtractLink(link)
+						if linkType == "battlepet" then
+							local speciesID, level, breedQuality = strsplit(":", linkOptions)
+							local qualityColor = BAG_ITEM_QUALITY_COLORS[tonumber(breedQuality)]
+							link = qualityColor:WrapTextInColorCode(name .. " |n" .. L["Level"] .. " " .. level .. L["Battle Pet"])
+						end
 						StaticPopup1Text:SetText(gsub(StaticPopup1Text:GetText(), gsub(TypeDeleteLine, "@", ""), "") .. "|n|n" .. link)
 					end
 				end
@@ -7743,14 +7756,22 @@
 			-- Controls
 			----------------------------------------------------------------------
 
-			-- Hide character frame controls
+			-- Hide controls for character frame
 			CharacterModelScene.ControlFrame:HookScript("OnShow", function()
 				CharacterModelScene.ControlFrame:Hide()
 			end)
+
 			-- Hide controls for dressing room
 			DressUpModelFrameRotateLeftButton:HookScript("OnShow", DressUpModelFrameRotateLeftButton.Hide)
 			DressUpModelFrameRotateRightButton:HookScript("OnShow", DressUpModelFrameRotateRightButton.Hide)
 			SideDressUpModelControlFrame:HookScript("OnShow", SideDressUpModelControlFrame.Hide)
+
+			-- Hide controls for shop
+			ModelPreviewFrame.Display.ModelScene.ControlFrame:HookScript("OnShow", function()
+				if StorePreviewFrame and StorePreviewFrame:IsShown() then
+					ModelPreviewFrame.Display.ModelScene.ControlFrame:Hide()
+				end
+			end)
 
 			----------------------------------------------------------------------
 			-- Wardrobe and inspect system
@@ -8552,25 +8573,9 @@
 				_G["TradeSkillFrameCloseButton"]:ClearAllPoints()
 				_G["TradeSkillFrameCloseButton"]:SetPoint("TOPRIGHT", _G["TradeSkillFrame"], "TOPRIGHT", -30, -8)
 
-				-- Position dropdown menus
-				TradeSkillInvSlotDropdown:ClearAllPoints()
-				TradeSkillInvSlotDropdown:SetPoint("TOPLEFT", TradeSkillFrame, "TOPLEFT", 550, -42)
-				TradeSkillSubClassDropdown:ClearAllPoints()
-				TradeSkillSubClassDropdown:SetPoint("RIGHT", TradeSkillInvSlotDropdown, "LEFT", -10, 0)
-
-				-- Move search box below rank frame
-				TradeSkillFrameEditBox:ClearAllPoints()
-				TradeSkillFrameEditBox:SetPoint("TOPRIGHT", TradeSkillRankFrame, "BOTTOMRIGHT", 0, 1)
-				TradeSkillFrameEditBox:SetFrameLevel(3)
-
-				-- Move have materials checkbox down slightly
-				TradeSkillFrameAvailableFilterCheckButton:ClearAllPoints()
-				TradeSkillFrameAvailableFilterCheckButton:SetPoint("TOPLEFT", TradeSkillFrame, "TOPLEFT", 70, -53)
-
-				-- Ensure have materials checkbox doesn't overlap search box
-				TradeSkillFrameAvailableFilterCheckButtonText:SetWidth(110)
-				TradeSkillFrameAvailableFilterCheckButtonText:SetWordWrap(false)
-				TradeSkillFrameAvailableFilterCheckButtonText:SetJustifyH("LEFT")
+				-- Move dropdown menu
+				TradeSkillFrame.FilterDropdown:ClearAllPoints()
+				TradeSkillFrame.FilterDropdown:SetPoint("TOPRIGHT", TradeSkillFrame, "TOPRIGHT", -44, -44)
 
 				-- ElvUI fixes
 				if LeaPlusLC.ElvUI then
@@ -8585,10 +8590,6 @@
 						_G["TradeSkillCancelButton"]:SetPoint("BOTTOMRIGHT", _G["TradeSkillFrame"], "BOTTOMRIGHT", -42, 78)
 						_G["TradeSkillRankFrame"]:ClearAllPoints()
 						_G["TradeSkillRankFrame"]:SetPoint("TOPLEFT", _G["TradeSkillFrame"], "TOPLEFT", 24, -44)
-						_G["TradeSkillFrameEditBox"]:ClearAllPoints()
-						_G["TradeSkillFrameEditBox"]:SetPoint("TOPRIGHT", TradeSkillFrame, "TOPRIGHT", -392, -60)
-						_G["TradeSkillFrameAvailableFilterCheckButton"]:ClearAllPoints()
-						_G["TradeSkillFrameAvailableFilterCheckButton"]:SetPoint("TOPLEFT", TradeSkillFrame, "TOPLEFT", 20, -58)
 					end
 				end
 
@@ -9192,209 +9193,6 @@
 			-- Set LibDBIcon when option is clicked and on startup
 			LeaPlusCB["ShowMinimapIcon"]:HookScript("OnClick", SetLibDBIconFunc)
 			SetLibDBIconFunc()
-
-		end
-
-		----------------------------------------------------------------------
-		-- Auction House Extras
-		----------------------------------------------------------------------
-
-		if LeaPlusLC["AhExtras"] == "On" then
-
-			EventUtil.ContinueOnAddOnLoaded("Blizzard_AuctionUI",function()
-
-				-- Set default auction duration value to saved settings or default settings
-				AuctionFrameAuctions.duration = LeaPlusDB["AHDuration"] or 3
-
-				-- Update duration radio button
-				AuctionsShortAuctionButton:SetChecked(false)
-				AuctionsMediumAuctionButton:SetChecked(false)
-				AuctionsLongAuctionButton:SetChecked(false)
-				if AuctionFrameAuctions.duration == 1 then
-					AuctionsShortAuctionButton:SetChecked(true)
-				elseif AuctionFrameAuctions.duration == 2 then
-					AuctionsMediumAuctionButton:SetChecked(true)
-				elseif AuctionFrameAuctions.duration == 3 then
-					AuctionsLongAuctionButton:SetChecked(true)
-				end
-
-				-- Functions
-				local function CreateAuctionCB(name, anchor, x, y, text)
-					LeaPlusCB[name] = CreateFrame("CheckButton", nil, AuctionFrameAuctions, "ChatConfigCheckButtonTemplate")
-					LeaPlusCB[name]:SetFrameStrata("HIGH")
-					LeaPlusCB[name]:SetSize(20, 20)
-					LeaPlusCB[name]:SetPoint(anchor, x, y)
-					LeaPlusCB[name].f = LeaPlusCB[name]:CreateFontString(nil, 'OVERLAY', "GameFontNormal")
-					LeaPlusCB[name].f:SetPoint("LEFT", 20, 0)
-					LeaPlusCB[name].f:SetText(L[text])
-					LeaPlusCB[name].f:Show();
-					LeaPlusCB[name]:SetScript('OnClick', function()
-						if LeaPlusCB[name]:GetChecked() then
-							LeaPlusLC[name] = "On"
-						else
-							LeaPlusLC[name] = "Off"
-						end
-					end)
-					LeaPlusCB[name]:SetScript('OnShow', function(self)
-						if LeaPlusLC[name] == "On" then
-							self:SetChecked(true)
-						else
-							self:SetChecked(false)
-						end
-					end)
-				end
-
-				-- Show the correct fields in the AH frame and match prices
-				local function SetupAh()
-					if LeaPlusLC["AhBuyoutOnly"] == "On" then
-						-- Hide the start price
-						StartPrice:SetAlpha(0);
-						-- Set start price to buyout price
-						StartPriceGold:SetText(BuyoutPriceGold:GetText());
-						StartPriceSilver:SetText(BuyoutPriceSilver:GetText());
-						StartPriceCopper:SetText(BuyoutPriceCopper:GetText());
-					else
-						-- Show the start price
-						StartPrice:SetAlpha(1);
-					end
-					-- If gold only is on, set copper and silver to 99
-					if LeaPlusLC["AhGoldOnly"] == "On" then
-						StartPriceCopper:SetText("99"); StartPriceCopper:Disable();
-						StartPriceSilver:SetText("99"); StartPriceSilver:Disable();
-						BuyoutPriceCopper:SetText("99"); BuyoutPriceCopper:Disable();
-						BuyoutPriceSilver:SetText("99"); BuyoutPriceSilver:Disable();
-					else
-						StartPriceCopper:Enable();
-						StartPriceSilver:Enable();
-						BuyoutPriceCopper:Enable();
-						BuyoutPriceSilver:Enable();
-					end
-					-- Validate the auction (mainly for the create auction button status)
-					AuctionsFrameAuctions_ValidateAuction()
-				end
-
-				-- Create checkboxes
-				CreateAuctionCB("AhBuyoutOnly", "BOTTOMLEFT", 200, 16, "Buyout Only")
-				CreateAuctionCB("AhGoldOnly", "BOTTOMLEFT", 320, 16, "Gold Only")
-
-				-- Reposition Gold Only checkbox so it does not overlap Buyout Only checkbox label
-				LeaPlusCB["AhGoldOnly"]:ClearAllPoints()
-				LeaPlusCB["AhGoldOnly"]:SetPoint("LEFT", LeaPlusCB["AhBuyoutOnly"].f, "RIGHT", 20, 0)
-
-				-- Set click boundaries
-				LeaPlusCB["AhBuyoutOnly"]:SetHitRectInsets(0, -LeaPlusCB["AhBuyoutOnly"].f:GetStringWidth() + 6, 0, 0);
-				LeaPlusCB["AhGoldOnly"]:SetHitRectInsets(0, -LeaPlusCB["AhGoldOnly"].f:GetStringWidth() + 6, 0, 0);
-
-				LeaPlusCB["AhBuyoutOnly"]:HookScript('OnClick', SetupAh);
-				LeaPlusCB["AhBuyoutOnly"]:HookScript('OnShow', SetupAh);
-
-				AuctionFrameAuctions:HookScript("OnShow", SetupAh)
-				BuyoutPriceGold:HookScript("OnTextChanged", SetupAh)
-				BuyoutPriceSilver:HookScript("OnTextChanged", SetupAh)
-				BuyoutPriceCopper:HookScript("OnTextChanged", SetupAh)
-				StartPriceGold:HookScript("OnTextChanged", SetupAh)
-				StartPriceSilver:HookScript("OnTextChanged", SetupAh)
-				StartPriceCopper:HookScript("OnTextChanged", SetupAh)
-
-				-- Lock the create auction button if buyout gold box is empty (when using buyout only and gold only)
-				AuctionsCreateAuctionButton:HookScript("OnEnable", function()
-					-- Do nothing if wow token frame is showing
-					if AuctionsWowTokenAuctionFrame:IsShown() then return end
-					-- Lock the create auction button if both checkboxes are enabled and buyout gold price is empty
-					if LeaPlusLC["AhGoldOnly"] == "On" and LeaPlusLC["AhBuyoutOnly"] == "On" then
-						if BuyoutPriceGold:GetText() == "" then
-							AuctionsCreateAuctionButton:Disable()
-						end
-					end
-				end)
-
-				-- Clear copper and silver prices if gold only box is unchecked
-				LeaPlusCB["AhGoldOnly"]:HookScript('OnClick', function()
-					if LeaPlusCB["AhGoldOnly"]:GetChecked() == false then
-						BuyoutPriceCopper:SetText("")
-						BuyoutPriceSilver:SetText("")
-						StartPriceCopper:SetText("")
-						StartPriceSilver:SetText("")
-					end
-					SetupAh();
-				end)
-
-				-- Create find button
-				AuctionsItemText:Hide()
-				LeaPlusLC:CreateButton("FindAuctionButton", AuctionsStackSizeMaxButton, "Find Item", "CENTER", 0, 68, 0, 21, false, "")
-				LeaPlusCB["FindAuctionButton"]:SetParent(AuctionFrameAuctions)
-
-				if LeaPlusLC.ElvUI then
-					_G.LeaPlusGlobalFindItemButton = LeaPlusCB["FindAuctionButton"]
-					LeaPlusLC.ElvUI:GetModule("Skins"):HandleButton(_G.LeaPlusGlobalFindItemButton)
-				end
-
-				-- Show find button when the auctions tab is shown
-				AuctionFrameAuctions:HookScript("OnShow", function()
-					LeaPlusCB["FindAuctionButton"]:SetEnabled(GetAuctionSellItemInfo() and true or false)
-				end)
-
-				-- Show find button when a new item is added
-				AuctionsItemButton:HookScript("OnEvent", function(self, event)
-					if event == "NEW_AUCTION_UPDATE" then
-						LeaPlusCB["FindAuctionButton"]:SetEnabled(GetAuctionSellItemInfo() and true or false)
-					end
-				end)
-
-				LeaPlusCB["FindAuctionButton"]:SetScript("OnClick", function()
-					if GetAuctionSellItemInfo() then
-						if BrowseWowTokenResults:IsShown() then
-							-- Stop if Game Time filter is currently shown
-							AuctionFrameTab1:Click()
-							LeaPlusLC:Print("To use the Find Item button, you need to deselect the WoW Token category.")
-						else
-							-- Otherwise, search for the required item
-							local name = GetAuctionSellItemInfo()
-							BrowseName:SetText('"' .. name .. '"')
-							AuctionFrameBrowse_Search() -- Workaround for quoted search from QueryAuctionItems(name, 0, 0, 0, false, 0, false, true)
-							AuctionFrameTab1:Click()
-						end
-					end
-				end)
-
-				-- Clear the cursor and reset editboxes when a new item replaces an existing one
-				hooksecurefunc("AuctionsFrameAuctions_ValidateAuction", function()
-					if GetAuctionSellItemInfo() then
-						-- Return anything you might be holding
-						ClearCursor();
-						-- Set copper and silver prices to 99 if gold mode is on
-						if LeaPlusLC["AhGoldOnly"] == "On" then
-							StartPriceCopper:SetText("99")
-							StartPriceSilver:SetText("99")
-							BuyoutPriceCopper:SetText("99")
-							BuyoutPriceSilver:SetText("99")
-						end
-					end
-				end)
-
-				-- Clear gold editbox after an auction has been created (to force user to enter something)
-				AuctionsCreateAuctionButton:HookScript("OnClick", function()
-					StartPriceGold:SetText("")
-					BuyoutPriceGold:SetText("")
-				end)
-
-				-- Set tab key actions (if different from defaults)
-				StartPriceGold:HookScript("OnTabPressed", function()
-					if not IsShiftKeyDown() then
-						if LeaPlusLC["AhBuyoutOnly"] == "Off" and LeaPlusLC["AhGoldOnly"] == "On" then
-							BuyoutPriceGold:SetFocus()
-						end
-					end
-				end)
-
-				BuyoutPriceGold:HookScript("OnTabPressed", function()
-					if IsShiftKeyDown() then
-						if LeaPlusLC["AhBuyoutOnly"] == "Off" and LeaPlusLC["AhGoldOnly"] == "On" then
-							StartPriceGold:SetFocus()
-						end
-					end
-				end)
-			end)
 
 		end
 
@@ -11455,12 +11253,22 @@
 				-- AutoCompleteBox
 				if AutoCompleteBox then AutoCompleteBox:SetScale(LeaPlusLC["LeaPlusTipSize"]) end
 
+				-- Pet battles and battle pets
+				if PetBattlePrimaryAbilityTooltip then PetBattlePrimaryAbilityTooltip:SetScale(LeaPlusLC["LeaPlusTipSize"]) end
+				if PetBattlePrimaryUnitTooltip then PetBattlePrimaryUnitTooltip:SetScale(LeaPlusLC["LeaPlusTipSize"]) end
+				if BattlePetTooltip then BattlePetTooltip:SetScale(LeaPlusLC["LeaPlusTipSize"]) end
+				if FloatingBattlePetTooltip then FloatingBattlePetTooltip:SetScale(LeaPlusLC["LeaPlusTipSize"]) end
+				if FloatingPetBattleAbilityTooltip then FloatingPetBattleAbilityTooltip:SetScale(LeaPlusLC["LeaPlusTipSize"]) end
+
 				-- Items (links, comparisons)
 				if ItemRefTooltip then ItemRefTooltip:SetScale(LeaPlusLC["LeaPlusTipSize"]) end
 				if ItemRefShoppingTooltip1 then ItemRefShoppingTooltip1:SetScale(LeaPlusLC["LeaPlusTipSize"]) end
 				if ItemRefShoppingTooltip2 then ItemRefShoppingTooltip2:SetScale(LeaPlusLC["LeaPlusTipSize"]) end
 				if ShoppingTooltip1 then ShoppingTooltip1:SetScale(LeaPlusLC["LeaPlusTipSize"]) end
 				if ShoppingTooltip2 then ShoppingTooltip2:SetScale(LeaPlusLC["LeaPlusTipSize"]) end
+
+				-- Minimap (PVP queue status)
+				if QueueStatusFrame then QueueStatusFrame:SetScale(LeaPlusLC["LeaPlusTipSize"]) end
 
 				-- Embedded item tooltip (as used in PVP UI)
 				if EmbeddedItemTooltip then EmbeddedItemTooltip:SetScale(LeaPlusLC["LeaPlusTipSize"]) end
@@ -11470,9 +11278,6 @@
 
 				-- Game settings panel tooltip
 				if SettingsTooltip then SettingsTooltip:SetScale(LeaPlusLC["LeaPlusTipSize"]) end
-
-				-- QueueStatusFrame (Dungeon Finder)
-				if QueueStatusFrame then QueueStatusFrame:SetScale(LeaPlusLC["LeaPlusTipSize"]) end
 
 				-- LibDBIcon
 				if LibDBIconTooltip then LibDBIconTooltip:SetScale(LeaPlusLC["LeaPlusTipSize"]) end
@@ -11503,15 +11308,49 @@
 			LeaPlusCB["LeaPlusTipSize"]:HookScript("OnValueChanged", SetTipScale)
 			SetTipScale()
 
+			----------------------------------------------------------------------
+			-- Pet Journal tooltips
+			----------------------------------------------------------------------
+
+			EventUtil.ContinueOnAddOnLoaded("Blizzard_Collections",function()
+
+				-- Function to set tooltip scale
+				local function SetPetJournalTipScale()
+					PetJournalPrimaryAbilityTooltip:SetScale(LeaPlusLC["LeaPlusTipSize"])
+				end
+
+				-- Set tooltip scale when slider changes and on startup
+				LeaPlusCB["LeaPlusTipSize"]:HookScript("OnValueChanged", SetPetJournalTipScale)
+				SetPetJournalTipScale()
+
+			end)
+
+			----------------------------------------------------------------------
+			-- Encounter Journal tooltips
+			----------------------------------------------------------------------
+
+			EventUtil.ContinueOnAddOnLoaded("Blizzard_EncounterJournal",function()
+
+				-- Function to set tooltip scale
+				local function SetEncounterJournalTipScale()
+					EncounterJournalTooltip:SetScale(LeaPlusLC["LeaPlusTipSize"])
+				end
+
+				-- Set tooltip scale when slider changes and on startup
+				LeaPlusCB["LeaPlusTipSize"]:HookScript("OnValueChanged", SetEncounterJournalTipScale)
+				SetEncounterJournalTipScale()
+
+			end)
+
 			---------------------------------------------------------------------------------------------------------
 			-- Other tooltip code
 			---------------------------------------------------------------------------------------------------------
 
 			-- Colorblind setting change
-			TipDrag:RegisterEvent("CVAR_UPDATE");
+			TipDrag:RegisterEvent("CVAR_UPDATE")
 			TipDrag:SetScript("OnEvent", function(self, event, arg1, arg2)
 				if (arg1 == "USE_COLORBLIND_MODE") then
-					LT["ColorBlind"] = arg2;
+					LT["ColorBlind"] = arg2
 				end
 			end)
 
@@ -11574,6 +11413,9 @@
 				if not LT["Reaction"] then
 					return
 				end
+
+				-- Quit if unit is a wild pet
+				if UnitIsWildBattlePet(LT["Unit"]) then return end
 
 				-- Setup variables
 				LT["TipUnitName"], LT["TipUnitRealm"] = UnitName(LT["Unit"])
@@ -13147,7 +12989,6 @@
 				LeaPlusLC:LoadVarNum("FlightMapX", 0, -5000, 5000)			-- Enhance flight map X
 				LeaPlusLC:LoadVarNum("FlightMapY", 61, -5000, 5000)			-- Enhance flight map Y
 				LeaPlusLC:LoadVarChk("ShowVolume", "Off")					-- Show volume slider
-				LeaPlusLC:LoadVarChk("AhExtras", "Off")						-- Show auction controls
 				LeaPlusLC:LoadVarChk("AhBuyoutOnly", "Off")					-- Auction buyout only
 				LeaPlusLC:LoadVarChk("AhGoldOnly", "Off")					-- Auction gold only
 
@@ -13566,7 +13407,6 @@
 			LeaPlusDB["FlightMapY"]				= LeaPlusLC["FlightMapY"]
 
 			LeaPlusDB["ShowVolume"] 			= LeaPlusLC["ShowVolume"]
-			LeaPlusDB["AhExtras"]				= LeaPlusLC["AhExtras"]
 			LeaPlusDB["AhBuyoutOnly"]			= LeaPlusLC["AhBuyoutOnly"]
 			LeaPlusDB["AhGoldOnly"]				= LeaPlusLC["AhGoldOnly"]
 
@@ -13795,19 +13635,6 @@
 		if LeaPlusDB["MoreFontSizes"] == "On" and not LeaLockList["MoreFontSizes"] then
 			if wipe or (not wipe and LeaPlusLC["MoreFontSizes"] == "Off") then
 				RunScript('for i = 1, 50 do if _G["ChatFrame" .. i] then local void, fontSize = FCF_GetChatWindowInfo(i); if fontSize and fontSize ~= 12 and fontSize ~= 14 and fontSize ~= 16 and fontSize ~= 18 then FCF_SetChatWindowFontSize(self, _G["ChatFrame" .. i], CHAT_FRAME_DEFAULT_FONT_SIZE) end end end')
-			end
-		end
-
-		----------------------------------------------------------------------
-		-- Do other stuff during logout
-		----------------------------------------------------------------------
-
-		-- Store the auction house duration and price type values if auction house option is enabled
-		if LeaPlusDB["AhExtras"] == "On" then
-			if AuctionFrameAuctions then
-				if AuctionFrameAuctions.duration then
-					LeaPlusDB["AHDuration"] = AuctionFrameAuctions.duration
-				end
 			end
 		end
 
@@ -14449,7 +14276,7 @@
 				end
 				return
 			elseif str == "id" then
-				-- Show web link
+				-- Show web link for tooltip
 				if not LeaPlusLC.WowheadLock then
 					-- Set Wowhead link prefix
 						if GameLocale == "deDE" then LeaPlusLC.WowheadLock = "wowhead.com/mop-classic/de"
@@ -14467,6 +14294,37 @@
 				end
 				-- Store frame under mouse
 				local mouseFocus = GetMouseFoci()[1]
+				-- Floating battle pet tooltip (linked in chat)
+				if FloatingBattlePetTooltip:IsMouseMotionFocus() and FloatingBattlePetTooltip.Name then
+					local tipTitle = FloatingBattlePetTooltip.Name:GetText()
+					if tipTitle then
+						local speciesId, petGUID = C_PetJournal.FindPetIDByName(tipTitle, false)
+						if petGUID then
+							local speciesID, customName, level, xp, maxXp, displayID, isFavorite, name, icon, petType, creatureID = C_PetJournal.GetPetInfoByPetID(petGUID)
+							LeaPlusLC:ShowSystemEditBox("https://" .. LeaPlusLC.WowheadLock .. "/npc=" .. creatureID)
+							LeaPlusLC.FactoryEditBox.f:SetText(L["Pet"] .. ": " .. name .. " (" .. creatureID .. ")")
+							return
+						end
+					end
+				end
+				-- Floating pet battle ability tooltip (linked in chat)
+				if FloatingPetBattleAbilityTooltip and FloatingPetBattleAbilityTooltip:IsMouseMotionFocus() and FloatingPetBattleAbilityTooltip.Name then
+					local tipTitle = FloatingPetBattleAbilityTooltip.Name:GetText()
+					if tipTitle then
+						LeaPlusLC:ShowSystemEditBox("https://" .. LeaPlusLC.WowheadLock .. "/search?q=" .. tipTitle, false)
+						LeaPlusLC.FactoryEditBox.f:SetText(L["Pet Ability"] .. ": " .. tipTitle)
+						return
+					end
+				end
+				-- Pet journal ability tooltip (tooltip in pet journal)
+				if PetJournalPrimaryAbilityTooltip and PetJournalPrimaryAbilityTooltip:IsShown() and PetJournalPrimaryAbilityTooltip.Name then
+					local tipTitle = PetJournalPrimaryAbilityTooltip.Name:GetText()
+					if tipTitle then
+						LeaPlusLC:ShowSystemEditBox("https://" .. LeaPlusLC.WowheadLock .. "/search?q=" .. tipTitle, false)
+						LeaPlusLC.FactoryEditBox.f:SetText(L["Pet Ability"] .. ": " .. tipTitle)
+						return
+					end
+				end
 				-- ItemRefTooltip or GameTooltip
 				local tooltip
 				if ItemRefTooltip:IsMouseMotionFocus() then tooltip = ItemRefTooltip else tooltip = GameTooltip end
@@ -14524,14 +14382,23 @@
 					-- Unknown tooltip (this must be last)
 					local tipTitle = GameTooltipTextLeft1:GetText()
 					if tipTitle then
-						-- Show unknown link
-						local unitFocus
-						if mouseFocus == WorldFrame then unitFocus = "mouseover" else unitFocus = select(2, GameTooltip:GetUnit()) end
-						if not unitFocus or not UnitIsPlayer(unitFocus) then
-							tipTitle = tipTitle:gsub("|c%x%x%x%x%x%x%x%x", "") -- Remove color tag
-							LeaPlusLC:ShowSystemEditBox("https://" .. LeaPlusLC.WowheadLock .. "/search?q=" .. tipTitle, false)
-							LeaPlusLC.FactoryEditBox.f:SetText("|cffff0000" .. L["Link will search Wowhead"])
+						local speciesId, petGUID = C_PetJournal.FindPetIDByName(GameTooltipTextLeft1:GetText(), false)
+						if petGUID then
+							-- Pet
+							local speciesID, customName, level, xp, maxXp, displayID, isFavorite, name, icon, petType, creatureID = C_PetJournal.GetPetInfoByPetID(petGUID)
+							LeaPlusLC:ShowSystemEditBox("https://" .. LeaPlusLC.WowheadLock .. "/npc=" .. creatureID)
+							LeaPlusLC.FactoryEditBox.f:SetText(L["Pet"] .. ": " .. name .. " (" .. creatureID .. ")")
 							return
+						else
+							-- Show unknown link
+							local unitFocus
+							if mouseFocus == WorldFrame then unitFocus = "mouseover" else unitFocus = select(2, GameTooltip:GetUnit()) end
+							if not unitFocus or not UnitIsPlayer(unitFocus) then
+								tipTitle = tipTitle:gsub("|c%x%x%x%x%x%x%x%x", "") -- Remove color tag
+								LeaPlusLC:ShowSystemEditBox("https://" .. LeaPlusLC.WowheadLock .. "/search?q=" .. tipTitle, false)
+								LeaPlusLC.FactoryEditBox.f:SetText("|cffff0000" .. L["Link will search Wowhead"])
+								return
+							end
 						end
 					end
 				end
@@ -15693,7 +15560,6 @@
 				LeaPlusDB["FlightMapX"] = 61					-- Enhance flight map Y
 
 				LeaPlusDB["ShowVolume"] = "On"					-- Show volume slider
-				LeaPlusDB["AhExtras"] = "On"					-- Show auction controls
 				LeaPlusDB["ShowCooldowns"] = "On"				-- Show cooldowns
 				LeaPlusDB["DurabilityStatus"] = "On"			-- Show durability status
 				LeaPlusDB["ShowPetSaveBtn"] = "On"				-- Show pet save button
@@ -16126,16 +15992,15 @@
 	LeaPlusLC:MakeCB(LeaPlusLC[pg], "ShowVolume"				, 	"Show volume slider"			, 	146, -272, 	true,	"If checked, a master volume slider will be shown in the character frame.")
 
 	LeaPlusLC:MakeTx(LeaPlusLC[pg], "Extras"					, 	340, -72);
-	LeaPlusLC:MakeCB(LeaPlusLC[pg], "AhExtras"					, 	"Show auction controls"			, 	340, -92, 	true,	"If checked, additional functionality will be added to the auction house.|n|nBuyout only - create buyout auctions without filling in the starting price.|n|nGold only - set the copper and silver prices at 99 to speed up new auctions.|n|nFind item - search the auction house for the item you are selling.|n|nIn addition, the auction duration setting will be saved account-wide.")
-	LeaPlusLC:MakeCB(LeaPlusLC[pg], "ShowCooldowns"				, 	"Show cooldowns"				, 	340, -112, 	true,	"If checked, you will be able to place up to five beneficial cooldown icons above the target frame.")
-	LeaPlusLC:MakeCB(LeaPlusLC[pg], "DurabilityStatus"			, 	"Show durability status"		, 	340, -132, 	true,	"If checked, a button will be added to the character frame which will show your equipped item durability when you hover the pointer over it.|n|nIn addition, an overall percentage will be shown in the chat frame when you die.")
-	LeaPlusLC:MakeCB(LeaPlusLC[pg], "ShowPetSaveBtn"			, 	"Show pet save button"			, 	340, -152, 	true,	"If checked, you will be able to save your current battle pet team (including abilities) to a single command.|n|nA button will be added to the Pet Journal.  Clicking the button will toggle showing the assignment command for your current team.  Pressing CTRL/C will copy the command to memory.|n|nYou can then paste the command (with CTRL/V) into the chat window or a macro to instantly assign your team.")
-	LeaPlusLC:MakeCB(LeaPlusLC[pg], "ShowVanityControls"		, 	"Show vanity controls"			, 	340, -172, 	true,	"If checked, helm and cloak toggle checkboxes will be shown in the character frame.|n|nYou can hold shift and right-click the checkboxes to switch layouts.")
-	LeaPlusLC:MakeCB(LeaPlusLC[pg], "ShowRaidToggle"			, 	"Show raid button"				,	340, -192, 	true,	"If checked, the button to toggle the raid container frame will be shown just above the raid management frame (left side of the screen) instead of in the raid management frame itself.|n|nThis allows you to toggle the raid container frame without needing to open the raid management frame.")
-	LeaPlusLC:MakeCB(LeaPlusLC[pg], "ShowBorders"				,	"Show borders"					,	340, -212, 	true,	"If checked, you will be able to show customisable borders around the edges of the screen.|n|nThe borders are placed on top of the game world but under the UI so you can place UI elements over them.")
-	LeaPlusLC:MakeCB(LeaPlusLC[pg], "ShowPlayerChain"			, 	"Show player chain"				,	340, -232, 	true,	"If checked, you will be able to show a rare, elite or rare elite chain around the player frame.")
-	LeaPlusLC:MakeCB(LeaPlusLC[pg], "ShowReadyTimer"			, 	"Show ready timer"				,	340, -252, 	true,	"If checked, a timer will be shown under the dungeon ready frame and the PvP encounter ready frame so that you know how long you have left to click the enter button.")
-	LeaPlusLC:MakeCB(LeaPlusLC[pg], "ShowWowheadLinks"			, 	"Show Wowhead links"			, 	340, -272, 	true,	"If checked, Wowhead links will be shown in the quest log frame and the achievements frame.")
+	LeaPlusLC:MakeCB(LeaPlusLC[pg], "ShowCooldowns"				, 	"Show cooldowns"				, 	340, -92, 	true,	"If checked, you will be able to place up to five beneficial cooldown icons above the target frame.")
+	LeaPlusLC:MakeCB(LeaPlusLC[pg], "DurabilityStatus"			, 	"Show durability status"		, 	340, -112, 	true,	"If checked, a button will be added to the character frame which will show your equipped item durability when you hover the pointer over it.|n|nIn addition, an overall percentage will be shown in the chat frame when you die.")
+	LeaPlusLC:MakeCB(LeaPlusLC[pg], "ShowPetSaveBtn"			, 	"Show pet save button"			, 	340, -132, 	true,	"If checked, you will be able to save your current battle pet team (including abilities) to a single command.|n|nA button will be added to the Pet Journal.  Clicking the button will toggle showing the assignment command for your current team.  Pressing CTRL/C will copy the command to memory.|n|nYou can then paste the command (with CTRL/V) into the chat window or a macro to instantly assign your team.")
+	LeaPlusLC:MakeCB(LeaPlusLC[pg], "ShowVanityControls"		, 	"Show vanity controls"			, 	340, -152, 	true,	"If checked, helm and cloak toggle checkboxes will be shown in the character frame.|n|nYou can hold shift and right-click the checkboxes to switch layouts.")
+	LeaPlusLC:MakeCB(LeaPlusLC[pg], "ShowRaidToggle"			, 	"Show raid button"				,	340, -172, 	true,	"If checked, the button to toggle the raid container frame will be shown just above the raid management frame (left side of the screen) instead of in the raid management frame itself.|n|nThis allows you to toggle the raid container frame without needing to open the raid management frame.")
+	LeaPlusLC:MakeCB(LeaPlusLC[pg], "ShowBorders"				,	"Show borders"					,	340, -192, 	true,	"If checked, you will be able to show customisable borders around the edges of the screen.|n|nThe borders are placed on top of the game world but under the UI so you can place UI elements over them.")
+	LeaPlusLC:MakeCB(LeaPlusLC[pg], "ShowPlayerChain"			, 	"Show player chain"				,	340, -212, 	true,	"If checked, you will be able to show a rare, elite or rare elite chain around the player frame.")
+	LeaPlusLC:MakeCB(LeaPlusLC[pg], "ShowReadyTimer"			, 	"Show ready timer"				,	340, -232, 	true,	"If checked, a timer will be shown under the dungeon ready frame and the PvP encounter ready frame so that you know how long you have left to click the enter button.")
+	LeaPlusLC:MakeCB(LeaPlusLC[pg], "ShowWowheadLinks"			, 	"Show Wowhead links"			, 	340, -252, 	true,	"If checked, Wowhead links will be shown in the quest log frame and the achievements frame.")
 
 	LeaPlusLC:CfgBtn("ModMinimapBtn", LeaPlusCB["MinimapModder"])
 	LeaPlusLC:CfgBtn("MoveTooltipButton", LeaPlusCB["TipModEnable"])
