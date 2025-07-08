@@ -254,7 +254,7 @@ L["ago"] = "之前";
 L["stillInDungeon"] = "目前正在副本中";
 L["leftOnLockout"] = "後解除每小時進本鎖定";
 L["leftOnDailyLockout"] = "後解除每日進本鎖定";
-L["noLockout"] = "團本無爆本限制";
+L["noLockout"] = "無爆本限制";
 L["unknown"] = "未知";
 L["instance"] = "副本";
 L["timeEntered"] = "進入時間";
@@ -500,6 +500,9 @@ L["lootReminderMysRelicPartyDesc"] = "當有人在卡拉贊地穴中拾取神秘
 L["Remnants of Valor"] = "勇氣殘骸";
 
 L["autoTwilightBuffReminder"] = "從 %s 取得暮光地城的增益。";
+
+L["douseDisclaimer"] = "注意：此淨化模組會根據「最後擊殺的首領」及其他因素做出最佳推測，可能不盡準確。";
+L["Not Doused"] = "沒有淨化";
 
 --增加
 L["Nova Instance Tracker"] = "Nova 副本進度追蹤";

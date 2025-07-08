@@ -1,10 +1,7 @@
-# [Full Changelog](https://github.com/enderneko/Cell/compare/r251-release...be06bd183a5fd9676ff6d96cdf04e1f4b0ce076a)
+# [Full Changelog](https://github.com/enderneko/Cell/compare/r253-release...4dae51eb5fb2b0e1eae78608160cb56378841554)
 
-Okami:
-
-- Import fix due to powerfilter expected values (#367)
-
-enderneko:
-
-- Remove global names for custom indicators
-- Update locales
+- Update for mop
+- Update BuffTracker (now only available for Retail and MoP)
+- Remove MissingBuffs indicator
+- Add fallback handling for group types
+- Disable dragging while in combat

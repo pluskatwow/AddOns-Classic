@@ -249,6 +249,20 @@ local phases = {
     AYSA_LIANG_LAKE = 1177,
     AYSA_ROPE = 1178,
     AYSA_CAVE = 1179,
+    SKYFIRE_STORMWIND = 1180,
+    SKYFIRE_JADE_FOREST = 1181,
+    SULLY_BELOW_SKYFIRE = 1182,
+    SULLY_TWINSPIRE_KEEP = 1183,
+    RELL_ON_BARRELS = 1184,
+    RELL_ON_DOCKS = 1185,
+    RELL_ON_DOCKS_2 = 1186,
+    RELL_PAWDON_VILLAGE = 1187,
+    RELL_TWINSPIRE_KEEP = 1188,
+    ADMIRAL_ROGERS_PAWDON_VILLAGE = 1189,
+    SASHA_AT_DUSKHOWL_DEN = 1190,
+    SASHA_AT_BLOODMOON_ISLE = 1191,
+    FUSELAGE_ROCKET = 1192,
+    FUSELAGE_CITY_SAVED = 1193,
 }
 Phasing.phases = phases
 
@@ -1051,6 +1065,42 @@ function Phasing.IsSpawnVisible(phase)
 
     if phase == phases.AYSA_CAVE then
         return complete[29785] or false
+    end
+
+    if phase == phases.SKYFIRE_STORMWIND then
+        return not complete[29548] and (not questLog[29548] or (questLog[29548] and questLog[29548].isComplete == 0)) or false
+    end
+
+    if phase == phases.SKYFIRE_JADE_FOREST then
+        return complete[29548] or (questLog[29548] and questLog[29548].isComplete == 1) or false
+    end
+
+    if phase == phases.RELL_ON_BARRELS then
+        return not complete[31735] and (not questLog[31735] or (questLog[31735] and questLog[31735].isComplete == 0)) or false
+    end
+
+    if phase == phases.RELL_ON_DOCKS then
+        return (questLog[31735] and questLog[31735].isComplete == 1) or false
+    end
+
+    if phase == phases.RELL_ON_DOCKS_2 then
+        return complete[31735] or false
+    end
+
+    if phase == phases.SASHA_AT_DUSKHOWL_DEN then
+        return complete[12411] and (not complete[12164]) and ((not questLog[12164]) or questLog[12164].isComplete == 0) or false
+    end
+
+    if phase == phases.SASHA_AT_BLOODMOON_ISLE then
+        return complete[12164] or (questLog[12164] and questLog[12164].isComplete == 1) or false
+    end
+
+    if phase == phases.FUSELAGE_ROCKET then
+        return not complete[10248]
+    end
+
+    if phase == phases.FUSELAGE_CITY_SAVED then
+        return complete[10248] or false
     end
 
     return false

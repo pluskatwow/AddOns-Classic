@@ -323,7 +323,7 @@ end
 --
 local function VUHDO_loadCurrentKeyLayout()
 
-	if not VUHDO_CONFIG then
+	if not VUHDO_CONFIG or not VUHDO_SPEC_LAYOUTS then
 		return;
 	end
 
@@ -544,13 +544,6 @@ function VUHDO_OnEvent(_, anEvent, anArg1, anArg2, anArg3, anArg4, anArg5, anArg
 		if (VUHDO_RAID or tEmptyRaid)[anArg1] then -- auch target, focus
 			VUHDO_updateBouquetsForEvent(anArg1, 36); -- VUHDO_UPDATE_SHIELD
 			VUHDO_updateShieldBar(anArg1);
-
-			-- 9.0.1 added Priest 'Spirit Shell' which does not fire SPELL_AURA__REFRESH events as normal
-			-- instead use this event handler to track the 'Spirit Shell' absorb amount
-			if VUHDO_getShieldPerc(anArg1, VUHDO_SPELL_ID.SPIRIT_SHELL) > 0 then
-				-- 114908 is the spell ID of the 'Spirit Shell' absorb aura
-				VUHDO_updateShield(anArg1, 114908);
-			end
 		end
 
 	elseif "UNIT_HEAL_ABSORB_AMOUNT_CHANGED" == anEvent then
@@ -796,7 +789,7 @@ function VUHDO_OnEvent(_, anEvent, anArg1, anArg2, anArg3, anArg4, anArg5, anArg
 	elseif "LFG_PROPOSAL_SUCCEEDED" == anEvent then
 		VUHDO_lateRaidReload();
 	--elseif("UPDATE_MACROS" == anEvent) then
-		--VUHDO_timeReloadUI(0.1); -- @WARNING Lï¿½dt wg. shield macro alle 8 sec.
+		--VUHDO_timeReloadUI(0.1); -- @WARNING Lädt wg. shield macro alle 8 sec.
 
 	elseif "UNIT_FACTION" == anEvent then
 		if (VUHDO_RAID or tEmptyRaid)[anArg1] then VUHDO_updateBouquetsForEvent(anArg1, VUHDO_UPDATE_MINOR_FLAGS); end
@@ -842,7 +835,7 @@ function VUHDO_OnEvent(_, anEvent, anArg1, anArg2, anArg3, anArg4, anArg5, anArg
 
 			if ((VUHDO_RAID or tEmptyRaid)[anArg1] ~= nil) then
 				VUHDO_resetTalentScan(anArg1);
-				VUHDO_initDebuffs(); -- Talentabhï¿½ngige Debuff-Fï¿½higkeiten neu initialisieren.
+				VUHDO_initDebuffs(); -- Talentabhängige Debuff-Fähigkeiten neu initialisieren.
 				VUHDO_timeReloadUI(1);
 			end
 		end
@@ -902,6 +895,7 @@ end
 
 
 --
+local tHelpText;
 function VUHDO_slashCmd(aCommand)
 	local tParsedTexts = VUHDO_textParse(aCommand);
 	local tCommandWord = strlower(tParsedTexts[1]);
@@ -1040,16 +1034,33 @@ function VUHDO_slashCmd(aCommand)
 
 		VUHDO_xMsg(#tProfile, #tCompressed, #tUnCompressed);]]
 
+	elseif tCommandWord == "pool" then
+		if tParsedTexts[2] then
+			if tParsedTexts[2] == "on" then
+				VUHDO_TABLE_POOL_PROFILE = true;
+
+				VUHDO_Msg("Table pool profiling enabled.");
+			elseif tParsedTexts[2] == "off" then
+				VUHDO_TABLE_POOL_PROFILE = false;
+
+				VUHDO_Msg("Table pool profiling disabled.");
+			elseif strfind(tParsedTexts[2], "res") then
+				VUHDO_resetPoolStats();
+
+				VUHDO_Msg("Table pool statistics reset.");
+			else
+				VUHDO_printPoolStats();
+			end
+		else
+			VUHDO_printPoolStats();
+		end
 
 	elseif tCommandWord == "ab" or tCommandWord == "about" then
 		VUHDO_printAbout();
 
 	elseif aCommand == "?" or strfind(tCommandWord, "help")	or aCommand == "" then
-		local tLines = VUHDO_splitString(VUHDO_I18N_COMMAND_LIST, "ï¿½");
-
-		for _, tCurLine in ipairs(tLines) do 
-			VUHDO_MsgC(tCurLine);
-		end
+		tHelpText = (VUHDO_I18N_COMMAND_LIST or ""):gsub("\n", "|n");
+		VUHDO_MsgC(tHelpText);
 	else
 		VUHDO_Msg(VUHDO_I18N_BAD_COMMAND, 1, 0.4, 0.4);
 	end
@@ -1373,7 +1384,7 @@ local function VUHDO_doReloadRoster(anIsQuick)
 			end
 		end
 
-		VUHDO_initDebuffs(); -- Verzï¿½gerung nach Taltentwechsel-Spell?
+		VUHDO_initDebuffs(); -- Verzögerung nach Taltentwechsel-Spell?
 	end
 end
 

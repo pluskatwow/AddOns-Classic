@@ -15,12 +15,25 @@ local VUHDO_SHIELDS = {
 	[7812] = 30, -- VUHDO_SPELL_ID.SACRIFICE
 	[85285] = 15, -- VUHDO_SPELL_ID.SACRED_SHIELD
 	[62606] = 10, -- VUHDO_SPELL_ID.SAVAGE_DEFENSE
+        [123258] = 15, -- Power Word: Shield (Improved)
+        [65148] = 15, -- VUHDO_SPELL_ID.SACRED_SHIELD (Buff) -- ok
+        [114908] = 15, -- VUHDO_SPELL_ID.SPIRIT_SHELL (Buff) -- ok
+        [116849] = 12, -- Life Cocoon
+        [115295] = 30, -- Guard (brewmaster monk's self buff, unglyphed)
+        [118604] = 30, -- Guard (brewmaster monk's black ox statue (cast on group), unglyphed)
+        --[123402] = 30, -- Guard (brewmaster monk's self buff, with Glyph of Guard) - Magic damage ONLY
+        --[136070] = 30, -- Guard (brewmaster monk's black ox statue (cast on group), with Glyph of Guard) - Magic damage ONLY
+        [112048] = 6, -- Shield Barrier (Prot warrior)
+        --[77535] = 10, -- Blood Shield (Blood DK) - Physical damage ONLY
+        [108416] = 20, -- Sacrificial Pact (warlock talent)
+        [114893] = 10, -- Stone Bulwark Totem (shaman talent)
 }
 
 
 --
 local VUHDO_PUMP_SHIELDS = {
-	[VUHDO_SPELL_ID.DIVINE_AEGIS] = 0.4,
+	[VUHDO_SPELL_ID.DIVINE_AEGIS] = 0.6,
+	[VUHDO_SPELL_ID.SPIRIT_SHELL] = 0.6,
 }
 
 
@@ -175,9 +188,6 @@ local function VUHDO_initShieldValue(aUnit, aShieldName, anAmount, aDuration)
 
 	if sIsPumpAegis and VUHDO_PUMP_SHIELDS[aShieldName] then
 		VUHDO_SHIELD_SIZE[aUnit][aShieldName] = VUHDO_RAID["player"]["healthmax"] * VUHDO_PUMP_SHIELDS[aShieldName];
-	elseif aShieldName == VUHDO_SPELL_ID.SPIRIT_SHELL then
-		-- as of 9.0.5 Priest 'Spirit Shell' cap is 11 times the caster's current intellect
-		VUHDO_SHIELD_SIZE[aUnit][aShieldName] = select(1, UnitStat("player", 4)) * 11;
 	else
 		VUHDO_SHIELD_SIZE[aUnit][aShieldName] = anAmount;
 	end
@@ -250,18 +260,27 @@ end
 --
 local tInit, tValue, tSourceGuid;
 function VUHDO_getShieldLeftCount(aUnit, aShield, aMode)
+
+	if not aUnit or not aShield or not aMode then
+		return;
+	end
+
 	tInit = sShowAbsorb and VUHDO_SHIELD_SIZE[aUnit][aShield] or 0;
 
 	if tInit > 0 then
 		tSourceGuid = VUHDO_SHIELD_LAST_SOURCE_GUID[aUnit][aShield];
+
 		if aMode == 3 or aMode == 0
 		or (aMode == 1 and tSourceGuid == VUHDO_PLAYER_GUID)
 		or (aMode == 2 and tSourceGuid ~= VUHDO_PLAYER_GUID) then
 			tValue = floor(4 * (VUHDO_SHIELD_LEFT[aUnit][aShield] or 0) / tInit);
+
 			return tValue > 4 and 4 or (tValue < 1 and 1 or tValue);
 		end
 	end
+
 	return 0;
+
 end
 
 

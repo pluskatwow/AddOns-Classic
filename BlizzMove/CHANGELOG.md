@@ -1,7 +1,7 @@
 # BlizzMove
 
-## [v3.6.17](https://github.com/Kiatra/BlizzMove/tree/v3.6.17) (2025-05-03)
-[Full Changelog](https://github.com/Kiatra/BlizzMove/compare/v3.6.16...v3.6.17) [Previous Releases](https://github.com/Kiatra/BlizzMove/releases)
+## [v3.6.22](https://github.com/Kiatra/BlizzMove/tree/v3.6.22) (2025-07-04)
+[Full Changelog](https://github.com/Kiatra/BlizzMove/compare/v3.6.21...v3.6.22) [Previous Releases](https://github.com/Kiatra/BlizzMove/releases)
 
-- Initial update for Mists of Pandaria classic support  
+- Fix a potential problem on mop prepatch that prevents queueing for scenarios (fixes #149)  
 - Minor cleanup  

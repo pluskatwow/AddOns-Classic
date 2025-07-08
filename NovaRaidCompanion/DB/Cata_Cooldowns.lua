@@ -458,7 +458,7 @@ NRC.cooldowns = {
 			[57934] = "Tricks of the Trade", --Rank 1.
 		},
 	},
-	["Cloak of Shadow"] = {
+	["Cloak of Shadow"] = { --Should be spelled shadows, but leave it so the setting for user doesn't change.
 		class = "ROGUE",
 		icon = "Interface\\Icons\\spell_shadow_nethercloak",
 		cooldown = 120,

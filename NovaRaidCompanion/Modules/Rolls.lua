@@ -3,6 +3,7 @@
 ------------------------------
 local addonName, NRC = ...;
 local L = LibStub("AceLocale-3.0"):GetLocale("NovaRaidCompanion");
+local GetItemInfo = GetItemInfo or C_Item.GetItemInfo;
 local lastChatMsg;
 local lastChatMsgWho;
 local lastChatMsgEvent;

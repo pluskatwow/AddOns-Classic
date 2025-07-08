@@ -402,6 +402,9 @@ function BaganatorCustomiseDialogCategoriesEditorMixin:OnLoad()
   addonTable.CallbackRegistry:RegisterCallback("SettingChanged", function(_, settingName)
     if settingName == addonTable.Config.Options.CATEGORY_SEARCH_EDIT_MODE then
       ApplySearchMode()
+    elseif settingName == addonTable.Config.Options.CATEGORY_DISPLAY_ORDER then
+      addonTable.CallbackRegistry:TriggerEvent("SetSelectedCategory", nil)
+      self:OnHide()
     end
   end)
 
@@ -416,7 +419,7 @@ function BaganatorCustomiseDialogCategoriesEditorMixin:OnLoad()
       return
     end
 
-    StaticPopup_Show("Baganator_Export_Dialog", nil, nil, addonTable.CustomiseDialog.SingleCategoryExport(self.currentCategory))
+    StaticPopup_Show("Baganator_Export_Dialog", nil, nil, (addonTable.CustomiseDialog.SingleCategoryExport(self.currentCategory):gsub("|n", "||n")))
   end)
 
   self.DeleteButton:SetScript("OnClick", function()
@@ -431,14 +434,16 @@ function BaganatorCustomiseDialogCategoriesEditorMixin:OnLoad()
     local oldIndex = tIndexOf(displayOrder, self.currentCategory)
     if oldIndex then
       table.remove(displayOrder, oldIndex)
-      addonTable.Config.Set(addonTable.Config.Options.CATEGORY_DISPLAY_ORDER, CopyTable(displayOrder))
     end
 
     if customCategories[self.currentCategory] then
       customCategories[self.currentCategory] = nil
       categoryMods[self.currentCategory] = nil
-      addonTable.Config.Set(addonTable.Config.Options.CUSTOM_CATEGORIES, CopyTable(customCategories))
     end
+    addonTable.Config.MultiSet({
+      [addonTable.Config.Options.CATEGORY_DISPLAY_ORDER] = CopyTable(displayOrder),
+      [addonTable.Config.Options.CUSTOM_CATEGORIES] = CopyTable(customCategories),
+    })
 
     self:OnHide()
   end)

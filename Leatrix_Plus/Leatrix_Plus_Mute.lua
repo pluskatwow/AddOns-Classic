@@ -85,9 +85,7 @@
 			--[[Troll]] 	"sound#543085", "sound#543093",
 			--[[Undead]]	"sound#542526", "sound#542600",
 			--[[Worgen]]	"sound#542035", "sound#542206", "sound#541463", "sound#541601",
-
-			-- LeaPlusLC.NewPatch
-			--[[Pandaren]]	-- "sound#636621", "sound#630296", "sound#630298",
+			--[[Pandaren]]	"sound#636621", "sound#630296", "sound#630298",
 
 		},
 

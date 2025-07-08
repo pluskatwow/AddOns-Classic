@@ -19,26 +19,8 @@ if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then return end
 -- Required APIs.
 assert(C_LFGList.GetActivityInfoTable, tocName .. " requires the API `C_LFGList.GetActivityInfoTable` for parsing dungeon info")
 
--- initialize here for now, this should be moved to a file thats always guarantied to load first.
----@class AddonEnum
-addon.Enum = {}
-
----@enum DungeonTypeID # note that the actual value of the enum maybe be different depending on the client version.
-local DungeonType = {
-    Dungeon = 1,
-    Raid = 2,
-    None = 4,
-    Battleground = 5, -- in classic, 5 is used for BGs
-    WorldBoss = 6,
-}
-
----@enum ExpansionID
-local Expansions = {
-	Classic = 0,
-	BurningCrusade = 1,
-	Wrath = 2,
-	Cataclysm = 3,
-}
+local DungeonType = addon.Enum.DungeonType
+local Expansions = addon.Enum.Expansions
 
 local isSoD = C_Seasons and (C_Seasons.GetActiveSeason() == Enum.SeasonID.SeasonOfDiscovery)
 
@@ -101,7 +83,7 @@ local LFGActivityIDs = {
     ["CRY"] = isSoD and 1611 or nil, -- Crystal Vale (Thunderaan)
     ["NMG"] = isSoD and 1610 or nil, -- Nightmare Grove (Emerald Dragons)
     ["KARA"] = isSoD and 1693 or nil, -- Karazhan Crypts
-    ["ENCLAVE"] = isSoD and 7777 or nil -- Scarlet Enclave (spoofed until real ActivityID known)
+    ["ENCLAVE"] = isSoD and 1710 or nil -- Scarlet Enclave
 }
 --see https://wago.tools/db2/GroupFinderCategory?build=1.15.2.54332
 local activityCategoryTypeID  = {
@@ -135,12 +117,6 @@ local infoOverrides = {
         maxLevel = 60, -- DMN max
         typeID = DungeonType.Dungeon
     },
-    -- once the activityID for scarlet enclave is known we can get data from LFGList API instead.
-    ENCLAVE = {
-        name = GetRealZoneText(2856),
-        minLevel = 60, maxLevel = 60,
-        typeID = DungeonType.Raid
-    }
 }
 
 ---@type {[DungeonID]: DungeonInfo}
@@ -265,5 +241,3 @@ function addon.GetDungeonKeyByID(opts)
     end
 end
 addon.rawClassicDungeonInfo = infoByTagKey
-addon.Enum.DungeonType = DungeonType
-addon.Enum.Expansions = Expansions

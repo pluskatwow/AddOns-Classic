@@ -513,6 +513,11 @@ function QuestieQuest:CompleteQuest(questId)
             Questie.db.char.complete[13687] = nil -- Horde Tournament Eligibility Marker
         end
     end
+    if Expansions.Current >= Expansions.MoP then
+        if questId == 31450 then -- A New Fate (Pandaren faction quest)
+            QuestiePlayer:Initialize() -- Reinitialize to update player race flags
+        end
+    end
     QuestieMap:UnloadQuestFrames(questId)
 
     if (QuestieMap.questIdFrames[questId]) then
@@ -1108,8 +1113,10 @@ _DetermineIconsToDraw = function(quest, objective, objectiveIndex, objectiveCent
                             touched = nil, -- TODO change. This is meant to let lua reserve memory for all keys needed for sure.
                         }
                         local x, y, _ = HBD:GetWorldCoordinatesFromZone(drawIcon.x / 100, drawIcon.y / 100, uiMapId)
-                        x = x or 0
-                        y = y or 0
+                        if (not x) or (not y) then
+                            x, y = 0, 0 -- Fallback to 0,0 if no coordinates are found
+                        end
+
                         -- Cache world coordinates for clustering calculations
                         drawIcon.worldX = x
                         drawIcon.worldY = y

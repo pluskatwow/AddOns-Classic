@@ -928,6 +928,13 @@ local targetedSpells = {
     272571, -- 窒息之水
     257063, -- 盐渍飞弹
     256709, -- 钢刃之歌
+    -- 暴富矿区！！
+    263628, -- 充能护盾
+    -- 麦卡贡行动
+    1215411, -- 刺破
+    291928, -- 巨力震击
+    292264, -- 巨力震击
+    285152, -- 索敌击飞
 
     -- Shadowlands -----------------
     -- 通灵战潮 - Necrotic Wake
@@ -946,7 +953,7 @@ local targetedSpells = {
     322614, -- 心灵连接 - Mind Link
     463248, -- 排斥
     463217, -- 心能挥砍
-    -- De Other Side
+    -- 彼界 - De Other Side
     320132, -- 暗影之怒 - Shadowfury
     332234, -- 挥发精油 - Essential Oil
     -- Spires of Ascenscion
@@ -1033,6 +1040,22 @@ local targetedSpells = {
     439031, -- 干杯勾拳
     436592, -- 点钞大炮
     440134, -- 蜂蜜料汁
+    -- 驭雷栖巢
+    445457, -- 湮灭波
+    430109, -- 闪电箭
+    430238, -- 虚空箭
+    474031, -- 虚空碾压
+    430805, -- 弧形虚空
+    -- 水闸行动
+    1213805, -- 射钉枪
+    465595, -- 闪电箭
+    468631, -- 鱼叉
+    459779, -- 滚桶冲锋
+    459799, -- 重击
+    473690, -- 动能胶质炸药
+    473351, -- 电气重碾
+    469478, -- 淤泥之爪
+    466190, -- 雷霆重拳
 }
 
 function I.GetDefaultTargetedSpellsList()
@@ -1072,57 +1095,6 @@ function I.ConvertActions(db)
         temp[t[1]] = t[2]
     end
     return temp
-end
-
--------------------------------------------------
--- missing buffs, for indicator settings only
--------------------------------------------------
-local buffsOrder = {"PWF", "MotW", "AB", "BS", "BotB", "SF"}
-
-local missingBuffs = {
-    ["PWF"] = 21562,
-    ["MotW"] = 1126,
-    ["AB"] = 1459,
-    ["BS"] = 6673,
-    ["BotB"] = 364342,
-    ["SF"] = 462854
-}
-
-do
-    local temp = {}
-    for _, k in pairs(buffsOrder) do
-        local id = missingBuffs[k]
-        local name, icon = F.GetSpellInfo(id)
-        if name then
-            tinsert(temp, {
-                ["id"] = id,
-                ["name"] = name,
-                ["icon"] = icon,
-                ["index"] = k,
-            })
-        end
-    end
-    missingBuffs = temp
-end
-
-function I.GetDefaultMissingBuffs()
-    return missingBuffs
-end
-
-function I.GetMissingBuffsString()
-    local s = ""
-    for _, t in pairs(missingBuffs) do
-        s = s.."|T"..t["icon"]..":14:14:0:0:14:14:1:13:1:13|t".." "
-    end
-    return s
-end
-
-function I.GetMissingBuffsFilters()
-    local ret = {}
-    for _, t in pairs(missingBuffs) do
-        tinsert(ret, {"|T"..t["icon"]..":14:14:0:0:14:14:1:13:1:13|t "..t["name"], t["index"]})
-    end
-    return ret
 end
 
 -------------------------------------------------

@@ -1,4 +1,22 @@
-﻿4.0.69 - 14th May 2025
+﻿5.0.01 - 5th July 2025
+- The 'Enhance dressup' option ('Interace') now also hides model controls for the Blizzard shop.
+- The 'Auction house extras' option ('Interface') has been removed since it's now included in the game.
+- Various fixes for Mists of Pandaria Classic.
+
+5.0.00 - 4th July 2025
+- Updated for Mists of Pandaria game patch 5.5.0.
+- You can now hold down control and left click the Leatrix Plus minimap button to toggle target tracking.
+
+4.0.72 - 26th June 2025
+- Mists of Pandaria Classic Beta: Fixed 'Enhance flight map' ('Interface') for the latest game update.
+
+4.0.71 - 18th June 2025
+- Mists of Pandaria Classic Beta: For 'Show Wowhead links' ('Interface'), quest log Wowhead links will now be shown in the quest log title bar.
+
+4.0.70 - 11th June 2025
+- Mists of Pandaria Classic Beta: The 'Show bag search box' option ('Interface') has been removed as it's now included in the default UI.
+
+4.0.69 - 14th May 2025
 - Mists of Pandaria Classic Beta: For 'Show bag search box' ('Interface'), the bag search box will now only show in the backpack frame since the default UI shows it in the bank and guild bank frames.
 
 4.0.67 - 6th May 2025

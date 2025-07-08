@@ -543,7 +543,11 @@ function Digsites:CreateDigSitesList(ContID)
 				local currentDigSite = scrollc.digsites[count];
 				currentDigSite:SetFontObject("ChatFontSmall");
 				currentDigSite:SetWordWrap(true);
-				currentDigSite:SetText(" "..name .. " - " .. digsite.race);
+				local text = " " .. name
+				if digsite.race then
+                    text = text .. " - " .. digsite.race
+                end
+				currentDigSite:SetText(text);
 				if (status == true) then
 					currentDigSite:SetTextColor(1.0, 1.0, 1.0, 1.0);
 				else
@@ -1012,7 +1016,7 @@ function Digsites:ShowRaceIconsOnMap()
 
 		for key, digsite in pairs(C_ResearchInfo.GetDigSitesForMap(uiMapID)) do
 			local pin
-			if MINARCH_EXPANSION == 'Cata' then
+			if MINARCH_EXPANSION == 'Cata' or MINARCH_EXPANSION == 'MoP' then
 				pin = WorldMapFrame:AcquirePin("DigSitePinTemplate", digsite)
 			else
 				pin = AcquireMapPin(digsite.name)

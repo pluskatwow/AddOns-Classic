@@ -978,6 +978,389 @@ NRC.encounters = {
 	[1299] = {"905", "Deathwing", "", 40087, 536055, 9, 3, 967},
 };
 
+--From MoP onwards we get encounter textures from the encounter journal API.
+--But we need a map of encounterID to journalEncounterID (wish there was an API func for this).
+NRC.encounterIDJournalMap = {
+	--Cata dungeons.
+    [1065] = 90, --Helix Gearbreaker.
+    [1069] = 96, --Baron Ashbury.
+    [1073] = 99, --Lord Walden.
+    [1077] = 127, --Isiset, Construct of Magic.
+    [1337] = 322, --Arcurion.
+    [1182] = 185, --Jin'do the Godbreaker.
+    [1181] = 184, --Zanzil.
+    [1038] = 106, --Corla, Herald of Twilight.
+    [1042] = 116, --Asaad, Caliph of Zephyrs.
+    [1046] = 103, --Mindbender Ghur'sha.
+    [1050] = 132, --Forgemaster Throngus.
+    [1054] = 119, --High Prophet Barim.
+    [1058] = 112, --Ozruk.
+    [1062] = 92, --Admiral Ripsnarl.
+    [1192] = 189, --Halazzi.
+    [1070] = 97, --Baron Silverlaine.
+    [1074] = 128, --Ammunae, Construct of Life.
+    [1078] = 130, --Rajh, Construct of Sun.
+    [1271] = 289, --Murozond.
+    [1180] = 181, --High Priestess Kilnara.
+    [788] = 180, --Cache of Madness - Wushoolay.
+    [1179] = 176, --Bloodlord Mandokir.
+    [1178] = 175, --High Priest Venoxis.
+    [1039] = 107, --Karsh Steelbender.
+    [1043] = 114, --Grand Vizier Ertan.
+    [1047] = 104, --Ozumat.
+    [1051] = 131, --General Umbriss.
+    [1055] = 122, --Siamat.
+    [1059] = 111, --Slabhide.
+    [1063] = 91, --Foe Reaper 5000.
+    [1193] = 190, --Hex Lord Malacrass.
+    [1071] = 98, --Commander Springvale.
+    [1075] = 126, --Anraphet.
+    [1268] = 283, --Echo of Tyrande.
+    [1272] = 290, --Peroth'arn.
+    [1339] = 341, --Archbishop Benedictus.
+    [1190] = 187, --Nalorakk.
+    [1191] = 188, --Jan'alai.
+    [1036] = 109, --Ascendant Lord Obsidius.
+    [1040] = 105, --Rom'ogg Bonecrusher.
+    [1044] = 102, --Commander Ulthok, the Festering Prince.
+    [1048] = 133, --Drahga Shadowburner.
+    [1052] = 117, --General Husam.
+    [1056] = 110, --Corborus.
+    [1060] = 93, --"Captain" Cookie.
+    [1064] = 89, --Glubtok.
+    [1194] = 191, --Daakara.
+    [1072] = 100, --Lord Godfrey.
+    [1076] = 125, --Earthrager Ptah.
+    [1080] = 124, --Temple Guardian Anhuur.
+    [1273] = 291, --Queen Azshara.
+    [1340] = 342, --Asira Dawnslayer.
+    [1189] = 186, --Akil'zon.
+    [1274] = 292, --Mannoroth and Varo'then.
+    [1037] = 108, --Beauty.
+    [1041] = 115, --Altairus.
+    [1045] = 101, --Lady Naz'jar.
+    [1049] = 134, --Erudax, the Duke of Below.
+    [1053] = 118, --Lockmaw.
+    [1057] = 113, --High Priestess Azil.
+    [1269] = 323, --Echo of Sylvanas.
+    [1079] = 129, --Setesh, Construct of Destruction.
+	--Cata raids.
+	[1200] = 196, --Baleroc, the Gatekeeper.
+    [1294] = 324, --Warlord Zon'ozz.
+    [1295] = 325, --Yor'sahj the Unsleeping.
+    [1296] = 317, --Hagara the Stormbinder.
+    [1297] = 331, --Ultraxion.
+    [1298] = 332, --Warmaster Blackhorn.
+    [1022] = 171, --Atramedes.
+    [1023] = 172, --Chimaeron.
+    [1024] = 170, --Magmaw.
+    [1025] = 173, --Maloriak.
+    [1026] = 174, --Nefarian's End.
+    [1027] = 169, --Omnotron Defense System.
+    [1028] = 158, --Ascendant Council.
+    [1029] = 167, --Cho'gall.
+    [1185] = 197, --Majordomo Staghelm.
+    [1030] = 156, --Halfus Wyrmbreaker.
+    [1032] = 157, --Theralion and Valiona.
+    [1033] = 139, --Argaloth.
+    [1034] = 155, --Al'Akir.
+    [1035] = 154, --The Conclave of Wind.
+    [1203] = 198, --Ragnaros.
+    [1206] = 195, --Shannox.
+    [1205] = 194, --Alysrazor.
+    [1204] = 193, --Lord Rhyolith.
+    [1332] = 339, --Alizabal, Mistress of Hate.
+    [1299] = 333, --Madness of Deathwing.
+    [1197] = 192, --Beth'tilac.
+    [1291] = 318, --Spine of Deathwing.
+    [1292] = 311, --Morchok.
+    [1250] = 140, --Occu'thar.
+	--MoP dungeons.
+	[1447] = 692, --General Pa'valak.
+	[1412] = 668, --Ook-Ook.
+	[1416] = 658, --Liu Flameheart.
+	[1420] = 656, --Flameweaver Koegler.
+	[1424] = 671, --Brother Korloff.
+	[1428] = 665, --Rattlegore.
+	[1306] = 686, --Taran Zhu.
+	[1397] = 655, --Saboteur Kip'tilak.
+	[1464] = 727, --Wing Leader Ner'onok.
+	[1405] = 675, --Striker Ga'dok.
+	[1413] = 669, --Hoptallus.
+	[1417] = 664, --Lorewalker Stonestep.
+	[1421] = 654, --Armsmaster Harlan.
+	[1425] = 674, --High Inquisitor Whitemane.
+	[1303] = 673, --Gu Cloudstrike.
+	[1441] = 698, --Xin the Weaponmaster.
+	[1465] = 693, --Vizier Jin'bak.
+	[1406] = 676, --Commander Ri'mok.
+	[1414] = 670, --Yan-Zhu the Uncasked.
+	[1418] = 672, --Wise Mari.
+	[1422] = 660, --Houndmaster Braun.
+	[1426] = 659, --Instructor Chillheart.
+	[1304] = 657, --Master Snowdrift.
+	[1442] = 708, --Trial of the King.
+	[1439] = 335, --Sha of Doubt.
+	[2129] = 690, --Gekkan.
+	[1419] = 649, --Raigonn.
+	[1423] = 688, --Thalnos the Soulrender.
+	[1427] = 663, --Jandice Barov.
+	[1305] = 685, --Sha of Violence.
+	[1429] = 666, --Lilian Voss.
+	[1502] = 738, --Commander Vo'jak.
+	[1430] = 684, --Darkmaster Gandling.
+	--MoP raids.
+	[1506] = 729, --Lei Shi.
+	[1573] = 828, --Ji-Kun.
+	[1577] = 827, --Jin'rokh the Breaker.
+	[1463] = 713, --Garalon.
+	[1593] = 853, --Paragons of the Klaxxi.
+	[1601] = 865, --Siegecrafter Blackfuse.
+	[1499] = 737, --Amber-Shaper Un'sok.
+	[1570] = 816, --Council of Elders.
+	[1574] = 820, --Primordius.
+	[1578] = 821, --Megaera.
+	[1594] = 870, --Spoils of Pandaria.
+	[1409] = 683, --Protectors of the Endless.
+	[1602] = 852, --Immerseus.
+	[1606] = 856, --Kor'kron Dark Shaman.
+	[1559] = 817, --Iron Qon.
+	[1500] = 726, --Elegon.
+	[1504] = 744, --Blade Lord Ta'yak.
+	[1575] = 819, --Horridon.
+	[1579] = 832, --Lei Shen.
+	[1595] = 846, --Malkorok.
+	[1599] = 851, --Thok the Bloodthirsty.
+	[1603] = 850, --General Nazgrim.
+	[1623] = 869, --Garrosh Hellscream.
+	[1434] = 682, --Gara'jal the Spiritbinder.
+	[1501] = 743, --Grand Empress Shek'zeer.
+	[1505] = 742, --Tsulong.
+	[1572] = 818, --Durumu the Forgotten.
+	[1576] = 824, --Dark Animus.
+	[1624] = 866, --Norushen.
+	[1395] = 679, --The Stone Guard.
+	[1622] = 881, --Galakras.
+	[1390] = 689, --Feng the Accursed.
+	[1407] = 677, --Will of the Emperor.
+	[1600] = 864, --Iron Juggernaut.
+	[1604] = 867, --Sha of Pride.
+	[1598] = 849, --The Fallen Protectors.
+	[1560] = 829, --Twin Empyreans.
+	[1436] = 687, --The Spirit Kings.
+	[1431] = 709, --Sha of Fear.
+	[1498] = 741, --Wind Lord Mel'jarak.
+	[1565] = 825, --Tortos.
+	[1507] = 745, --Imperial Vizier Zor'lok.
+	--No encounterID's for these below, must be outdoor bosses?
+	--[[Error1: Xuen, The White Tiger JournalDungeonID: 860
+	Error2: Sha of Anger JournalDungeonID: 691
+	Error3: Chi-Ji, The Red Crane JournalDungeonID: 857
+	Error4: Salyis's Warband JournalDungeonID: 725
+	Error5: Oondasta JournalDungeonID: 826
+	Error6: Nalak, The Storm Lord JournalDungeonID: 814
+	Error7: Ordos, Fire-God of the Yaungol JournalDungeonID: 861
+	Error8: Yu'lon, The Jade Serpent JournalDungeonID: 858
+	Error9: Niuzao, The Black Ox JournalDungeonID: 859]]
+
+	--WoD dungeons.
+	--[[[1758] = 1227, --Kyrak.
+    [1699] = 966, --Araknath.
+    [1715] = 1138, --Rocketspark and Borka.
+    [1751] = 1208, --Archmage Sol.
+    [1759] = 1228, --Commander Tharbek.
+    [1700] = 967, --Rukhran.
+    [1653] = 888, --Slave Watcher Crushto.
+    [1732] = 1163, --Nitrogg Thundertower.
+    [1736] = 1133, --Skylord Tovra.
+    [1677] = 1139, --Sadana Bloodfury.
+    [1685] = 1186, --Soulbinder Nyami.
+    [1752] = 1209, --Xeri'tac.
+    [1756] = 1210, --Yalnu.
+    [1760] = 1229, --Ragewing the Untamed.
+    [1701] = 968, --High Sage Viryx.
+    [1654] = 889, --Gug'rokk.
+    [1678] = 1216, --Azzakel.
+    [1682] = 1160, --Ner'zhul.
+    [1749] = 1235, --Fleshrender Nok'gar.
+    [1757] = 1207, --Ancient Protectors.
+    [1761] = 1226, --Orebender Gor'ashan.
+    [1714] = 1225, --Teron'gor.
+    [1655] = 893, --Magmolatus.
+    [1762] = 1234, --Warlord Zaela.
+    [1698] = 965, --Ranjit.
+    [1652] = 887, --Roltall.
+    [1688] = 1168, --Nhallish.
+    [1686] = 1185, --Vigilant Kaathar.
+    [1679] = 1140, --Bonemaw.
+    [1746] = 1214, --Witherbark.
+    [1750] = 1237, --Oshir.
+    [1754] = 1238, --Skulloc.
+    [1748] = 1236, --Grimrail Enforcers.
+	--WoD raids.
+	[1696] = 1202, --Oregorger.
+    [1799] = 1438, --Archimonde.
+    [1784] = 1394, --Tyrant Velhari.
+    [1794] = 1427, --Socrethar the Eternal.
+    [1795] = 1395, --Mannoroth.
+    [1722] = 1195, --Tectus.
+    [1704] = 959, --Blackhand.
+    [1705] = 1197, --Imperator Mar'gok.
+    [1706] = 971, --The Butcher.
+    [1800] = 1447, --Xhul'horac.
+    [1788] = 1433, --Shadow-Lord Iskar.
+    [1783] = 1372, --Gorefiend.
+    [1786] = 1396, --Kilrogg Deadeye.
+    [1798] = 1432, --Hellfire High Council.
+    [1787] = 1392, --Kormrok.
+    [1713] = 1162, --Kromog.
+    [1785] = 1425, --Iron Reaver.
+    [1777] = 1391, --Fel Lord Zakuun.
+    [1778] = 1426, --Hellfire Assault.
+    [1690] = 1154, --The Blast Furnace.
+    [1723] = 1153, --Ko'ragh.
+    [1719] = 1148, --Twin Ogron.
+    [1689] = 1123, --Flamebender Ka'graz.
+    [1721] = 1128, --Kargath Bladefist.
+    [1691] = 1161, --Gruul.
+    [1692] = 1147, --Operator Thogar.
+    [1693] = 1155, --Hans'gar and Franzok.
+    [1694] = 1122, --Beastlord Darmac.
+    [1695] = 1203, --The Iron Maidens.
+    [1720] = 1196, --Brackenspore.]]
+    --[[Error1: Supreme Lord Kazzak JournalDungeonID: 1452
+	Error2: Drov the Ruiner JournalDungeonID: 1291
+	Error3: Tarlna the Ageless JournalDungeonID: 1211
+	Error4: Rukhmar JournalDungeonID: 1262]]
+	
+	--Legion dungeons.
+	--[[[1825] = 1498, --Corstilax.
+    [1829] = 1501, --Advisor Vandros.
+    [1833] = 1653, --Illysanna Ravencrest.
+    [1837] = 1655, --Oakheart.
+    [1845] = 1694, --Shivermaw.
+    [2066] = 1980, --Saprish.
+    [1790] = 1662, --Rokmora.
+    [1805] = 1485, --Hymdall.
+    [1960] = 1835, --Attumen the Huntsman.
+    [1850] = 1695, --Inquisitor Tormentorum.
+    [1869] = 1719, --Talixae Flamewreath.
+    [1810] = 1480, --Warlord Parjesh.
+    [1814] = 1492, --Wrath of Azshara.
+    [1818] = 1470, --Cordana Felsong.
+    [1822] = 1502, --Ymiron, the Fallen King.
+    [1826] = 1500, --Nal'tira.
+    [2053] = 1878, --Mephistroth.
+    [1834] = 1664, --Smashspite the Hateful.
+    [1838] = 1656, --Dresaron.
+    [1828] = 1499, --General Xakal.
+    [1846] = 1686, --Mindflayer Kaahrj.
+    [2039] = 1904, --Domatrax.
+    [1791] = 1665, --Ularogg Cragshaper.
+    [2017] = 1838, --Viz'aduum the Watcher.
+    [2068] = 1982, --L'ura.
+    [2067] = 1981, --Viceroy Nezhar.
+    [1870] = 1720, --Advisor Melandrus.
+    [1811] = 1490, --Lady Hatecoil.
+    [1815] = 1467, --Tirathon Saltheril.
+    [2065] = 1979, --Zuraal the Ascended.
+    [1823] = 1512, --Harbaron.
+    [1827] = 1497, --Ivanyr.
+    [2055] = 1905, --Agronox.
+    [1835] = 1672, --Lord Kur'talos Ravencrest.
+    [1839] = 1657, --Shade of Xavius.
+    [1959] = 1818, --Mana Devourer.
+    [1847] = 1688, --Millificent Manastorm.
+    [1851] = 1697, --Sael'orn.
+    [1855] = 1702, --Blood-Princess Thal'ena.
+    [1965] = 1817, --Shade of Medivh.
+    [1964] = 1836, --The Curator.
+    [1961] = 1837, --Moroes.
+    [1808] = 1488, --God-King Skovald.
+    [1812] = 1491, --King Deepbeard.
+    [1816] = 1468, --Ash'golm.
+    [1957] = 1827, --Opera Hall: Beautiful Beast.
+    [1824] = 1663, --Helya.
+    [1954] = 1825, --Maiden of Virtue.
+    [2057] = 1906, --Thrashbite the Scornful.
+    [1836] = 1654, --Archdruid Glaidalis.
+    [1793] = 1687, --Dargrul the Underking.
+    [1792] = 1673, --Naraxas.
+    [1848] = 1693, --Festerface.
+    [1852] = 1696, --Anub'esset.
+    [1856] = 1711, --Fel Lord Betrug.
+    [1806] = 1486, --Hyrja.
+    [1807] = 1487, --Fenryr.
+    [1868] = 1718, --Patrol Captain Gerdo.
+    [1809] = 1489, --Odyn.
+    [1813] = 1479, --Serpentrix.
+    [1817] = 1469, --Glazer.
+    [1832] = 1518, --The Amalgam of Souls.
+	--Legion raids.
+	[2051] = 1898, --Kil'jaeden.
+    [1841] = 1667, --Ursoc.
+    [1849] = 1706, --Skorpyron.
+    [1853] = 1703, --Nythendra.
+    [2052] = 1897, --Maiden of Vigilance.
+    [1865] = 1725, --Chronomatic Anomaly.
+    [1873] = 1738, --Il'gynoth, Heart of Corruption.
+    [1877] = 1750, --Cenarius.
+    [2092] = 2031, --Argus the Unmaker.
+    [2069] = 1983, --Varimathras.
+    [1842] = 1713, --Krosus.
+    [1854] = 1704, --Dragons of Nightmare.
+    [1862] = 1762, --Tichondrius.
+    [1866] = 1737, --Gul'dan.
+    [2070] = 1997, --Antoran High Command.
+    [2008] = 1829, --Helya.
+    [1886] = 1761, --High Botanist Tel'arn.
+    [2063] = 1984, --Aggramar.
+    [2032] = 1862, --Goroth.
+    [2036] = 1856, --Harjatan.
+    [2048] = 1867, --Demonic Inquisition.
+    [1863] = 1732, --Star Augur Etraeus.
+    [1867] = 1731, --Trilliax.
+    [1871] = 1751, --Spellblade Aluriel.
+    [2088] = 2004, --Kin'garoth.
+    [2082] = 2009, --Imonar the Soulhunter.
+    [1958] = 1819, --Odyn.
+    [1962] = 1830, --Guarm.
+    [2073] = 1986, --The Coven of Shivarra.
+    [2075] = 2025, --Eonar the Life-Binder.
+    [2037] = 1861, --Mistress Sassz'ine.
+    [2064] = 1985, --Portal Keeper Hasabel.
+    [2038] = 1873, --Fallen Avatar.
+    [2050] = 1903, --Sisters of the Moon.
+    [1864] = 1726, --Xavius.
+    [2076] = 1992, --Garothi Worldbreaker.
+    [1872] = 1743, --Grand Magistrix Elisande.
+    [1876] = 1744, --Elerethe Renferal.
+    [2054] = 1896, --The Desolate Host.
+    [2074] = 1987, --Felhounds of Sargeras.]]
+    --Lots of outdoor bosses in legion.
+    --[[Error1: Brutallus JournalDungeonID: 1883
+	Error2: Matron Folnuna JournalDungeonID: 2010
+	Error3: Apocron JournalDungeonID: 1956
+	Error4: Malificus JournalDungeonID: 1884
+	Error5: Nithogg JournalDungeonID: 1749
+	Error6: Drugon the Frostblood JournalDungeonID: 1789
+	Error7: Na'zak the Fiend JournalDungeonID: 1783
+	Error8: Mistress Alluradel JournalDungeonID: 2011
+	Error9: Ana-Mouz JournalDungeonID: 1790
+	Error10: Levantus JournalDungeonID: 1769
+	Error11: Calamir JournalDungeonID: 1774
+	Error12: Pit Lord Vilemus JournalDungeonID: 2015
+	Error13: Humongris JournalDungeonID: 1770
+	Error14: Occularus JournalDungeonID: 2013
+	Error15: Flotsam JournalDungeonID: 1795
+	Error16: Si'vash JournalDungeonID: 1885
+	Error17: Inquisitor Meto JournalDungeonID: 2012
+	Error18: The Soultakers JournalDungeonID: 1756
+	Error19: Sotanathor JournalDungeonID: 2014
+	Error20: Withered J'im JournalDungeonID: 1796
+	Error21: Shar'thos JournalDungeonID: 1763]]
+};
+
 --Data from EJ_GetInstanceByIndex, some modifications and mapped to instanceID.
 --name, description, bgImage, loreImage, buttonImage1, buttonImage2, dungeonAreaMapID.
 NRC.instanceTextures = {
@@ -1084,6 +1467,7 @@ NRC.instanceTextures = {
 	[754] = {"Throne of the Four Winds", "Al'Akir the Windlord's personal lair, the Throne of the Four Winds, glides high among Skywall's boundless vistas. Now that the barriers of the Elemental Plane have been ruptured, Al'Akir is free to travel Azeroth's winds at his leisure. He has mustered his fiercest tempests to scour Uldum of life and seize control of the mysterious titan-forged Halls of Origination.", 522343, 526411, 522359, 460874, 0},
 	[720] = {"Firelands", "The Firelands is the molten domain forged by the titans to house Ragnaros and his wayward minions. Following Deathwing's emergence into Azeroth, Ragnaros and his servants surged onto the slopes of Mount Hyjal before being driven back by the sacred mountain's valiant defenders. Now Ragnaros is rallying his loyalists to defend the Firelands from Azeroth's champions.", 522337, 526405, 522353, 529270, 0},
 	[967] = {"Dragon Soul", "Forged by Deathwing during the War of the Ancients, the Dragon Soul harnessed the combined power of the dragonflights until it was ultimately destroyed. Through the Caverns of Time, Thrall and the remaining dragonflights were able to recover the powerful artifact before its destruction.  Now they have rallied at Wyrmrest Temple in a desperate attempt to use the might of the Dragon Soul against Deathwing himself.", 571738, 571757, 571753, 575261, 0},
+	--From MoP onwards instance data is handled by the encounter journal API.
 };
 
 --Trash and boss lists taken from wowhead and refined.
@@ -2647,199 +3031,6 @@ NRC.zones = {
 };
 
 NRC.flasks = {
-	--Classic flasks.
-	[17628] = {
-		name = "Flask of Supreme Power",
-		icon = 134821,
-		desc = "+70 Spell Power",
-	},
-	[17626] = {
-		name = "Flask of the Titans",
-		icon = 134842,
-		desc = "+400 HP",
-	},
-	[17627] = {
-		name = "Flask of Distilled Wisdom",
-		icon = 134877,
-		desc = "+65 Int",
-	},
-	[17629] = {
-		name = "Flask of Chromatic Resistance",
-		icon = 134828,
-		desc = "+25 All Resistances",
-	},
-	--TBC flasks.
-	[28518] = {
-		name = "Flask of Fortification",
-		icon = 134742,
-		desc = "+500 HP",
-	},
-	[28540] = {
-		name = "Flask of Pure Death",
-		icon = 134738,
-		desc = "+80 Shadow/Fire/Frost Spell Power",
-	},
-	[28520] = {
-		name = "Flask of Relentless Assault",
-		icon = 134740,
-		desc = "+120 Attack Power",
-	},
-	[28521] = {
-		name = "Flask of Blinding Light",
-		icon = 134739,
-		desc = "+80 Arcane/Holy/Natural Spell Power",
-	},
-	[28519] = {
-		name = "Flask of Mighty Restoration",
-		icon = 134741,
-		desc = "+25 MP5",
-	},
-	[42735] = {
-		name = "Flask of Chromatic Wonder",
-		icon = 134828,
-		desc = "+35 All Resistances, +18 Stats",
-	},
-	--Shat flasks have 2 or 3 spells the same, have to test one day which is correct for each.
-	[41607] = {
-		name = "Fortification of Shattrath",
-		icon = 134742,
-	},
-	[41609] = {
-		name = "Fortification of Shattrath",
-		icon = 134742,
-	},
-	[46837] = {
-		name = "Pure Death of Shattrath",
-		icon = 134738,
-	},
-	[46838] = {
-		name = "Pure Death of Shattrath",
-		icon = 134738,
-	},
-	[41606] = {
-		name = "Relentless Assault of Shattrath",
-		icon = 134740,
-	},
-	[41608] = {
-		name = "Relentless Assault of Shattrath",
-		icon = 134740,
-	},
-	[46839] = {
-		name = "Blinding Light of Shattrath",
-		icon = 134739,
-	},
-	[46840] = {
-		name = "Blinding Light of Shattrath",
-		icon = 134739,
-	},
-	[41605] = {
-		name = "Mighty Restoration of Shattrath",
-		icon = 134741,
-	},
-	[41610] = {
-		name = "Mighty Restoration of Shattrath",
-		icon = 134741,
-	},
-	[41604] = {
-		name = "Supreme Power of Shattrath",
-		icon = 134821,
-	},
-	[41611] = {
-		name = "Supreme Power of Shattrath",
-		icon = 134821,
-	},
-	[40572] = {
-		name = "Unstable Flask of the Beast",
-		icon = 134815,
-	},
-	[40580] = {
-		name = "Unstable Flask of the Beast",
-		icon = 134815,
-	},
-	[40576] = {
-		name = "Unstable Flask of the Sorcerer",
-		icon = 134822,
-	},
-	[40588] = {
-		name = "Unstable Flask of the Sorcerer",
-		icon = 134822,
-	},
-	[40763] = {
-		name = "Unstable Flask of the Sorcerer",
-		icon = 134822,
-	},
-	[40567] = {
-		name = "Unstable Flask of the Bandit",
-		icon = 134871,
-	},
-	[40577] = {
-		name = "Unstable Flask of the Bandit",
-		icon = 134871,
-	},
-	[40579] = {
-		name = "Unstable Flask of the Bandit",
-		icon = 134871,
-	},
-	[40568] = {
-		name = "Unstable Flask of the Elder",
-		icon = 134857,
-	},
-	[40582] = {
-		name = "Unstable Flask of the Elder",
-		icon = 134857,
-	},
-	[40573] = {
-		name = "Unstable Flask of the Physician",
-		icon = 134850,
-	},
-	[40586] = {
-		name = "Unstable Flask of the Physician",
-		icon = 134850,
-	},
-	[40575] = {
-		name = "Unstable Flask of the Soldier",
-		icon = 134864,
-	},
-	[40587] = {
-		name = "Unstable Flask of the Soldier",
-		icon = 134864,
-	},
-	--Wrath flasks.
-	[53760] = {
-		name = "Flask of Endless Rage",
-		icon = 236880,
-		desc = "+180 AP",
-	},
-	[53755] = {
-		name = "Flask of the Frost Wyrm",
-		icon = 236878,
-		desc = "+125 SP",
-	},
-	[67019] = {
-		name = "Flask of the North",
-		icon = 236879,
-		desc = "+47 SP or +80 AP or +40 Strength",
-	},
-	[53758] = {
-		name = "Flask of Stoneblood",
-		icon = 236879,
-		desc = "+1300 HP",
-	},
-	[54212] = {
-		name = "Flask of Pure Mojo",
-		icon = 236877,
-		desc = "+45 MP5",
-	},
-	[62380] = {
-		name = "Lesser Flask of Resistance",
-		icon = 134741,
-		desc = "+50 All Resistances",
-	},
-	[53752] = {
-		name = "Lesser Flask of Toughness",
-		icon = 236876,
-		desc = "+50 Resilience",
-	},
 	--Cata.
 	[79470] = {
 		name = "Flask of the Draconic Mind",
@@ -2895,125 +3086,40 @@ NRC.flasks = {
 		desc = "+450 Stamina",
 		maxRank = true,
 	},
+	--MoP.
+	[105689] = {
+		name = "Flask of Spring Blossoms",
+		icon = 609900,
+		desc = "+1000 Agility",
+		maxRank = true,
+	},
+	[105691] = {
+		name = "Flask of the Warm Sun",
+		icon = 609902,
+		desc = "+1000 Intellect",
+		maxRank = true,
+	},
+	[105696] = {
+		name = "Flask of Winter's Bite",
+		icon = 609901,
+		desc = "+1000 Strength",
+		maxRank = true,
+	},
+	[105693] = {
+		name = "Flask of Falling Leaves",
+		icon = 609899,
+		desc = "+1000 Spirit",
+		maxRank = true,
+	},
+	[105694] = {
+		name = "Flask of the Earth",
+		icon = 609903,
+		desc = "+1500 Stamina",
+		maxRank = true,
+	},
 };
 
 NRC.battleElixirs = {
-	[28503] = {
-		name = "Elixir of Major Shadow Power",
-		icon = 134771,
-		desc = "+55 Shadow Spell Power",
-	},
-	[38954] = {
-		name = "Fel Strength Elixir",
-		icon = 134779,
-		desc = "+90 Attack Power, -10 Stamina",
-	},
-	[28497] = {
-		name = "Elixir of Major Agility",
-		icon = 134751,
-		desc = "+35 Agility, +20 Critical Strike Rating",
-	},
-	[28501] = {
-		name = "Elixir of Major Firepower",
-		icon = 134772,
-		desc = "+55 Fire Spell Power",
-	},
-	[28493] = {
-		name = "Elixir of Major Frost Power",
-		icon = 134774,
-		desc = "+55 Frost Spell Power",
-	},
-	[28491] = {
-		name = "Elixir of Healing Power",
-		icon = 134768,
-		desc = "+50 Healing",
-	},
-	[33726] = {
-		name = "Elixir of Mastery",
-		icon = 134734,
-		desc = "+15 Stats",
-	},
-	[28490] = {
-		name = "Elixir of Major Strength",
-		icon = 134773,
-		desc = "+35 Strength",
-	},
-	[33721] = {
-		name = "Adept's Elixir",
-		icon = 134876,
-		desc = "+24 Spell Damage/Healing, +24 Spell Crit",
-	},
-	[33720] = {
-		name = "Onslaught Elixir",
-		icon = 134838,
-		desc = "+60 Attack Power",
-	},
-	[17538] = {
-		name = "Elixir of the Mongoose",
-		icon = 134812,
-		desc = "+25 Agility, +28 Crit Rating",
-	},
-	[11406] = {
-		name = "Elixir of Demonslaying",
-		icon = 134807,
-		desc = "Increases attack power by +265 against demons.",
-	},
-	[17539] = {
-		name = "Greater Arcane Elixir",
-		icon = 134805,
-		desc = "Increases spell damage by up to 3.",
-	},
-	--Wrath.
-	[33721] = {
-		name = "Spellpower Elixir",
-		icon = 236885,
-		desc = "+58 SP",
-	},
-	[60345] = {
-		name = "Elixir of Armor Piercing",
-		icon = 236886,
-		desc = "+45 Armor Pen",
-	},
-	[28497] = {
-		name = "Elixir of Mighty Agility",
-		icon = 134790,
-		desc = "+45 Agility",
-	},
-	[53748] = {
-		name = "Elixir of Mighty Strength",
-		icon = 134793,
-		desc = "+50 Strength",
-	},
-	[53749] = {
-		name = "Guru's Elixir",
-		icon = 134735,
-		desc = "+20 All Stats",
-	},
-	[60340] = {
-		name = "Elixir of Accuracy",
-		icon = 134841,
-		desc = "+45 Hit",
-	},
-	[60346] = {
-		name = "Elixir of Lightning Speed",
-		icon = 236884,
-		desc = "+45 Haste",
-	},
-	[60344] = {
-		name = "Elixir of Expertise",
-		icon = 236881,
-		desc = "+45 Expertise",
-	},
-	[60341] = {
-		name = "Elixir of Deadly Strikes",
-		icon = 236882,
-		desc = "+45 Crit",
-	},
-	[53746] = {
-		name = "Wrath Elixir",
-		icon = 134737,
-		desc = "+90 AP",
-	},
 	--Cata.
 	[79477] = {
 		name = "Elixir of the Cobra",
@@ -3045,90 +3151,15 @@ NRC.battleElixirs = {
 		icon = 464029,
 		desc = "+225 Hit Rating",
 	},
+	--MoP.
+	[127230] = {
+		name = "Crystal of Insanity",
+		icon = 132885,
+		desc = "Increases all stats by 500 for 1 hour.",
+	},
 };
 
 NRC.guardianElixirs = {
-	[28514] = {
-		name = "Elixir of Empowerment",
-		icon = 134761,
-		desc = "-30 Target's Magic Resistance", -- Empowerment.
-	},
-	[28509] = {
-		name = "Elixir of Major Mageblood",
-		icon = 134778,
-		desc = "+16 MP5", --Greater Mana Regeneration.
-	},
-	[28502] = {
-		name = "Elixir of Major Defense",
-		icon = 134746,
-		desc = "+550 Armor", --Major Armor.
-	},
-	[39628] = {
-		name = "Elixir of Ironskin",
-		icon = 134786,
-		desc = "+30 Resilience",
-	},
-	[39627] = {
-		name = "Elixir of Draenic Wisdom",
-		icon = 134782,
-		desc = "+30 Int, +30 Spirit",
-	},
-	[39626] = {
-		name = "Earthen Elixir",
-		icon = 134781,
-		desc = "-20 Damage Taken",
-	},
-	[39625] = {
-		name = "Elixir of Major Fortitude",
-		icon = 134785,
-		desc = "+250 HP, +10 HP5",
-	},
-	[11371] = {
-		name = "Gift of Arthas",
-		icon = 136157,
-		desc = "+10 Shadow Resist, 30% Disease Proc",
-	},
-	[24382] = {
-		name = "Spirit of Zanza",
-		icon = 134810,
-		desc = "Increases the player's Spirit by 25 and Stamina by 25",
-	},
-	[24383] = {
-		name = "Swiftness of Zanza",
-		icon = 134811,
-		desc = "Increases the player's run speed by 20%",
-	},
-	--Wrath.
-	[53764] = {
-		name = "Elixir of Mighty Mageblood",
-		icon = 134753,
-		desc = "+30 MP5",
-	},
-	[53747] = {
-		name = "Elixir of Spirit",
-		icon = 134713,
-		desc = "+50 Spirit",
-	},
-	[60347] = {
-		name = "Elixir of Mighty Thoughts",
-		icon = 134789,
-		desc = "+45 Intellect",
-	},
-	[60343] = {
-		name = "Elixir of Mighty Defense",
-		icon = 236883,
-		desc = "+45 Defense",
-	},
-	[53751] = {
-		name = "Elixir of Mighty Fortitude",
-		icon = 134792,
-		desc = "+350 HP, +20 HP5",
-	},
-	[53763] = {
-		name = "Elixir of Protection",
-		icon = 236887,
-		desc = "+800 Armor",
-	},
 	--Cata.
 	[79480] = {
 		name = "Elixir of Deep Earth",
@@ -3140,225 +3171,10 @@ NRC.guardianElixirs = {
 		icon = 464027,
 		desc = "+90 Resistances",
 	},
+	--MoP.
 };
 
 NRC.foods = {
-	[33263] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+23 Spell Power, +20 Spirit",
-	},
-	[33257] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+30 Stamina, +20 Spirit",
-	},
-	[33254] = { --Lower stam buff.
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+20 Stamina, +20 Spirit",
-	},
-	[33259] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+40 Attack Power, +20 Spirit",
-	},
-	[33261] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+20 Agility, +20 Spirit",
-	},
-	[33256] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+20 Strength, +20 Spirit",
-	},
-	[43722] = {
-		name = "Enlightened",
-		icon = 136000,
-		desc = "+20 Spell Crit, +20 Spirit",
-	},
-	[43764] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+20 Hit Rating, +20 Spirit",
-	},
-	[33265] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+8 MP5, +20 Stamina",
-	},
-	[45619] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+8 All Resistances",
-	},
-	[33268] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+44 Healing, +20 Spirit",
-	},
-	[43730] = {
-		name = "Electrified",
-		icon = 135990,
-		desc = "Deals Nature Damage to nearby enemies",
-	},
-	--Wrath foods.
-	[57294] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+60 AP, +35 SP, +30 Stamina",
-	},
-	[57399] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+80 AP, +46 SP, +40 Stamina",
-	},
-	[69559] = {
-		name = "\"Well Fed\"", --Brewfest.
-		icon = 133696,
-		desc = "+40 Stamina and Resilience",
-	},
-	[65365] = {
-		name = "\"Well Fed\"", --Brewfest.
-		icon = 133696,
-		desc = "+40 Crit",
-	},
-	[59230] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+40 Dodge",
-	},
-	[64057] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+24 AP, +14 SP", --Low level?
-	},
-	[57111] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+60 AP, +30 Stamina",
-	},
-	[57079] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+60 AP, +40 Stamina",
-	},
-	[57325] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+80 AP, +40 Stamina",
-	},
-	[57139] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+35 SP, +30 Stamina",
-	},
-	[57097] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+35 SP, +40 Stamina",
-	},
-	[57327] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+46 SP, +40 Stamina",
-	},
-	[57288] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+30 Haste, +30 Stamina",
-	},
-	[57102] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+30 Haste, +40 Stamina",
-	},
-	[57332] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+40 Haste, +40 Stamina",
-	},
-	[62349] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+30 Hit, +40 Stamina",
-	},
-	[57360] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+40 Hit, +40 Stamina",
-	},
-	[57286] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+30 Crit, +30 Stamina",
-	},
-	[57100] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+30 Crit, +40 Stamina",
-	},
-	[57329] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+40 Crit, +40 Stamina",
-	},
-	[57358] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+40 Crit, +40 Stamina",
-	},
-	--[[[65247] = { --Pet buff? New kibler's bits ID?
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+20 Strength, +20 Stamina",
-	},]]
-	[57371] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+40 Strength, +40 Stamina",
-	},
-	[57356] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+40 Expertise, +40 Stamina",
-	},
-	[57367] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+40 Agility, +40 Stamina",
-	},
-	[53284] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+25 Spirit, +25 Stamina",
-	},
-	[57365] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+40 Spirit, +40 Stamina",
-	},
-	[57107] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+30 Spirit, +40 Stamina",
-	},
-	[57291] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+30 Spirit, +30 Stamina",
-	},
-	[57334] = {
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+40 Spirit, +40 Stamina",
-	},
-	[66623] = { --https://www.wowhead.com/wotlk/item=46887/bountiful-feast (Pilgrim's event food)
-		name = "Well Fed",
-		icon = 136000,
-		desc = "+80 AP, +47 SP, +40 Stamina",
-	},
 	--Cata.
 	--I'm assuming food with "gain useful stat" just uses the normal food buffs below, but have to test after launch.
 	[87549] = {
@@ -3501,51 +3317,168 @@ NRC.foods = {
 		desc = "+90 Hit, +90 Stamina",
 		maxRank = true,
 	},
+	--MoP.
+	[104277] = { --Mogu Fish Stew.
+		name = "Well Fed",
+		icon = 136000,
+		desc = "+300 Intellect",
+		maxRank = true,
+	},
+	[146806] = { --Spiced Blossom Soup.
+		name = "Well Fed",
+		icon = 136000,
+		desc = "+300 Intellect",
+		maxRank = true,
+	},
+	[104280] = { --Steamed Crab Surprise.
+		name = "Well Fed",
+		icon = 136000,
+		desc = "+300 Spirit",
+		maxRank = true,
+	},
+	[104272] = { --Black Pepper Ribs and Shrimp.
+		name = "Well Fed",
+		icon = 136000,
+		desc = "+300 Strength",
+		maxRank = true,
+	},
+	[104275] = { --Sea Mist Rice Noodles.
+		name = "Well Fed",
+		icon = 136000,
+		desc = "+300 Agility",
+		maxRank = true,
+	},
+	[125113] = { --Spicy Salmon.
+		name = "Well Fed",
+		icon = 136000,
+		desc = "+Hit",
+		maxRank = true,
+	},
+	[125115] = { --Spicy Vegetable Chips.
+		name = "Well Fed",
+		icon = 136000,
+		desc = "+Expertise",
+		maxRank = true,
+	},
+	[0] = {
+		name = "Well Fed",
+		icon = 136000,
+		desc = "+300 ",
+		maxRank = true,
+	},
+	[0] = {
+		name = "Well Fed",
+		icon = 136000,
+		desc = "+300 ",
+		maxRank = true,
+	},
+	[0] = {
+		name = "Well Fed",
+		icon = 136000,
+		desc = "+300 ",
+		maxRank = true,
+	},
+	[0] = {
+		name = "Well Fed",
+		icon = 136000,
+		desc = "+300 ",
+		maxRank = true,
+	},
+	[0] = {
+		name = "Well Fed",
+		icon = 136000,
+		desc = "+300 ",
+		maxRank = true,
+	},
+	[0] = {
+		name = "Well Fed",
+		icon = 136000,
+		desc = "+300 ",
+		maxRank = true,
+	},
+	[0] = {
+		name = "Well Fed",
+		icon = 136000,
+		desc = "+300 ",
+		maxRank = true,
+	},
+	[0] = {
+		name = "Well Fed",
+		icon = 136000,
+		desc = "+300 ",
+		maxRank = true,
+	},
+	[0] = {
+		name = "Well Fed",
+		icon = 136000,
+		desc = "+300 ",
+		maxRank = true,
+	},
+	[0] = {
+		name = "Well Fed",
+		icon = 136000,
+		desc = "+300 ",
+		maxRank = true,
+	},
+	[0] = {
+		name = "Well Fed",
+		icon = 136000,
+		desc = "+300 ",
+		maxRank = true,
+	},
+	[0] = {
+		name = "Well Fed",
+		icon = 136000,
+		desc = "+300 ",
+		maxRank = true,
+	},
+	[0] = {
+		name = "Well Fed",
+		icon = 136000,
+		desc = "+300 ",
+		maxRank = true,
+	},
+	[0] = {
+		name = "Well Fed",
+		icon = 136000,
+		desc = "+300 ",
+		maxRank = true,
+	},
+	[0] = {
+		name = "Well Fed",
+		icon = 136000,
+		desc = "+300 ",
+		maxRank = true,
+	},
+	[0] = {
+		name = "Well Fed",
+		icon = 136000,
+		desc = "+300 ",
+		maxRank = true,
+	},
+	[0] = {
+		name = "Well Fed",
+		icon = 136000,
+		desc = "+300 ",
+		maxRank = true,
+	},
+	[0] = {
+		name = "Well Fed",
+		icon = 136000,
+		desc = "+300 ",
+		maxRank = true,
+	},
+	[0] = {
+		name = "Well Fed",
+		icon = 136000,
+		desc = "+300 ",
+		maxRank = true,
+	},
 };
 
 --"Food" buffs used in RaidStatus to show player is currently eating buff food, these must match all foods above.
 --Current expansion and 1 previous expansion.
 NRC.eating = {
-	--Wrath.
-	[57292] = "Refreshment", --Attack Power increased by 60, Spell Power increased by 35 and Stamina increased by 30.
-	[58067] = "Refreshment", --Attack Power increased by 60, Spell Power increased by 35 and Stamina increased by 30.
-	[57398] = "Refreshment", --Attack Power increased by 80, Spell Power increased by 46 and Stamina increased by 40.
-	[69560] = "Brewfest Drink", --Resilience rating and Stamina increased by 40.
-	[65363] = "Brewfest Drink", --Critical strike rating increased by 40.
-	[69561] = "Brewfest Drink", --Critical strike rating increased by 40.
-	[59227] = "Refreshment", --You are covered in eel oil!  On the bright side, at least your dodge rating has increased by 40. 
-	[57110] = "Refreshment", --Attack Power increased by 60 and Stamina increased by 30.
-	[58503] = "Refreshment", --Attack Power increased by 60 and Stamina increased by 30. (or this is just a human form buff?)
-	[57085] = "Refreshment", --Attack Power increased by 60 and Stamina increased by 40.
-	[57324] = "Refreshment", --Attack Power increased by 80 and Stamina increased by 40.
-	[57335] = "Refreshment", --Attack Power increased by 80 and Stamina increased by 40.
-	[57138] = "Refreshment", --Spell Power increased by 35 and Stamina increased by 30.
-	[57096] = "Refreshment", --Spell Power increased by 35 and Stamina increased by 40.
-	[57326] = "Refreshment", --Spell Power increased by 46 and Stamina increased by 40.
-	[57341] = "Refreshment", --Spell Power increased by 46 and Stamina increased by 40.
-	[57287] = "Refreshment", --Haste Rating increased by 30 and Stamina increased by 30.
-	[57101] = "Refreshment", --Haste Rating increased by 30 and Stamina increased by 40.
-	[57331] = "Refreshment", --Haste Rating increased by 40 and Stamina increased by 40.
-	[57344] = "Refreshment", --Haste Rating increased by 40 and Stamina increased by 40.
-	[62351] = "Refreshment", --Hit rating increased by 30 and Stamina increased by 40.
-	[57359] = "Refreshment", --Hit Rating increased by 40 and Stamina increased by 40.
-	[57285] = "Refreshment", --Critical Rating increased by 30 and Stamina increased by 30.
-	[57098] = "Refreshment", --Critical Strike Rating increased by 30 and Stamina increased by 40.
-	[57328] = "Refreshment", --Critical Strike Rating increased by 40 and Stamina increased by 40.
-	[57343] = "Refreshment", --Critical Strike Rating increased by 40 and Stamina increased by 40.
-	[57357] = "Refreshment", --Armor penetration rating increased by 40 and Stamina increased by 40.
-	[57370] = "Refreshment", --Strength increased by 40 and Stamina increased by 40.
-	[57355] = "Refreshment", --Expertise Rating increased by 40 and Stamina increased by 40.
-	[57366] = "Refreshment", --Agility increased by 40 and Stamina increased by 40.
-	[57364] = "Refreshment", --Spirit increased by 40 and Stamina increased by 40.
-	[57106] = "Refreshment", --Mana Regeneration increased by 15 every 5 seconds and Stamina increased by 40.
-	[57289] = "Refreshment", --Mana Regeneration increased by 15 every 5 seconds and Stamina increased by 30.
-	[57333] = "Refreshment", --Mana Regeneration increased by 20 every 5 seconds and Stamina increased by 40.
-	[57354] = "Refreshment", --Mana Regeneration increased by 20 every 5 seconds and Stamina increased by 40.
-	[53283] = "Food", --Stamina and Spirit increased by 25.
-	[64056] = "Food", --Attack power increased by 24 and spell power increased by 14.
-	--Seems you don't actually get the above buffs in wrath, you get seperate drink and food?
-	[45548] = "Food", --Restores 22500 health over 30 sec.
 	--Cata.
 	[87604] = "Food", -- +90 foods.
 	[87587] = "Food",
@@ -3572,341 +3505,53 @@ NRC.eating = {
 	[87566] = "Food",
 	[80168] = "Food", --Goblin Barbecue and Broiled Dragon Feast.
 	[80169] = "Food", --Seafood Magnifique Feast.
+	--MoP.
+	[104289] = "Food",
+	[104293] = "Food",
+	[104285] = "Food",
+	[104288] = "Food",
+	[125114] = "Food",
+	[125116] = "Food",
+	[145267] = "Food",
+	[0] = "Food",
+	[0] = "Food",
+	[0] = "Food",
+	[0] = "Food",
+	[0] = "Food",
+	[0] = "Food",
+	[0] = "Food",
+	[0] = "Food",
+	[0] = "Food",
+	[0] = "Food",
+	[0] = "Food",
+	[0] = "Food",
+	[0] = "Food",
+	[0] = "Food",
+	[0] = "Food",
+	[0] = "Food",
+	[0] = "Food",
+	[0] = "Food",
+	[0] = "Food",
+	[126543] = "Food", --Banquet of the Steamer.
+	[0] = "Food", --Great Banquet of the Steamer.
+	[126544] = "Food", --Banquet of the Oven.
+	[0] = "Food", --Great Banquet of the Oven.
+	[126545] = "Food", --Banquet of the Brew.
+	[0] = "Food", --Great Banquet of the Brew.
+	[126541] = "Food", --Banquet of the Wok.
+	[0] = "Food", --Great Banquet of the Wok.
+	[126542] = "Food", --Banquet of the Pot.
+	[0] = "Food", --Great Banquet of the Pot.
+	[126532] = "Food", --Banquet of the Grill.
+	[0] = "Food", --Great Banquet of the Grill.
+	--I think these spellids are to place the banquets not the actual eating buff.
+	--There are different banquet types that spawn?
+	[104958] = "Food", --Pandaren Banquet.
+	[105193] = "Food", --Great Pandaren Banquet.
 };
 
---Scrolls get overridden by dk buffs in wrath.
---Also the lower ranks can be removed a month after wrath launches.
 NRC.scrolls = {
-	[12174] = {
-		name = "Scroll of Agility IV",
-		icon = 135879,
-		desc = "+10 Agility",
-		order = 1,
-		itemID = 10309,
-		itemIcon = 134938,
-		quality = 1,
-	},
-	[33077] = {
-		name = "Scroll of Agility V",
-		icon = 135879,
-		desc = "+15 Agility",
-		order = 1,
-		itemID = 27498,
-		itemIcon = 134938,
-		quality = 1,
-	},
-	[43194] = {
-		name = "Scroll of Agility VI",
-		icon = 135879,
-		desc = "+20 Agility",
-		order = 1,
-		itemID = 33457,
-		itemIcon = 134938,
-		quality = 1,
-	},
-	[58450] = {
-		name = "Scroll of Agility VII",
-		icon = 135879,
-		desc = "+25 Agility",
-		order = 1,
-		itemID = 43463,
-		itemIcon = 134938,
-		quality = 1,
-	},
-	[58451] = {
-		name = "Scroll of Agility VIII",
-		icon = 135879,
-		desc = "+30 Agility",
-		order = 1,
-		itemID = 43464,
-		itemIcon = 134938,
-		quality = 1,
-	},
-	[89343] = {
-		name = "Scroll of Agility IX",
-		icon = 135879,
-		desc = "+100 Agility",
-		maxRank = true,
-		order = 1,
-		itemID = 63303,
-		itemIcon = 134938,
-		quality = 1,
-	},
-	[12179] = {
-		name = "Scroll of Strength IV",
-		icon = 136101,
-		desc = "+10 Strength",
-		order = 2,
-		itemID = 10310,
-		itemIcon = 134938,
-		quality = 1,
-	},
-	[33082] = {
-		name = "Scroll of Strength V",
-		icon = 136101,
-		desc = "+15 Strength",
-		order = 2,
-		itemID = 27503,
-		itemIcon = 134938,
-		quality = 1,
-	},
-	[43199] = {
-		name = "Scroll of Strength VI",
-		icon = 136101,
-		desc = "+20 Strength",
-		order = 2,
-		itemID = 33462,
-		itemIcon = 134938,
-		quality = 1,
-	},
-	[58448] = {
-		name = "Scroll of Strength VII",
-		icon = 136101,
-		desc = "+25 Strength",
-		order = 2,
-		itemID = 43465,
-		itemIcon = 134938,
-		quality = 1,
-	},
-	[58449] = {
-		name = "Scroll of Strength VIII",
-		icon = 136101,
-		desc = "+30 Strength",
-		order = 2,
-		itemID = 43466,
-		itemIcon = 134938,
-		quality = 1,
-	},
-	[89346] = {
-		name = "Scroll of Strength IX",
-		icon = 136101,
-		desc = "+100 Strength",
-		maxRank = true,
-		order = 2,
-		itemID = 63304,
-		itemIcon = 134938,
-		quality = 1,
-	},
-	[12175] = {
-		name = "Scroll of Protection IV",
-		icon = 132341,
-		desc = "+40 Armor",
-		order = 3,
-		itemID = 10305,
-		itemIcon = 134943,
-		quality = 1,
-	},
-	[33079] = {
-		name = "Scroll of Protection V",
-		icon = 132341,
-		desc = "+60 Armor",
-		order = 3,
-		itemID = 27500,
-		itemIcon = 134943,
-		quality = 1,
-	},
-	[43196] = {
-		name = "Scroll of Protection VI",
-		icon = 132341,
-		desc = "+80 Armor",
-		order = 3,
-		itemID = 33459,
-		itemIcon = 134943,
-		quality = 1,
-	},
-	[58452] = {
-		name = "Scroll of Protection VII",
-		icon = 132341,
-		desc = "+100 Armor",
-		order = 3,
-		itemID = 43467,
-		itemIcon = 134943,
-		quality = 1,
-	},
-	[58453] = {
-		name = "Scroll of Protection VIII",
-		icon = 132341,
-		desc = "+120 Armor",
-		order = 3,
-		itemID = 43468,
-		itemIcon = 134943,
-		quality = 1,
-	},
-	[89344] = {
-		name = "Scroll of Protection IX",
-		icon = 132341,
-		desc = "+400 Armor",
-		maxRank = true,
-		order = 3,
-		itemID = 63308,
-		itemIcon = 134943,
-		quality = 1,
-	},
-	[12176] = {
-		name = "Scroll of Intellect IV",
-		icon = 135932,
-		desc = "+10 Intellect",
-		order = 4,
-		itemID = 10308,
-		itemIcon = 134937,
-		quality = 1,
-	},
-	[33078] = {
-		name = "Scroll of Intellect V",
-		icon = 135932,
-		desc = "+15 Intellect",
-		order = 4,
-		itemID = 27499,
-		itemIcon = 134937,
-		quality = 1,
-	},
-	[43195] = {
-		name = "Scroll of Intellect VI",
-		icon = 135932,
-		desc = "+20 Intellect",
-		order = 4,
-		itemID = 33458,
-		itemIcon = 134937,
-		quality = 1,
-	},
-	[48099] = {
-		name = "Scroll of Intellect VII",
-		icon = 135932,
-		desc = "+25 Intellect",
-		order = 4,
-		itemID = 37091,
-		itemIcon = 134937,
-		quality = 1,
-	},
-	[48100] = {
-		name = "Scroll of Intellect VIII",
-		icon = 135932,
-		desc = "+30 Intellect",
-		order = 4,
-		itemID = 37092,
-		itemIcon = 134937,
-		quality = 1,
-	},
-	[89347] = {
-		name = "Scroll of Intellect IX",
-		icon = 135932,
-		desc = "+100 Intellect",
-		maxRank = true,
-		order = 4,
-		itemID = 63305,
-		itemIcon = 134937,
-		quality = 1,
-	},
-	[12177] = {
-		name = "Scroll of Spirit IV",
-		icon = 136126,
-		desc = "+10 Spirit",
-		order = 5,
-		itemID = 10306,
-		itemIcon = 134937,
-		quality = 1,
-	},
-	[33080] = {
-		name = "Scroll of Spirit V",
-		icon = 136126,
-		desc = "+15 Spirit",
-		order = 5,
-		itemID = 27501,
-		itemIcon = 134937,
-		quality = 1,
-	},
-	[43197] = {
-		name = "Scroll of Spirit VI",
-		icon = 136126,
-		desc = "+20 Spirit",
-		order = 5,
-		itemID = 33460,
-		itemIcon = 134937,
-		quality = 1,
-	},
-	[48103] = {
-		name = "Scroll of Spirit VII",
-		icon = 136126,
-		desc = "+25 Spirit",
-		order = 5,
-		itemID = 37097,
-		itemIcon = 134937,
-		quality = 1,
-	},
-	[48104] = {
-		name = "Scroll of Spirit VIII",
-		icon = 136126,
-		desc = "+30 Spirit",
-		order = 5,
-		itemID = 37098,
-		itemIcon = 134937,
-		quality = 1,
-	},
-	[89342] = {
-		name = "Scroll of Spirit IX",
-		icon = 136126,
-		desc = "+100 Spirit",
-		maxRank = true,
-		order = 5,
-		itemID = 63307,
-		itemIcon = 134937,
-		quality = 1,
-	},
-	[12178] = {
-		name = "Scroll of Stamina IV",
-		icon = 136112,
-		desc = "+10 Stamina",
-		order = 6,
-		itemID = 10307,
-		itemIcon = 134943,
-		quality = 1,
-	},
-	[33081] = {
-		name = "Scroll of Stamina V",
-		icon = 136112,
-		desc = "+15 Stamina",
-		order = 6,
-		itemID = 27502,
-		itemIcon = 134943,
-		quality = 1,
-	},
-	[43198] = {
-		name = "Scroll of Stamina VI",
-		icon = 136112,
-		desc = "+20 Stamina",
-		order = 6,
-		itemID = 33461,
-		itemIcon = 134943,
-		quality = 1,
-	},
-	[48101] = {
-		name = "Scroll of Stamina VII",
-		icon = 136112,
-		desc = "+25 Stamina",
-		order = 6,
-		itemID = 37093,
-		itemIcon = 134943,
-		quality = 1,
-	},
-	[48102] = {
-		name = "Scroll of Stamina VIII",
-		icon = 136112,
-		desc = "+30 Stamina",
-		order = 6,
-		itemID = 37094,
-		itemIcon = 134943,
-		quality = 1,
-	},
-	[89345] = {
-		name = "Scroll of Stamina IX",
-		icon = 136112,
-		desc = "+150 Stamina",
-		maxRank = true,
-		order = 6,
-		itemID = 63306,
-		itemIcon = 134943,
-		quality = 1,
-	},
+	--No scrolls in MoP.
 };
 
 --Spell cast IDs not item IDs.
@@ -4274,6 +3919,14 @@ NRC.trackedConsumes = {
 		itemID = 65455,
 		quality = 1,
 	},
+	--MoP.
+	[146555] = {
+		name = "Drums of Rage",
+		icon = 133845,
+		desc = "Increases melee, ranged, and spell haste by 25% for all party and raid members. Lasts 40 sec.",
+		itemID = 102351,
+		quality = 2,
+	},
 }
 
 NRC.racials = {
@@ -4407,6 +4060,11 @@ NRC.racials = {
 		icon = 366937,
 		desc = "Activates your true form, increasing current movement speed by an additional 40% for 10 sec.",
 	},
+	[107079] = {
+		name = "Quaking Palm",
+		icon = 572035,
+		desc = "Strikes the target with lightning speed, incapacitating them for 4 sec, and turns off your attack.",
+	},
 }
 
 --Some of these are NPC spells, not sure if used in cata but leaving them in anyway.
@@ -4454,6 +4112,14 @@ NRC.interrupts = {
 	[96231] = {
 		name = "Rebuke",
 		icon = 523893,
+	};
+	[147362] = {
+		name = "Counter Shot",
+		icon = 249170,
+	};
+	[116705] = {
+		name = "Spear Hand Strike",
+		icon = 608940,
 	};
 };
 
@@ -9767,7 +9433,7 @@ NRC.ignoredLoot = {
 
 NRC.distractingShot = {
 	--Id = threat.
-	[20736] = 61, --Now just a 6 second taunt in cata?
+	[20736] = 60, --Now just a 6 second taunt in cata?
 };
 
 NRC.resurrectionSpells = {
@@ -9788,16 +9454,20 @@ NRC.resurrectionSpells = {
 		icon = 135955,
 	},
 	[20484] = {
-		name = "Rebirth", --Rank 1.
+		name = "Rebirth", --Druid Rank 1.
 		icon = 136080,
 	},
 	[61999] = {
-		name = "Raise Ally", --Rank 1.
+		name = "Raise Ally", --DK Rank 1.
 		icon = 136143,
 	},
 	[20707] = {
 		name = "Soulstone", --Rank 1.
 		icon = 136210, --Only during combat this actually counts as a res, have to write some stuff seperately for it for cata+.
+	},
+	[132132] = {
+		name = "Resuscitate", --Monk Rank 1.
+		icon = 136143,
 	},
 };
 
@@ -9868,10 +9538,22 @@ NRC.magePortals = {
 		name = "Portal: Tol Barad",
 		icon = 462339,
 	},
+	[120146] = {
+		name = "Ancient Portal: Dalaran",
+		icon = 237508,
+	},
+	[132620] = { --Alliance.
+		name = "Portal: Vale of Eternal Blossoms",
+		icon = 851297,
+	},
+	[132626] = { --Horde.
+		name = "Portal: Vale of Eternal Blossoms",
+		icon = 851297,
+	},
 };
 
 NRC.healthstones = {
-	[6262] = {
+	[6262] = { --no new healthstone ID in mop? Must just scale?
 		name = "Healthstone",
 		icon = 135230,
 		spellName = "Healthstone",
@@ -9940,62 +9622,34 @@ NRC.dpsPotions = {
 		name = "Earthen Potion",
 		icon = 236874,
 	},
+	--MoP.
+	[105702] = {
+		name = "Potion of the Jade Serpent",
+		icon = 609895,
+	},
+	[105706] = {
+		name = "Potion of Mogu Power",
+		icon = 609896,
+	},
+	[105697] = {
+		name = "Virmen's Bite",
+		icon = 609897,
+	},
+	[105698] = {
+		name = "Potion of the Mountains",
+		icon = 609892,
+	},
+	[105707] = {
+		name = "Darkwater Potion",
+		icon = 609891,
+	},
+	[133024] = {
+		name = "Snap Root Tuber",
+		icon = 134011,
+	},
 };
 
 NRC.manaPotions = {
-	[17531] = {
-		name = "Major Mana Potion",
-		icon = 134856,
-	},
-	[28499] = {
-		name = "Super Mana Potion",
-		icon = 134762,
-	},
-	[22729] = {
-		name = "Major Rejuvenation Potion",
-		icon = 134827,
-	},
-	[28517] = {
-		name = "Super Rejuvenation Potion",
-		icon = 134759,
-	},
-	[28504] = {
-		name = "Major Dreamless Sleep Potion",
-		icon = 134764,
-	},
-	[38908] = {
-		name = "Fel Regeneration Potion",
-		icon = 134766,
-	},
-	[16666] = {
-		name = "Demonic Rune",
-		icon = 134417,
-	},
-	[27869] = {
-		name = "Dark Rune",
-		icon = 136192,
-	},
-	--Wrath.
-	[43186] = {
-		name = "Runic Mana Potion",
-		icon = 236869,
-	},
-	[67490] = { --Injector.
-		name = "Runic Mana Potion",
-		icon = 237032,
-	},
-	[53750] = {
-		name = "Crazy Alchemist's Potion",
-		icon = 134807,
-	},
-	[53761] = {
-		name = "Powerful Rejuvenation Potion",
-		icon = 236873,
-	},
-	[53753] = {
-		name = "Potion of Nightmares",
-		icon = 236870,
-	},
 	--Cata.
 	[78990] = {
 		name = "Mythical Mana Potion",
@@ -10015,69 +9669,18 @@ NRC.manaPotions = {
 		itemID = 57099,
 		quality = 1,
 	},
-	[78992] = {
-		name = "Mighty Rejuvenation Potion",
-		icon = 463546,
-		desc = "Restores 9000 to 11000 mana and health.",
-		itemID = 57193,
-		quality = 1,
+	--MoP.
+	[105709] = {
+		name = "Master Mana Potion",
+		icon = 650641,
+	},
+	[105701] = {
+		name = "Potion of Focus",
+		icon = 609893,
 	},
 };
 
 NRC.healingPotions = {
-	[17534] = {
-		name = "Major Healing Potion",
-		icon = 134834,
-	},
-	[28495] = {
-		name = "Super Healing Potion",
-		icon = 134756,
-	},
-	[22729] = {
-		name = "Major Rejuvenation Potion",
-		icon = 134827,
-	},
-	[28517] = {
-		name = "Super Rejuvenation Potion",
-		icon = 134759,
-	},
-	[28504] = {
-		name = "Major Dreamless Sleep Potion",
-		icon = 134764,
-	},
-	[38908] = {
-		name = "Fel Regeneration Potion",
-		icon = 134766,
-	},
-	--Wrath.
-	[43185] = {
-		name = "Runic Healing Potion",
-		icon = 236872,
-	},
-	[67489] = { --Injector.
-		name = "Runic Healing Potion",
-		icon = 237031,
-	},
-	[52697] = {
-		name = "Noth's Special Brew",
-		icon = 136243,
-	},
-	[53750] = {
-		name = "Crazy Alchemist's Potion",
-		icon = 134807,
-	},
-	[53761] = {
-		name = "Powerful Rejuvenation Potion",
-		icon = 236873,
-	},
-	[53753] = {
-		name = "Potion of Nightmares",
-		icon = 236870,
-	},
-	[53670] = {
-		name = "Runic Battle Potion",
-		icon = 134788,
-	},
 	--Cata.
 	[78989] = {
 		name = "Mythical Healing Potion",
@@ -10104,36 +9707,21 @@ NRC.healingPotions = {
 		itemID = 63300,
 		quality = 1,
 	},
+	--MoP.
+	[105708] = {
+		name = "Master Healing Potion",
+		icon = 650638,
+	},
+	[105704] = {
+		name = "Alchemist's Rejuvenation",
+		icon = 650639,
+	},
 };
 
 NRC.tempEnchants = {
 	--Mapped to enchantID not spellID.
-	[22] = {
-		name = "Crippling Poison",
-		icon = 132274,
-		desc = "Each strike has a 50% chance of poisoning the enemy, slowing their movement speed by 70% for 12 sec.",
-	},
-	[7] = {
-		name = "Deadly Poison",
-		icon = 132290,
-		desc = "Each strike has a 30% chance of poisoning the enemy for Nature damage over 12 sec. Stacks up to 5 times on a single target.",
-	},
-	[323] = {
-		name = "Instant Poison",
-		icon = 132273,
-		desc = "Each strike has a chance of poisoning the enemy which instantly inflicts Nature damage.",
-	},
-	[35] = {
-		name = "Mind-numbing Poison",
-		icon = 136066,
-		desc = "Each strike has a 50% chance of poisoning the enemy, increasing their casting time by 430% for 10 sec.",
-	},
-	[703] = {
-		name = "Wound Poison",
-		icon = 134197,
-		desc = "Each strike has a chance of poisoning the enemy, causing Nature damage and reducing all healing effects used on them by 25% for 15 sec.",
-	},
-	--Shaman self weapon enchants.
+	--Rogue poisons are now just a buff not an enchant in MoP.
+	--Shaman self weapon enchants are still an enchant in MoP.
 	[5] = {
 		name = "Flametongue Weapon 1",
 		icon = 135814,
@@ -10165,6 +9753,7 @@ NRC.healingSpecs = {
 	["Restoration"] = true,
 	["Holy"] = true,
 	["Discipline"] = true,
+	["Mistweaver"] = true,
 };
 
 ---These buff tables below are wiped after being loaded locally in RaidStatus.
@@ -10247,49 +9836,36 @@ NRC.fort = {
 	[69377] = { --These are meant to be % but wowhead shows flat numbers?
 		name = "Runescroll of Fortitude",
 		icon = 237449,
-		desc = "+132 Stam",
+		desc = "+6% Stam",
 		maxRank = true,
 	},
 	[86507] = { --There's 2 versions of this?
 		name = "Runescroll of Fortitude II",
 		icon = 237449,
-		desc = "+468 Stam",
+		desc = "+7% Stam",
 		maxRank = true,
 	},
 	[96175] = {
 		name = "Runescroll of Fortitude II",
 		icon = 237449,
-		desc = "+468 Stam",
+		desc = "+7% Stam",
+		maxRank = true,
+	},
+	--MoP.
+	[111922] = {
+		name = "Runescroll of Fortitude III",
+		icon = 237052,
+		desc = "+8% Stam",
 		maxRank = true,
 	},
 };
 
 NRC.spirit = {
-	--Does this exist in cata?
+	--No spirit buff in MoP.
 };
 
 NRC.shadow = {
-	[27683] = {
-		name = "Shadow Protection",
-		icon = 135945,
-		desc = "+195 Shadow Resistance",
-		rank = 1,
-		maxRank = true,
-	},
-	[79107] = {
-		name = "Shadow Protection",
-		icon = 135945,
-		desc = "+195 Shadow Resistance",
-		rank = 1,
-		maxRank = true,
-	},
-	[79106] = {
-		name = "Shadow Protection",
-		icon = 135945,
-		desc = "+195 Shadow Resistance",
-		rank = 1,
-		maxRank = true,
-	},
+	--No shadow prot in MoP.
 };
 
 NRC.motw = {
@@ -10329,7 +9905,7 @@ NRC.motw = {
 		maxRank = true,
 	},]]
 	--Kings.
-	[20217] = { --Move kings the motw colum now they're shared.
+	[20217] = { --Move kings to the motw colum now they're shared.
 		name = "Blessing of Kings",
 		icon = 135993,
 		desc = "+5% Stats, +42 Resistances",

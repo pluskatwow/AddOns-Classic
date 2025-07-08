@@ -73,6 +73,10 @@ end
 -- Generated in `/dungeons/{version}.lua` files
 local classicDungeonLevels = GBB.GetDungeonLevelRanges(GBB.Enum.Expansions.Classic)
 
+local mistsDungeonKeys = GBB.GetSortedDungeonKeys(
+	GBB.Enum.Expansions.Mists,
+	{ GBB.Enum.DungeonType.Dungeon, GBB.Enum.DungeonType.Raid }
+);
 local cataDungeonKeys = GBB.GetSortedDungeonKeys(
 	GBB.Enum.Expansions.Cataclysm,
 	{ GBB.Enum.DungeonType.Dungeon, GBB.Enum.DungeonType.Raid }
@@ -164,8 +168,8 @@ function GBB.GetDungeonSort(additonalCategories)
 	else
 		additonalCategories = {} --[[@as string[] ]]
 	end
-	local dungeonOrder = { 
-		vanillaDungeonKeys, tbcDungeonNames, wotlkDungeonNames, cataDungeonKeys, 
+	local dungeonOrder = {
+		vanillaDungeonKeys, tbcDungeonNames, wotlkDungeonNames, cataDungeonKeys, mistsDungeonKeys,
 		pvpNames, additonalCategories, GBB.Misc, debugNames
 	}
 
@@ -173,19 +177,20 @@ function GBB.GetDungeonSort(additonalCategories)
 	local tbcDungeonSize = #tbcDungeonNames
 	local wotlkDungeonSize = #wotlkDungeonNames
 	local cataDungeonSize = #cataDungeonKeys
+	local mistsDungeonSize = #mistsDungeonKeys
 	local debugSize = #debugNames
 
 	local tmp_dsort, concatenatedSize = ConcatenateLists(dungeonOrder)
 	local dungeonSort = {}
-
+	-- todo: these global constants need to be refactored (removed). Theres only a few places left that reference them.
 	GBB.TBCDUNGEONSTART = vanillaDungeonSize + 1
 	GBB.MAXDUNGEON = vanillaDungeonSize
 	GBB.TBCMAXDUNGEON = vanillaDungeonSize  + tbcDungeonSize
 	GBB.WOTLKDUNGEONSTART = GBB.TBCMAXDUNGEON + 1
-	GBB.WOTLKMAXDUNGEON = wotlkDungeonSize + GBB.TBCMAXDUNGEON + cataDungeonSize
+	GBB.WOTLKMAXDUNGEON = wotlkDungeonSize + GBB.TBCMAXDUNGEON + cataDungeonSize + mistsDungeonSize
 	GBB.ENDINGDUNGEONSTART = GBB.WOTLKMAXDUNGEON + 1
-	
-	-- used in Options.lua for drawing dungeon editboxes for search patterns 
+
+	-- used in Options.lua for drawing dungeon editboxes for search patterns
 	GBB.ENDINGDUNGEONEND = concatenatedSize - debugSize - 1
 
 	for dungeon,nb in pairs(tmp_dsort) do
@@ -201,11 +206,12 @@ function GBB.GetDungeonSort(additonalCategories)
 	dungeonSort[dungeonSort["SM2"]] = "SM2"
 	dungeonSort[dungeonSort["DM2"]] = "DM2"
 
-	-- This is set to a high index with no reverse link because-
-	-- we dont ever want to show this in the list during `UpdateList()` (might not be relevant anymore)
-	-- Ideally the "DEADMINES" key should never make it to the `req.dungeon` field as it should be converted to either "DM" or "DM2"/"DMW"/"DME"/"DMN" in GBB.GetDungeon() 
+	-- This is set to a high index with no reverse link because we dont ever want to show this in `ChatRequests.UpdateRequestList()` (might not be relevant anymore)
+	-- Ideally the "DEADMINES" key should never make it to the `req.dungeon` field as it should be converted to either-
+	-- "DM" or "DM2"/"DMW"/"DME"/"DMN" in `getRequestMessageCategories()`
+	-- keeping this shim here until i fully understand what it even doing, though i suspect it's a relic of old code.
 	dungeonSort["DEADMINES"] = GBB.ENDINGDUNGEONEND + 20
-	
+
 	return dungeonSort
 end
 

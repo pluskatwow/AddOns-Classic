@@ -4,6 +4,13 @@ local TOCNAME,
 
 local MAX_PLAYER_LEVEL = GetMaxPlayerLevel()
 
+Addon.Metadata = {
+	Title = C_AddOns.GetAddOnMetadata(TOCNAME, "Title"),
+	Version = C_AddOns.GetAddOnMetadata(TOCNAME, "Version"),
+	Author = C_AddOns.GetAddOnMetadata(TOCNAME, "Author"),
+	Notes = C_AddOns.GetAddOnMetadata(TOCNAME, "Notes"),
+}
+
 ---@class ToolBox
 local Tool = {}
 Addon.Tool = Tool
@@ -72,19 +79,27 @@ end
 
 local transliterations = {
     ["À"] = "A", ["Á"] = "A", ["Â"] = "A", ["Ã"] = "A", ["Ä"] = "Ae", ["Å"] = "A",
-	["Æ"] = "AE", ["Ç"] = "C", ["È"] = "E", ["É"] = "E", ["Ê"] = "E", ["Ë"] = "E", 
-	["Ì"] = "I", ["Í"] = "I", ["Î"] = "I", ["Ï"] = "I", ["Ð"] = "D", ["Ñ"] = "N", 
-	["Ò"] = "O", ["Ó"] = "O", ["Ô"] = "O", ["Õ"] = "O", ["Ö"] = "Oe", ["Ø"] = "O", 
-	["Ù"] = "U", ["Ú"] = "U", ["Û"] = "U", ["Ü"] = "Ue", ["Ý"] = "Y", ["Þ"] = "P", 
-	["ẞ"] = "s", ["à"] = "a", ["á"] = "a", ["â"] = "a", ["ã"] = "a", ["ä"] = "ae", 
-	["å"] = "a", ["æ"] = "ae", ["ç"] = "c", ["è"] = "e", ["é"] = "e", ["ê"] = "e", 
-	["ë"] = "e", ["ì"] = "i", ["í"] = "i", ["î"] = "i", ["ï"] = "i", ["ð"] = "eth", 
-	["ñ"] = "n", ["ò"] = "o", ["ó"] = "o", ["ô"] = "o", ["õ"] = "o", ["ö"] = "oe", 
-	["ø"] = "o", ["ù"] = "u", ["ú"] = "u", ["û"] = "u", ["ü"] = "ue", ["ý"] = "y", 
+	["Æ"] = "AE", ["Ç"] = "C", ["È"] = "E", ["É"] = "E", ["Ê"] = "E", ["Ë"] = "E",
+	["Ì"] = "I", ["Í"] = "I", ["Î"] = "I", ["Ï"] = "I", ["Ð"] = "D", ["Ñ"] = "N",
+	["Ò"] = "O", ["Ó"] = "O", ["Ô"] = "O", ["Õ"] = "O", ["Ö"] = "Oe", ["Ø"] = "O",
+	["Ù"] = "U", ["Ú"] = "U", ["Û"] = "U", ["Ü"] = "Ue", ["Ý"] = "Y", ["Þ"] = "P",
+	["ẞ"] = "s", ["à"] = "a", ["á"] = "a", ["â"] = "a", ["ã"] = "a", ["ä"] = "ae",
+	["å"] = "a", ["æ"] = "ae", ["ç"] = "c", ["è"] = "e", ["é"] = "e", ["ê"] = "e",
+	["ë"] = "e", ["ì"] = "i", ["í"] = "i", ["î"] = "i", ["ï"] = "i", ["ð"] = "eth",
+	["ñ"] = "n", ["ò"] = "o", ["ó"] = "o", ["ô"] = "o", ["õ"] = "o", ["ö"] = "oe",
+	["ø"] = "o", ["ù"] = "u", ["ú"] = "u", ["û"] = "u", ["ü"] = "ue", ["ý"] = "y",
 	["þ"] = "p", ["ÿ"] = "y", ["ß"] = "ss",
 }
--- Hyperlink
 
+Tool.isUtf8String = function(str)
+	for i = 1, str:len() do
+		local b = str:byte(i)
+		if b >= 192 and b <= 239 then return true; end
+	end
+	return false;
+end
+
+-- Hyperlink
 local function EnterHyperlink(self,link,text)
 	--print(link,text)
 	local part=Tool.Split(link,":")
@@ -455,208 +470,28 @@ function Tool.EnableSize(frame,border,OnStart,OnStop)
 	
 	frame:EnableMouse(true)
 	frame:SetResizable(true)	
-	
-	-- path= "Interface\\AddOns\\".. TOCNAME .. "\\Resize\\"
-	
-	CreateSizeBorder(frame,"BOTTOM","BOTTOMLEFT", border, border, "BOTTOMRIGHT", -border, 0,"Interface\\CURSOR\\UI-Cursor-SizeLeft",45,OnStart,OnStop)
-	CreateSizeBorder(frame,"TOP","TOPLEFT", border, 0, "TOPRIGHT", -border, -border,"Interface\\CURSOR\\UI-Cursor-SizeLeft",45,OnStart,OnStop)
-	CreateSizeBorder(frame,"LEFT","TOPLEFT", 0,-border, "BOTTOMLEFT", border, border,"Interface\\CURSOR\\UI-Cursor-SizeRight",45,OnStart,OnStop)
-	CreateSizeBorder(frame,"RIGHT","TOPRIGHT",-border,-border, "BOTTOMRIGHT", 0, border,"Interface\\CURSOR\\UI-Cursor-SizeRight",45,OnStart,OnStop)
-	
-	CreateSizeBorder(frame,"TOPLEFT","TOPLEFT", 0,0, "TOPLEFT", border, -border,"Interface\\CURSOR\\UI-Cursor-SizeRight",0,OnStart,OnStop)
-	CreateSizeBorder(frame,"BOTTOMLEFT","BOTTOMLEFT", 0,0, "BOTTOMLEFT", border, border, "Interface\\CURSOR\\UI-Cursor-SizeLeft",0,OnStart,OnStop)
-	CreateSizeBorder(frame,"TOPRIGHT","TOPRIGHT", 0,0, "TOPRIGHT", -border, -border, "Interface\\CURSOR\\UI-Cursor-SizeLeft",0,OnStart,OnStop)
-	CreateSizeBorder(frame,"BOTTOMRIGHT","BOTTOMRIGHT", 0,0, "BOTTOMRIGHT", -border, border, "Interface\\CURSOR\\UI-Cursor-SizeRight",0,OnStart,OnStop)
-	
-end
 
---------------------------------------------------------------------------------
--- Dynamic Popup Menu
---------------------------------------------------------------------------------
-
-local PopupDepth
-local addonDropdowns = {} -- # {[dropdownFrame]: popup}
-local touchedButtonInfoKeys = {} -- used to track tainted variables
-
---- Securely nils variable by hacking the `TextureLoadingGroupMixin.RemoveTexture` framexml function
-local purgeInsecureVariable = function(table, key)
-	TextureLoadingGroupMixin.RemoveTexture({textures = table}, key)
-end
----@return boolean `true` if mouse is over any DropDownList (including submenus)
-local isMouseOverDropdown = function()
-	for i = 1, UIDROPDOWNMENU_MAXLEVELS or 0 do
-		local dropdown = _G['DropDownList'..i]
-		if dropdown:IsMouseOver() then return true end;
-	end
-	return false
-end
-
-local function PopupClick(self, arg1, arg2, checked)
-	if type(self.value)=="table" then		
-		local handle = Addon.OptionsBuilder.GetSavedVarHandle(self.value, arg1)
-		if handle then
-			handle:SetValue(not handle:GetValue())
-		else
-			self.value[arg1] = not self.value[arg1]
-			self.checked = self.value[arg1]
-		end
-		if arg2 then
-			-- passes old value of `checked`
-			arg2(self.value,arg1,checked)		
-		end
-				
-	elseif type(self.value)=="function" then		
-		self.value(arg1,arg2)		
-	end		
-end
-
----@param text string
----@param disabled boolean
----@param value table|function|nil savedVar db or onclick function
----@param arg1 any? If value is a table, arg1 is the key, else arg1 is the 1st arg for `value`
----@param arg2 any? If value is a function arg2 is the 2nd arg
----@param closeOnClick boolean? If true, the dropdown will close after the button is clicked
-local function PopupAddItem(self,text,disabled,value,arg1,arg2, closeOnClick)
-	local c=self._Frame._GPIPRIVAT_Items.count+1
-	self._Frame._GPIPRIVAT_Items.count=c
-	if not self._Frame._GPIPRIVAT_Items[c] then
-		self._Frame._GPIPRIVAT_Items[c]={}
-	end
-	local t=self._Frame._GPIPRIVAT_Items[c]
-	t.text=text or ""
-	t.disabled=disabled or false
-	t.value=value
-	t.arg1=arg1
-	t.arg2=arg2
-	t.closeOnClick = closeOnClick
-	t.MenuDepth=PopupDepth
-end
-
-local function PopupAddSubMenu(self,text,value)
-	if text~=nil and text~="" then
-		PopupAddItem(self,text,"MENU",value)
-		PopupDepth=value
-	else
-		PopupDepth=nil
-	end
-end
-
-local PopupLastWipeName
-local function PopupWipe(self,WipeName)
-	self._Frame._GPIPRIVAT_Items.count=0
-	PopupDepth=nil	
-	if UIDROPDOWNMENU_OPEN_MENU == self._Frame then
-		ToggleDropDownMenu(nil, nil, self._Frame, self._where, self._x, self._y)
-		if WipeName == PopupLastWipeName then
-			return false
+	local borders = {
+		CreateSizeBorder(frame,"BOTTOM","BOTTOMLEFT", border, border, "BOTTOMRIGHT", -border, 0,"Interface\\CURSOR\\UI-Cursor-SizeLeft",45,OnStart,OnStop),
+		CreateSizeBorder(frame,"TOP","TOPLEFT", border, 0, "TOPRIGHT", -border, -border,"Interface\\CURSOR\\UI-Cursor-SizeLeft",45,OnStart,OnStop),
+		CreateSizeBorder(frame,"LEFT","TOPLEFT", 0,-border, "BOTTOMLEFT", border, border,"Interface\\CURSOR\\UI-Cursor-SizeRight",45,OnStart,OnStop),
+		CreateSizeBorder(frame,"RIGHT","TOPRIGHT",-border,-border, "BOTTOMRIGHT", 0, border,"Interface\\CURSOR\\UI-Cursor-SizeRight",45,OnStart,OnStop),
+		CreateSizeBorder(frame,"TOPLEFT","TOPLEFT", 0,0, "TOPLEFT", border, -border,"Interface\\CURSOR\\UI-Cursor-SizeRight",0,OnStart,OnStop),
+		CreateSizeBorder(frame,"BOTTOMLEFT","BOTTOMLEFT", 0,0, "BOTTOMLEFT", border, border, "Interface\\CURSOR\\UI-Cursor-SizeLeft",0,OnStart,OnStop),
+		CreateSizeBorder(frame,"TOPRIGHT","TOPRIGHT", 0,0, "TOPRIGHT", -border, -border, "Interface\\CURSOR\\UI-Cursor-SizeLeft",0,OnStart,OnStop),
+		CreateSizeBorder(frame,"BOTTOMRIGHT","BOTTOMRIGHT", 0,0, "BOTTOMRIGHT", -border, border, "Interface\\CURSOR\\UI-Cursor-SizeRight",0,OnStart,OnStop),
+	}
+	local setResizingEnabled = function(enabled)
+		for _, border in ipairs(borders) do
+			border:SetScript("OnEnter", enabled and SizingEnter or nil)
+			border:SetScript("OnLeave", enabled and SizingLeave or nil)
+			border:SetScript("OnMouseDown", enabled and SizingStart or nil)
+			border:SetScript("OnMouseUp", enabled and SizingStop or nil)
 		end
 	end
-	PopupLastWipeName=WipeName	
-	return true
+	return setResizingEnabled
 end
 
-local function PopupCreate(frame, level, menuList)
-	if level==nil then return end
-	local info = UIDropDownMenu_CreateInfo()
-
-	for i=1,frame._GPIPRIVAT_Items.count do
-		local val=frame._GPIPRIVAT_Items[i]		
-		if val.MenuDepth==menuList then
-			if val.disabled=="MENU" then
-				info.text=val.text
-				info.notCheckable = true
-				info.disabled=false
-				info.value=nil
-				info.arg1=nil
-				info.arg2=nil
-				info.func=nil
-				info.hasArrow=true
-				info.menuList=val.value
-				--info.isNotRadio=true
-			else
-				info.text=val.text
-				if type(val.value)=="table" then
-					info.checked=val.value[val.arg1] or false
-					info.notCheckable = false
-				else
-					info.notCheckable = true
-				end
-				info.disabled=(val.disabled==true or val.text=="" )
-				info.keepShownOnClick=true
-				info.value=val.value
-				info.arg1=val.arg1
-				if type(val.value)=="table" then			
-					info.arg2=frame._GPIPRIVAT_TableCallback
-				elseif type(val.value)=="function" then
-					info.arg2=val.arg2
-				end		
-				info.func=function(...)
-					PopupClick(...);
-					local popup = addonDropdowns[frame]
-					if val.closeOnClick and popup then PopupWipe(popup) end;
-				end
-				info.hasArrow=false
-				info.menuList=nil
-				--info.isNotRadio=true
-			end
-			for key, _ in pairs(info) do touchedButtonInfoKeys[key] = true end
-			UIDropDownMenu_AddButton(info,level)
-		end
-	end
-end
-
-local function PopupShow(self,where,x,y)
-	where=where or "cursor" 
-	UIDropDownMenu_Initialize(self._Frame, PopupCreate, "MENU")
-	ToggleDropDownMenu(nil, nil, self._Frame, where, x,y)
-	self._where=where
-	self._x=x
-	self._y=y
-end
-function Tool.CreatePopup(TableCallback)
-	local popup={}
-	popup._Frame=CreateFrame("Frame", nil, UIParent, "UIDropDownMenuTemplate")
-	popup._Frame._GPIPRIVAT_TableCallback=TableCallback
-	popup._Frame._GPIPRIVAT_Items={}
-	popup._Frame._GPIPRIVAT_Items.count=0
-	popup.AddItem=PopupAddItem
-	popup.SubMenu=PopupAddSubMenu
-	popup.Show=PopupShow
-	popup.Wipe=PopupWipe
-	addonDropdowns[popup._Frame] = popup
-	return popup
-end
--- hack: whenever any of our dropdowns are hidden purge ANY insecure button variables/member
--- note! I'll refrain from cleaning up taint caused by other addons with this fix mostly because-
--- 	this fix requires buttonInfo to have the `keepShownOnClick` member set true.
--- 	Otherwise this hack would clear the button's `.func` handler before it has the chance to be called-
---	resulting in broken buttons that do nothing when clicked.
-hooksecurefunc("UIDropDownMenu_OnHide", function(listFrame)
-	if not listFrame.dropdown or not addonDropdowns[listFrame.dropdown] then return end;
-	for i = 1, UIDROPDOWNMENU_MAXLEVELS or 0 do
-		for j = 1, UIDROPDOWNMENU_MAXBUTTONS or 0 do
-			local button = _G["DropDownList" .. i .. "Button" .. j]
-			if button then for key, _ in pairs(touchedButtonInfoKeys) do
-				local isSecure, _taintSource = issecurevariable(button, key)
-				if not isSecure then purgeInsecureVariable(button, key) end
-			end; end;
-		end
-	end
-end)
--- Hide dropdown anytime mouse is clicked outside of the dropdown or its anchor region.
-Tool.RegisterEvent("GLOBAL_MOUSE_DOWN",function(event, buttonName)
-	local dropdown = UIDROPDOWNMENU_OPEN_MENU;
-	if not dropdown or not addonDropdowns[dropdown] then return end;
-	local popup = addonDropdowns[dropdown];
-	local anchorFrame;
-	if type(popup._where) == "table" and popup._where.IsMouseOver then anchorFrame = popup._where;
-	elseif type(popup._where) == "string" then anchorFrame = _G[popup._where] end;
-
-	local shouldHide = true
-	if anchorFrame then shouldHide = not (anchorFrame:IsMouseOver() or isMouseOverDropdown());
-	else shouldHide = not isMouseOverDropdown(); end
-	if shouldHide then PopupWipe(popup);  end
-end)
 --------------------------------------------------------------------------------
 -- TAB
 --------------------------------------------------------------------------------
@@ -920,7 +755,7 @@ function Tool.AddDataBrocker(icon,onClick,onTooltipShow,text)
 				OnClick = onClick,
 				OnTooltipShow = onTooltipShow,
 				tocname = TOCNAME,
-				label = text or GetAddOnMetadata(TOCNAME, "Title"),
+				label = text or Addon.Metadata.Title,
 			})
 		end
 	end	
@@ -984,8 +819,8 @@ end
 local function mySlashs(msg)
 	if msg=="help" then
 		local colCmd="|cFFFF9C00"
-		print("|cFFFF1C1C"..GetAddOnMetadata(TOCNAME, "Title") .." ".. GetAddOnMetadata(TOCNAME, "Version") .." by "..GetAddOnMetadata(TOCNAME, "Author"))
-		print(GetAddOnMetadata(TOCNAME, "Notes"))		
+		print(("|cFFFF1C1C %s %s by %s"):format(Addon.Metadata.Title, Addon.Metadata.Version, Addon.Metadata.Author))
+		print(Addon.Metadata.Notes)
 		if type(slashCmd)=="table" then
 			print("SlashCommand:",colCmd,slashUnpack(slashCmd,"|r, "..colCmd),"|r")
 		end

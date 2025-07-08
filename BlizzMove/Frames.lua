@@ -293,7 +293,7 @@ BlizzMoveAPI:RegisterFrames(
     },
     ["GuildInviteFrame"] =
     {
-        MinVersion = 60000, -- Added when?
+        MinVersion = 50000,
     },
     ["GuildRegistrarFrame"] =
     {
@@ -387,14 +387,6 @@ BlizzMoveAPI:RegisterFrames(
                 MinVersion = 60000, -- Added when?
                 MaxVersion = 100000,
                 IgnoreMouseWheel = true,
-            },
-            ["ScenarioQueueFrameSpecific"] =
-            {
-                VersionRanges =
-                {
-                    { Min = 50000, Max = 90000 },
-                    { Min = 100207 },
-                },
             },
         },
     },
@@ -1003,6 +995,7 @@ BlizzMoveAPI:RegisterAddOnFrames(
                 {
                     VersionRanges =
                     {
+                        { Min = 40402, Max = 50000 },
                         { Min = 50500, Max = 60000 },
                         { Min = 100000 },
                     },
@@ -1231,23 +1224,23 @@ BlizzMoveAPI:RegisterAddOnFrames(
                     {
                         ["InspectPVPFrameHonor"] =
                         {
-                            MaxVersion = 70300, -- Removed when?
+                            MaxVersion = 50000, -- Removed when?
                         },
                         ["InspectPVPFrameArena"] =
                         {
-                            MaxVersion = 70300, -- Removed when?
+                            MaxVersion = 50000, -- Removed when?
                         },
                         ["InspectPVPTeam1"] =
                         {
-                            MaxVersion = 70300, -- Removed when?
+                            MaxVersion = 50000, -- Removed when?
                         },
                         ["InspectPVPTeam2"] =
                         {
-                            MaxVersion = 70300, -- Removed when?
+                            MaxVersion = 50000, -- Removed when?
                         },
                         ["InspectPVPTeam3"] =
                         {
-                            MaxVersion = 70300, -- Removed when?
+                            MaxVersion = 50000, -- Removed when?
                         },
                     },
                 },
@@ -1259,7 +1252,7 @@ BlizzMoveAPI:RegisterAddOnFrames(
                 },
                 ["InspectGuildFrame"] =
                 {
-                    MinVersion = 60000, -- Added when?
+                    MinVersion = 50000,
                 },
             },
         },
@@ -1304,7 +1297,7 @@ BlizzMoveAPI:RegisterAddOnFrames(
     {
         ["ItemUpgradeFrame"] =
         {
-            MinVersion = 60000, -- Added when?
+            MinVersion = 50000,
         },
     },
     ["Blizzard_LookingForGroupUI"] =
@@ -1314,7 +1307,7 @@ BlizzMoveAPI:RegisterAddOnFrames(
             VersionRanges =
             {
                 { Min = 11404, Max = 11503 }, -- Backported in a broken state
-                { Min = 20504, Max = 70000 }, -- Moved from FrameXML; Removed when?
+                { Min = 20504, Max = 40000 }, -- Moved from FrameXML; moved to Blizzard_GroupFinder_VanillaStyle
             },
         },
     },

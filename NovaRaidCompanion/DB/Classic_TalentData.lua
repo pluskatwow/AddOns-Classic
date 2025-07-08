@@ -62,7 +62,7 @@ local specData = {
 		[2] = {
 			name = "Marksmanship",
 			icon = 132222,
-			iconPath = "Interface\\Icons\\Interface/Icons/Ability_Marksmanship",
+			iconPath = "Interface\\Icons\\Ability_Marksmanship",
 		},
 		[3] = {
 			name = "Survival",

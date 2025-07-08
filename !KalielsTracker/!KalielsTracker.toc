@@ -1,4 +1,4 @@
-## Interface: 40402
+## Interface: 50500
 ## Title: Kaliel's Tracker
 ## Notes: Cataclysm Classic Objective Tracker
 ## Version: 4.2.1

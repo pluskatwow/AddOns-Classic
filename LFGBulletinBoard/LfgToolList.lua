@@ -322,27 +322,18 @@ local getDebounceHandle = function(func, delay)
 	end
 end
 
-local function WhoRequest(name)
-	GBB.Tool.RunSlashCmd("/who " .. name)
-end
-
-local function WhisperRequest(name)
-	ChatFrame_OpenChat("/w " .. name .." ")
-end
-
-local function InviteRequest(name)
-	GBB.Tool.RunSlashCmd("/invite " .. name)
-end
-
-local function IgnoreRequest(name)
-	for ir,req in pairs(GBB.RequestList) do
-		if type(req) == "table" and req.name == name then
-			req.last=0
+local function autoNestingTable(keyDepth, defaultValue)
+	return setmetatable({}, {
+		__index = function(table, key)
+			local v = keyDepth > 1 and autoNestingTable(keyDepth - 1, defaultValue) or defaultValue
+			rawset(table, key, v);
+			return v
 		end
-	end
-	GBB.ClearNeeded=true
-	C_FriendList.AddIgnore(name)
+	})
 end
+
+-- {[author][listingTimestamp][activityID] = boolean}
+local requestsBlacklist = autoNestingTable(3, false)
 
 -- argument constants used by various methods in the TreeDataProviderNodeMixin
 -- here to make the source more readable.
@@ -356,60 +347,11 @@ local DataProviderConsts = {
 	SkipSort = true,
 	DoSort = false,
 }
-local setAllHeadersCollapsed ---@type function
-local toggleHeaderCollapseByKey ---@type function
-local function createMenu(DungeonID,req) -- shared right-click menu for headers and requests
-	if not GBB.PopupDynamic:Wipe("request"..(DungeonID or "nil")..(req and "request" or "nil")) then
-		return
-	end
-	if req then
-		GBB.PopupDynamic:AddItem(string.format(GBB.L["BtnWho"],req.name),false,WhoRequest,req.name,nil,true)
-		GBB.PopupDynamic:AddItem(string.format(GBB.L["BtnWhisper"],req.name),false,WhisperRequest,req.name,nil,true)
-		GBB.PopupDynamic:AddItem(string.format(GBB.L["BtnInvite"],req.name),false,InviteRequest,req.name,nil,true)
-		GBB.PopupDynamic:AddItem(string.format(GBB.L["BtnIgnore"],req.name),false,IgnoreRequest,req.name,nil,true)
-		GBB.PopupDynamic:AddItem("",true)
-	end
-	if DungeonID then
-		GBB.PopupDynamic:AddItem(GBB.L["BtnFold"], false, toggleHeaderCollapseByKey, DungeonID, nil, true)
-		GBB.PopupDynamic:AddItem(GBB.L["BtnFoldAll"], false, setAllHeadersCollapsed, true, nil, true)
-		GBB.PopupDynamic:AddItem(GBB.L["BtnUnFoldAll"], false, setAllHeadersCollapsed, false, nil, true)
-		GBB.PopupDynamic:AddItem("",true)
-	end
-	GBB.PopupDynamic:AddItem(GBB.L["CboxShowTotalTime"],false,GBB.DB,"ShowTotalTime")
-	GBB.PopupDynamic:AddItem(GBB.L["CboxOrderNewTop"],false,GBB.DB,"OrderNewTop")
-	GBB.PopupDynamic:AddItem(GBB.L["CboxEnableShowOnly"],false,GBB.DB,"EnableShowOnly")
-	GBB.PopupDynamic:AddItem(GBB.L["CboxChatStyle"],false,GBB.DB,"ChatStyle")
-	GBB.PopupDynamic:AddItem(GBB.L["CboxCompactStyle"],false,GBB.DB,"CompactStyle")
-	GBB.PopupDynamic:AddItem(GBB.L["CboxDontTrunicate"],false,GBB.DB,"DontTrunicate")
-	GBB.PopupDynamic:AddItem("",true)
-	GBB.PopupDynamic:AddItem(GBB.L["CboxNotifySound"],false,GBB.DB,"NotifySound")
-	GBB.PopupDynamic:AddItem(GBB.L["CboxNotifyChat"],false,GBB.DB,"NotifyChat")
-	GBB.PopupDynamic:AddItem(GBB.L["CboxRemoveRealm"],false,GBB.DB,"RemoveRealm")
-	GBB.PopupDynamic:AddItem("",true)
-	GBB.PopupDynamic:AddItem(SETTINGS, false, GBB.OptionsBuilder.OpenCategoryPanel, 1)
-	GBB.PopupDynamic:AddItem(GBB.L["BtnCancel"], false, nil, nil, nil, true)
-	GBB.PopupDynamic:Show()
-end
 --------------------------------------------------------------------------------
 -- Dungeon/Category Header frame setup
 --------------------------------------------------------------------------------
 
----@param self Button|TreeDataProviderNodeMixin
----@param clickType mouseButton
----@param isMouseDown boolean
-local dungeonHeaderClickHandler = function(self, clickType, isMouseDown)
-	if clickType == "LeftButton" then
-		if IsShiftKeyDown() then
-			local shouldCollapse = not self:IsCollapsed()
-			setAllHeadersCollapsed(shouldCollapse)
-		else
-			self:ToggleCollapsed(DataProviderConsts.ExcludeChildren, DataProviderConsts.DoInvalidation)
-		end
-	elseif clickType == "RightButton" then
-		createMenu(self:GetData().dungeon)
-	end
-end
-setAllHeadersCollapsed = function(shouldCollapse)
+local setAllHeadersCollapsed = function(shouldCollapse)
 	local scrollView = LFGTool.ScrollContainer.scrollView
 	scrollView.dataProvider.node:SetChildrenCollapsed(shouldCollapse,
 		DataProviderConsts.ExcludeChildren, DataProviderConsts.SkipInvalidation
@@ -423,13 +365,38 @@ setAllHeadersCollapsed = function(shouldCollapse)
 	for key, _ in pairs(GBB.FoldedDungeons) do GBB.FoldedDungeons[key] = shouldCollapse end
 	scrollView.dataProvider:Invalidate()
 end
-toggleHeaderCollapseByKey = function(key)
+local toggleHeaderCollapseByKey = function(key)
 	LFGTool.ScrollContainer.scrollView:ForEachFrame(function(frame, node)
 		if node.data.isHeader and node.data.dungeon == key then
 			frame:ToggleCollapsed(DataProviderConsts.ExcludeChildren, DataProviderConsts.DoInvalidation);
 		end
 	end)
 end
+local sharedMenuHeaderAPI = {
+	fold = {
+		isSelected = function(dungeonKey) return GBB.FoldedDungeons[dungeonKey] end,
+		setSelected = function(dungeonKey) toggleHeaderCollapseByKey(dungeonKey) end,
+	},
+	foldAll = { onSelect = function() setAllHeadersCollapsed(true) end },
+	unfoldAll = { onSelect = function() setAllHeadersCollapsed(false) end },
+}
+---@param self Button|TreeDataProviderNodeMixin
+---@param clickType mouseButton
+---@param isMouseDown boolean
+local dungeonHeaderClickHandler = function(self, clickType, isMouseDown)
+	if clickType == "LeftButton" then
+		if IsShiftKeyDown() then
+			local shouldCollapse = not self:IsCollapsed()
+			setAllHeadersCollapsed(shouldCollapse)
+		else
+			self:ToggleCollapsed(DataProviderConsts.ExcludeChildren, DataProviderConsts.DoInvalidation)
+		end
+	elseif clickType == "RightButton" then
+		local dungeonKey = self:GetData().dungeon
+		GBB.CreateSharedBoardContextMenu(self, dungeonKey, sharedMenuHeaderAPI)
+	end
+end
+
 local elementExtentByData = {}
 local function InitializeHeader(header, node)
 	---@class HeaderButton: Button, ScrollElementAccessorsMixin
@@ -589,13 +556,33 @@ do
 		gridContainer:Hide()
 	end
 end
+
+local sharedMenuRequestAPI = {
+	dismissRequest = {
+		---@param req LFGToolRequestData
+		onSelect = function(req)
+			---@type TreeDataProviderMixin
+			local dataProvider = LFGTool.ScrollContainer.scrollBox:GetDataProvider()
+			for _, node in dataProvider:Enumerate(nil, nil, DataProviderConsts.IncludeCollapsed) do
+				if node.data.req
+					and node.data.req.name == req.name
+					and node.data.req.activityID == req.activityID
+				then
+					requestsBlacklist[req.name][req.listingTimestamp][req.activityID] = true
+					dataProvider:Remove(node, DataProviderConsts.DoInvalidation)
+					return;
+				end
+			end
+		end
+	}
+}
 ---@param self Frame|TreeDataProviderNodeMixin
 ---@param clickType mouseButton
 local requestEntryClickHandler = function(self, clickType)
 	local req = self:GetData().req ---@type LFGToolRequestData
 	if clickType == "LeftButton" then
 		if IsShiftKeyDown() then
-			WhoRequest(req.name)
+			GBB.Tool.RunSlashCmd("/who " .. req.name)
 		elseif IsAltKeyDown() then
 			GBB.SendJoinRequestMessage(req.name, req.dungeon, req.isHeroic)
 		elseif IsControlKeyDown() then
@@ -616,7 +603,7 @@ local requestEntryClickHandler = function(self, clickType)
 			end
 		end
 	else -- on right click
-		createMenu(nil, req)
+		GBB.CreateSharedBoardContextMenu(self, req, sharedMenuRequestAPI)
 	end
 end
 ---@param entry RequestEntryFrame|ScrollElementAccessorsMixin
@@ -674,7 +661,7 @@ local function InitializeEntryItem(entry, node)
 		entry.Name:SetJustifyV("TOP")
 		entry.Message:SetJustifyH("LEFT")
 		entry.Message:SetNonSpaceWrap(false)
-		if GBB.DontTrunicate then GBB.ClearNeeded=true end
+
 		-- add highlight hover tex. Draw on "HIGHTLIGHT" layer to use base xml highlighting script
 		local hoverTex = entry:CreateTexture(nil, "HIGHLIGHT")
 		-- padding used compensate text clipping out of its containing frame
@@ -1121,7 +1108,8 @@ function LFGTool:UpdateRequestList()
                 message = (message ~= "" and strjoin(" ", message, searchResultData.comment)) or searchResultData.comment
             end
 			GBB.RealLevel[leaderInfo.name] = leaderInfo.level
-			for _, activityID in pairs(searchResultData.activityIDs) do
+			local activityBlacklist = requestsBlacklist[leaderInfo.name][listingTimestamp]
+			for _, activityID in pairs(searchResultData.activityIDs) do if not activityBlacklist[activityID] then
 				local activityInfo = C_LFGList.GetActivityInfoTable(activityID)
 				-- DevTool:AddData(activityInfo, resultID)
 				local dungeonKey = getActivityDungeonKey(activityInfo.fullName, activityID)
@@ -1161,7 +1149,7 @@ function LFGTool:UpdateRequestList()
 					memberRoleCounts = C_LFGList.GetSearchResultMemberCounts(resultID),
 				}
 				table.insert(self.requestList, entry)
-			end
+			end end
 		end
     end
 	return self.requestList

@@ -323,6 +323,9 @@ function NRC:encounterStartRD(...)
 		if (NRC.isClassic) then
 			encounter.chronoCache = NRC:tableCopy(NRC.chronoCache);
 		end
+		if (NRC.expansionNum > 4) then
+			encounter.glyphCache = NRC:copyRaidGlyphs();
+		end
 		--Check if talents have changed and only record if they are different.
 		--We don't want to record talent cache for every boss to save load times.
 		--Encounters are saved in order so we can just check last recorded talents before the encounter for buff snapshot viewing.
@@ -337,7 +340,7 @@ end
 
 function NRC:encounterEndRD(encounterID, encounterName, difficultyID, groupSize, success)
 	if (NRC.raid) then
-		if (encounter and GetServerTime() - encounter.startTime < 20) then
+		if (encounter and GetServerTime() - encounter.startTime < 2 and IsInGroup()) then
 			encounter = nil;
 			return;
 		elseif (encounter) then
@@ -445,33 +448,56 @@ local function combatLogEventUnfiltered(...)
 			end
 		elseif (subEvent == "UNIT_DIED") then
 			local raid = NRC.raid;
-			local _, _, _, _, zoneID, npcID = strsplit("-", destGUID);
-			--zoneID = tonumber(zoneID);
-			npcID = tonumber(npcID);
-			if (strfind(destGUID, "Creature")
-					and bitband(destFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) == COMBATLOG_OBJECT_REACTION_HOSTILE) then
-				if (not NRC.critterCreatures[npcID] and not NRC.companionCreatures[npcID] and not NRC.ignoredCreatures[npcID]) then
-					if (not raid.npcDeaths[npcID]) then
-						raid.npcDeaths[npcID] = {};
-						raid.npcDeaths[npcID].name = destName;
-						raid.npcDeaths[npcID].count = 1;
-					else
-						raid.npcDeaths[npcID].count = raid.npcDeaths[npcID].count + 1;
+			if (raid) then
+				local _, _, _, _, _, npcID = strsplit("-", destGUID);
+				--zoneID = tonumber(zoneID);
+				npcID = tonumber(npcID);
+				if (strfind(destGUID, "Creature")) then
+					if (bitband(destFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) == COMBATLOG_OBJECT_REACTION_HOSTILE) then
+						if (not NRC.critterCreatures[npcID] and not NRC.companionCreatures[npcID] and not NRC.ignoredCreatures[npcID]) then
+							if (not raid.npcDeaths[npcID]) then
+								raid.npcDeaths[npcID] = {};
+								raid.npcDeaths[npcID].name = destName;
+								raid.npcDeaths[npcID].count = 1;
+							else
+								raid.npcDeaths[npcID].count = raid.npcDeaths[npcID].count + 1;
+							end
+							if (not raid.firstTrash) then
+								raid.firstTrash = GetServerTime();
+							end
+						end
 					end
-					if (not raid.firstTrash) then
-						raid.firstTrash = GetServerTime();
+				elseif (strfind(destGUID, "Player")) then
+					local _, class = GetPlayerInfoByGUID(destGUID);
+					if (class == "HUNTER" and feignCache[destGUID] and GetTime() - feignCache[destGUID] < 1) then
+						--If a hunter feigned death within the last second.
+						NRC:debug(destName, "hunter feigned, not recording death");
+					else
+						if (not raid.playerDeaths) then
+							raid.playerDeaths = {};
+							raid.playerDeaths.trash = 0;
+						end
+						if (encounter) then
+							if (not raid.playerDeaths[encounter.encounterID]) then
+								raid.playerDeaths[encounter.encounterID] = {
+									encounterName = encounter.encounterName;
+									count = 0;
+								};
+							end
+							raid.playerDeaths[encounter.encounterID].count = raid.playerDeaths[encounter.encounterID].count + 1;
+						else
+							raid.playerDeaths.trash = raid.playerDeaths.trash + 1;
+						end
 					end
 				end
-			end
-			if (npcID == 21216) then
-				--Hydross the Unstable has no encounter_end success event so add it manually.
-				--Just incase it one day starts working add a check for success already there.
-				--Not sure if encounter end fires first or death event fires first always in the same order.
-				--So check if encounter still running first.
-				--if (encounter and encounter.encounterID == 623) then
-				--	encounter.success = 1;
-				--elseif (raid) then
-				if (raid) then
+				if (npcID == 21216) then
+					--Hydross the Unstable has no encounter_end success event so add it manually.
+					--Just incase it one day starts working add a check for success already there.
+					--Not sure if encounter end fires first or death event fires first always in the same order.
+					--So check if encounter still running first.
+					--if (encounter and encounter.encounterID == 623) then
+					--	encounter.success = 1;
+					--elseif (raid) then
 					--I think sometimes death fires before encounter_end and then encounter_end overwrites our success here with a failure.
 					--So add a short delay.
 					C_Timer.After(2, function()
@@ -695,15 +721,38 @@ end
 	end
 end]]
 
-local function getEncounterData(id)
-	if (NRC.encounters[id]) then
-		return unpack(NRC.encounters[id]);
+--
+function NRC:encounterToJournalID(encounterID)
+	if (NRC.encounterIDJournalMap and NRC.encounterIDJournalMap[encounterID]) then
+		return NRC.encounterIDJournalMap[encounterID];
 	end
 end
 
-local function getInstanceTextures(id)
-	if (NRC.instanceTextures[id]) then
-		return unpack(NRC.instanceTextures[id]);
+local function getEncounterData(encounterID)
+	--local id, name, description, displayInfo, iconImage, uiModelSceneID = getEncounterData(v.encounterID);
+	local journalEncounterID = NRC:encounterToJournalID(encounterID);
+	if (journalEncounterID) then
+		--If we can get a journalEncounterID then we can use the ingame API instead of our db file.
+		--index is 1 for first boss for this encounter (this exists for encounters with multiple bosses).
+		local id, name, description, displayInfo, iconImage, uiModelSceneID = EJ_GetCreatureInfo(1, journalEncounterID);
+		return id, name, description, displayInfo, iconImage, uiModelSceneID;
+	end
+	if (NRC.encounters[encounterID]) then
+		return unpack(NRC.encounters[encounterID]);
+	end
+end
+
+local function getInstanceTextures(instanceID)
+	if (C_EncounterJournal and C_EncounterJournal.GetInstanceForGameMap) then
+		local journalInstanceID = C_EncounterJournal.GetInstanceForGameMap(instanceID)
+		if (journalInstanceID) then
+			local name, description, bgImage, buttonImage1, loreImage, buttonImage2, dungeonAreaMapID, link, shouldDisplayDifficulty, mapID
+					= EJ_GetInstanceInfo(journalInstanceID);
+			return name, description, bgImage, buttonImage1, loreImage, buttonImage2, dungeonAreaMapID;
+		end
+	end
+	if (NRC.instanceTextures[instanceID]) then
+		return unpack(NRC.instanceTextures[instanceID]);
 	end
 end
 
@@ -714,7 +763,20 @@ local function getDeathData(id)
 	end
 	local count, bossCount, trashCount = 0, 0, 0;
 	local deathData = {};
-	if (data.group) then
+	if (data.playerDeaths) then
+		--New way.
+		if (data.playerDeaths.trash) then
+			trashCount = data.playerDeaths.trash;
+			count = count + data.playerDeaths.trash;
+		end
+		for k, v in pairs(data.playerDeaths) do
+			if (k ~= "trash") then
+				bossCount = bossCount + v.count;
+				count = count + v.count;
+			end
+		end
+	elseif (data.group) then
+		--Old way.
 		for guid, playerData in pairs(data.group) do
 			if (playerData.deaths) then
 				for k, v in pairs(playerData.deaths) do
@@ -743,7 +805,14 @@ local function getDeathsByEncounter(id, encounterID)
 	end
 	local count = 0;
 	local deathData = {};
-	if (data.group) then
+	if (data.playerDeaths) then
+		--New way.
+		for k, v in pairs(data.playerDeaths) do
+			if (k == encounterID) then
+				count = count + v.count;
+			end
+		end
+	elseif (data.group) then
 		for guid, playerData in pairs(data.group) do
 			for k, v in pairs(playerData.deaths) do
 				if (v.encounterID == encounterID) then
@@ -1194,7 +1263,7 @@ local function getTrashCount(logID)
 		else
 			--Else add all npcs to the trash list.
 			for k, v in pairs(data.npcDeaths) do
-				trashCount = trashCount + v.count;
+				trashCount = trashCount + (v.count or 0);
 			end
 		end
 	end
@@ -2126,6 +2195,9 @@ function NRC:loadRaidLogInstance(logID)
 				NRC.raidStatusCache.encounterID = v.encounterID;
 				NRC.raidStatusCache.success = v.success;
 				NRC.raidStatusCache.startTime = v.startTime;
+				NRC.raidStatusCache.playerName = data.playerName;
+				NRC.raidStatusCache.playerGUID = data.playerGUID;
+				NRC.raidStatusCache.attemptID = attemptID;
 				NRC:openRaidStatusFrame(true, true, attemptID);
 			end)
 			frame.button3:SetScript("OnClick", function(self, arg)
@@ -3459,7 +3531,7 @@ function NRC:loadRaidTalents(logID, encounterID, encounterName, attemptID)
 	end
 	local text = "|cFFFFFF00" .. L["Talent Snapshot for"] .. " " .. encounterName .. "|r";
 	local text2 = "";
-	local talents = NRC:getAllTalentsFromEncounter(logID, encounterID, attemptID);
+	local talents, glyphs = NRC:getAllTalentsFromEncounter(logID, encounterID, attemptID);
 	if (not talents) then
 		text2 = text2 .. "|cFFFFFFFF" .. L["No talents found"] .. ".";
 		raidLogFrame.scrollChild.fs:SetText(text);
@@ -3478,18 +3550,27 @@ function NRC:loadRaidTalents(logID, encounterID, encounterName, attemptID)
 		trees = {strsplit("-", trees, 4)};
 		local _, _, _, classHex = NRC.getClassColor(classEnglish);
 		local colorizedName = "|c" .. classHex .. k .. "|r";
-		local icon = "|T" .. specIconPath .. ":17:17:0:-1|t";
-		local treeString = "|cFF9CD6DE(" .. treeData[1] .. "/" .. treeData[2] .. "/" .. treeData[3] .. ")|r";
-		local text3 = colorizedName .. "  " .. treeString .. "  |cFF9CD6DE" .. specName .. "|r";
+		local icon = "|T" .. (specIconPath or specIcon or 0) .. ":17:17:0:-1|t";
+		local treeString = "";
+		if (NRC.expansionNum < 5) then
+			treeString = "|cFF9CD6DE(" .. treeData[1] .. "/" .. treeData[2] .. "/" .. treeData[3] .. ")|r";
+		end
+		local text3 = colorizedName .. "  " .. treeString .. "  |cFF9CD6DE" .. (specName or "") .. "|r";
 		local button = raidLogFrame.getExtraButton(count);
 		button:SetSize(280, 20);
 		button.fs2:SetText(text3);
 		button.fs3:SetText(icon);
 		--button:SetPoint("TOPRIGHT", raidLogFrame.scrollChild.fs3, "TOPLEFT", -15, -(offset * count));
 		button:SetPoint("TOP", raidLogFrame.scrollChild, "TOP", 0, -(40 + (offset * count)));
-		button:SetScript("OnClick", function(self, arg)
-			NRC:openTalentFrame(k, talentString);
-		end)
+		if (glyphs[k]) then
+			button:SetScript("OnClick", function(self, arg)
+				NRC:openTalentFrame(k, talentString, nil, nil, nil, glyphs[k]);
+			end)
+		else
+			button:SetScript("OnClick", function(self, arg)
+				NRC:openTalentFrame(k, talentString);
+			end)
+		end
 		button:Show();
 	end
 	raidLogFrame.scrollChild.fs:SetText(text);
@@ -5913,13 +5994,15 @@ function NRC:enteredInstanceRD(isReload, isLogon)
 		end
 		local instanceNameMsg = instanceName;
 		local raidID;
-		if (not isReload) then
+		--Check NRC.db.global.instances[1] incase it's a first install and they did /reload.
+		if (not isReload or not NRC.db.global.instances[1]) then
 			--Increment new unique raidID.
 			raidID = NRC:getNewRaidID();
 			local class, classEnglish = UnitClass("player");
 			local t = {
 				raidID = raidID,
 				playerName = UnitName("player"),
+				playerGUID = UnitGUID("player"),
 				class = class,
 				classEnglish = classEnglish,
 				instanceName = instanceName,
@@ -6102,6 +6185,26 @@ function NRC:mergeInstancesRD(instanceOne, instanceTwo, GUID, source)
 		elseif (NRC.db.global.instances[instanceTwo].npcDeaths and NRC.db.global.instances[instanceTwo].npcDeaths[k]
 				and NRC.db.global.instances[instanceTwo].npcDeaths[k].count and v.count) then
 			NRC.db.global.instances[instanceTwo].npcDeaths[k].count = NRC.db.global.instances[instanceTwo].npcDeaths[k].count + v.count;
+		end
+	end
+	--Merge player deaths, npc death could be the first event seen that triggers merge.
+	if (data.playerDeaths) then
+		for k, v in pairs(data.playerDeaths) do
+			if (not NRC.db.global.instances[instanceTwo].playerDeaths) then
+				NRC.db.global.instances[instanceTwo].playerDeaths = {};
+				NRC.db.global.instances[instanceTwo].playerDeaths.trash = 0;
+			end
+			if (k == "trash") then
+				NRC.db.global.instances[instanceTwo].playerDeaths.trash = NRC.db.global.instances[instanceTwo].playerDeaths.trash + v;
+			else
+				if (not NRC.db.global.instances[instanceTwo].playerDeaths[k]) then
+					NRC.db.global.instances[instanceTwo].playerDeaths[k] = {
+						encounterName = v.encounterName;
+						count = 0;
+					};
+				end
+				NRC.db.global.instances[instanceTwo].playerDeaths[k].count = NRC.db.global.instances[instanceTwo].playerDeaths[k].count + v.count;
+			end
 		end
 	end
 	--Merge encounters, insert encounters from the later instance to the first entered instance.

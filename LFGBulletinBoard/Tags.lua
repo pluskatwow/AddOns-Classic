@@ -218,7 +218,7 @@ local dungeonTags = {
 		zhCN = "厄运西",
 	},
 	DMN = { -- Dire Maul - Gordok Commons (DMN pre-cata)
-		enGB = "dmn dmnorth north tribute",
+		enGB = "dmn dmnorth north tribute dmt",
 		deDE = "tribut dbn nord dbnord",
 		ruRU = "дмн дмсевер север трибут трибьют",
 		frFR = "tribut nord",
@@ -941,6 +941,41 @@ local dungeonTags = {
 	NULL = { -- Prince Sarsarun
 	},
 
+	-- Mists of Pandaria specific dungeons/raids
+	MSV = { -- "Mogu'shan Vaults"
+		enGB = "msv vaults",
+    },
+    NIUZAO_TEMPLE = { -- "Siege of Niuzao Temple"
+		enGB = "niu niuzao temple nt",
+    },
+    SETTING_SUN = { -- "Gate of the Setting Sun"
+		enGB = "goss gate",
+    },
+	SCARLET_HALLS = { -- "Scarlet Halls"
+		enGB = "scarlet halls sh",
+    },
+    TOT = { -- "Throne of Thunder"
+		enGB = "tot tot10 tot25",
+    },
+    MSP = { -- "Mogu'shan Palace"
+		enGB = "palace msp",
+    },
+    TOTJS = { -- "Temple of the Jade Serpent"
+		enGB = "jade serpent totjs",
+    },
+    SPM = { -- "Shado-Pan Monastery"
+		enGB = "monastery spm",
+    },
+    BREWERY = { -- "Stormstout Brewery"
+		enGB = "brewery stormstout sb brew",
+    },
+    TERRACE = { -- "Terrace of Endless Spring"
+		enGB = "terrace tes toes",
+    },
+    HEART_OF_FEAR = { -- "Heart of Fear"
+		enGB = "heart hof",
+    },
+
 	-- PvP
 	RBG = { -- 10v10 Rated Battleground
 		enGB = "rbgs rbg rated",
@@ -1013,7 +1048,23 @@ local dungeonTags = {
 		frFR = nil,
 		zhTW = nil,
 		zhCN = nil,
-	}
+	},
+	SSM = { -- Silvershard Mines
+		enGB = "ssm silvershard",
+		deDE = nil,
+		ruRU = nil,
+		frFR = nil,
+		zhTW = nil,
+		zhCN = nil,
+	},
+	KOTMOGU = { -- Temple of Kotmogu
+		enGB = "kotmogu",
+		deDE = nil,
+		ruRU = nil,
+		frFR = nil,
+		zhTW = nil,
+		zhCN = nil,
+	},
 }
 if isSoD then
 	local sodSpecificTags = { -- appended to associated dungeonTags
@@ -1069,7 +1120,7 @@ local miscTags = {
 	  zhTW = "傳送 開門 拉人",
 	  zhCN = "传送 开门 拉人",
 	},
-	MISC = { --[[Misc messages, no defined tags. see `GBB.GetDungeons`]]},
+	MISC = { --[[Misc messages, no defined tags. see getRequestDungeons in RequestList.lua]]},
 }
 
 --- Secondary Dungeon Tags: used for groupable categories such as Scarlet Monastery
@@ -1106,8 +1157,16 @@ GBB.heroicTagsLoc = langSplit(heroicTags)
 GBB.Misc = (function() local t = {}; for k, _ in pairs(miscTags) do table.insert(t,k); end return t; end)()
 
 GBB.dungeonTagsLoc = dungeonTagsLoc
+
+-- todo: this is a hack to only use this system for Cata+ clients
+if WOW_PROJECT_ID >= WOW_PROJECT_CATACLYSM_CLASSIC then
+	GBB.Dungeons.ProcessActivityInfo()
+end
+
 -- Remove any unused dungeon tags based on game version
 local clientDungeonKeys = GBB.GetSortedDungeonKeys() -- includes raids/bgs/dungeons for all valid expansions.
+assert(next(clientDungeonKeys), "No client dungeons found. Was `ProcessActivityInfo()` called?")
+
 clientDungeonKeys = (function() ---@type table<string, boolean> convert to map
 	local t = {}; for _, key in ipairs(clientDungeonKeys) do t[key] = true; end return t;
 end)()

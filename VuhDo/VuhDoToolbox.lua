@@ -45,6 +45,8 @@ local FindAura = AuraUtil.FindAura;
 local FindAuraByName = AuraUtil.FindAuraByName;
 local IsUsableItem = IsUsableItem or C_Item.IsUsableItem;
 local IsUsableSpell = IsUsableSpell or C_Spell.IsSpellUsable;
+local GetSpecialization = GetSpecialization or C_SpecializationInfo.GetSpecialization;
+local GetSpecializationInfo = GetSpecializationInfo or C_SpecializationInfo.GetSpecializationInfo;
 
 -- Number of seconds into the future to look for incoming heals
 -- This ensures we only include the next incoming tick of HoTs
@@ -77,6 +79,18 @@ VUHDO_META_NEW_ARRAY = {
 		return tValue;
 	end
 };
+
+
+
+--
+function VUHDO_tableCreate(...)
+
+	local tTable = { };
+
+	return tTable;
+
+end
+local tcreate = table.create or VUHDO_tableCreate;
 
 
 
@@ -616,7 +630,7 @@ function VUHDO_splitStringQuoted(aText)
 			tToken = string.gsub(tToken, [[^(['"])]], "");
 			tToken = string.gsub(tToken, [[(['"])$]], "");
 
-			table.insert(tSplit, tToken); 
+			tinsert(tSplit, tToken);
 		end
 	end
 
@@ -789,6 +803,12 @@ end
 function VUHDO_initTalentSpellCaches()
 
 	if not C_ClassTalents then
+		return;
+	end
+
+	if InCombatLockdown() then
+		-- avoid expensive malloc on talent re-scan during combat
+		-- SPELLS_CHANGED handler calls this on spell morph e.g. Priest 'Premonition'
 		return;
 	end
 
@@ -1298,12 +1318,12 @@ end
 function VUHDO_tableToString(tbl)
   local result, done = {}, {}
   for k, v in ipairs( tbl ) do
-    table.insert( result, VUHDO_tableValueToString( v ) )
+    tinsert( result, VUHDO_tableValueToString( v ) )
     done[ k ] = true
   end
   for k, v in pairs( tbl ) do
     if not done[ k ] then
-      table.insert( result,
+      tinsert( result,
         VUHDO_tableKeyToString( k ) .. "=" .. VUHDO_tableValueToString( v ) )
     end
   end
@@ -1753,13 +1773,13 @@ local function VUHDO_tokenizeByWord(aString)
 
 	-- first try to split on camel case
 	for tWord in string.gmatch(aString, "%u%U*") do
-		table.insert(tTokens, tWord);
+		tinsert(tTokens, tWord);
 	end
 
 	-- fallback to split on whitespace
 	if #tTokens < 1 then
 		for tWord in string.gmatch(aString, "%S+") do
-			table.insert(tTokens, tWord);
+			tinsert(tTokens, tWord);
 		end
 	end
 
@@ -1780,13 +1800,13 @@ local function VUHDO_tokenizeByNGram(aString, aLength)
 	tNGrams = { };
 
 	if aLength > #aString then
-		table.insert(tNGrams, aString);
+		tinsert(tNGrams, aString);
 
 		return tNGrams;
 	end
 
 	for tCnt = 1, strlen(aString) - aLength + 1 do
-		table.insert(tNGrams, string.sub(aString, tCnt, tCnt + aLength - 1));
+		tinsert(tNGrams, string.sub(aString, tCnt, tCnt + aLength - 1));
 	end
 
 	return tNGrams;
@@ -1861,15 +1881,237 @@ end
 
 
 
+--
+local VUHDO_REGISTERED_TABLE_POOLS = {};
+
+
+
+--
+function VUHDO_cleanupListNodeDelegate(aNode)
+
+	aNode["auraInstanceId"] = nil;
+	aNode["prev"] = nil;
+
+	return;
+
+end
+
+
+
+--
+local tNode;
+function VUHDO_createListNodeDelegate()
+
+	tNode = tcreate(0, 2);
+
+	tNode["auraInstanceId"] = nil;
+	tNode["prev"] = nil;
+
+	return tNode;
+
+end
+
+
+
+--
+VUHDO_TABLE_POOL_PROFILE = false;
+local VUHDO_DEFAULT_MAX_POOL_SIZE = 200;
+local tMaxPoolSize;
+function VUHDO_createTablePool(aPoolName, aMaxPoolSize, aCreateDelegate, aCleanupDelegate)
+
+	tMaxPoolSize = aMaxPoolSize or VUHDO_DEFAULT_MAX_POOL_SIZE;
+
+	local tPool = {
+		["poolData"] = tcreate(tMaxPoolSize),
+		["maxSize"] = tMaxPoolSize,
+		["createDelegate"] = aCreateDelegate or function() return { }; end,
+		["cleanupDelegate"] = aCleanupDelegate,
+		["_twipe"] = twipe,
+		["metrics"] = {
+			["hits"] = 0,
+			["misses"] = 0,
+			["peakIdleCount"] = 0,
+			["rejectedReleases"] = 0,
+		}
+	};
+
+	local tIsProfile;
+	local tMetrics;
+	local tPoolSize;
+	local tObject;
+	function tPool:get()
+
+		tIsProfile = VUHDO_TABLE_POOL_PROFILE;
+
+		if tIsProfile then
+			tMetrics = self["metrics"];
+		end
+
+		tPoolSize = #self["poolData"];
+
+		if tPoolSize > 0 then
+			tObject = self["poolData"][tPoolSize];
+			self["poolData"][tPoolSize] = nil;
+
+			if tIsProfile then
+				tMetrics["hits"] = tMetrics["hits"] + 1;
+			end
+
+			return tObject;
+		else
+			if tIsProfile then
+				tMetrics["misses"] = tMetrics["misses"] + 1;
+			end
+
+			return self["createDelegate"]();
+		end
+
+	end
+
+	local tIsProfile;
+	local tMetrics;
+	local tPoolSize;
+	function tPool:release(aObject)
+
+		tIsProfile = VUHDO_TABLE_POOL_PROFILE;
+
+		if tIsProfile then
+			tMetrics = self["metrics"];
+		end
+
+		tPoolSize = #self["poolData"];
+
+		if aObject and tPoolSize < self["maxSize"] then
+			if self["cleanupDelegate"] then
+				self["cleanupDelegate"](aObject);
+			else
+				self["_twipe"](aObject);
+			end
+
+			tinsert(self["poolData"], aObject);
+
+			if tIsProfile then
+				tMetrics["peakIdleCount"] = max(tMetrics["peakIdleCount"], tPoolSize + 1);
+			end
+		elseif aObject and tIsProfile then
+			tMetrics["rejectedReleases"] = tMetrics["rejectedReleases"] + 1;
+		end
+
+		return;
+
+	end
+
+	local tMetrics;
+	local tIdleCount;
+	function tPool:getMetrics()
+
+		tMetrics = self["metrics"];
+		tIdleCount = #self["poolData"];
+
+		return {
+			["hits"] = tMetrics["hits"],
+			["misses"] = tMetrics["misses"],
+			["peakIdleCount"] = tMetrics["peakIdleCount"],
+			["rejectedReleases"] = tMetrics["rejectedReleases"],
+			["currentIdle"] = tIdleCount,
+			["maxSize"] = self["maxSize"],
+		};
+
+	end
+
+	local tMetrics;
+	function tPool:resetMetrics()
+
+		tMetrics = self["metrics"];
+		tMetrics["hits"] = 0;
+		tMetrics["misses"] = 0;
+		tMetrics["peakIdleCount"] = #self["poolData"];
+		tMetrics["rejectedReleases"] = 0;
+
+		return;
+
+	end
+
+	if type(aPoolName) == "string" and aPoolName ~= "" then
+		VUHDO_REGISTERED_TABLE_POOLS[aPoolName] = tPool;
+	else
+		VUHDO_Msg("Warning: An unnamed table pool was created.");
+	end
+
+	return tPool;
+
+end
+
+
+
+--
+local function VUHDO_getTablePools()
+
+	return VUHDO_REGISTERED_TABLE_POOLS;
+
+end
+
+
+
+--
+local tPoolStats;
+function VUHDO_printPoolStats()
+
+	VUHDO_Msg("|cffFFD100Table Pool Stats:|r");
+
+	for tName, tPool in pairs(VUHDO_getTablePools()) do
+		if tPool and tPool.getMetrics then
+			tPoolStats = tPool:getMetrics();
+
+			VUHDO_Msg(string.format("    Pool[%s] (Max:%d CurIdle:%d PeakIdle:%d): Hits=%d Misses=%d Rejected=%d",
+				tName, tPoolStats["maxSize"], tPoolStats["currentIdle"], tPoolStats["peakIdleCount"],
+				tPoolStats["hits"], tPoolStats["misses"], tPoolStats["rejectedReleases"]));
+		else
+			VUHDO_Msg(string.format("    Pool[%s]: Not available or invalid.", tName));
+		end
+
+	end
+
+	return;
+
+end
+
+
+
+--
+function VUHDO_resetPoolStats()
+
+	for _, tPool in pairs(VUHDO_getTablePools()) do
+		if tPool and tPool.resetMetrics then
+			tPool:resetMetrics();
+		end
+	end
+
+	return;
+
+end
+
+
+
 ---------------------------------
 -- CLASSIC COMPATIBILITY LAYER --
 ---------------------------------
+function VUHDO_isMists()
+
+	return WOW_PROJECT_ID == WOW_PROJECT_MISTS_CLASSIC;
+
+end
+
+
+
 function VUHDO_getSpecialization()
 
-	if not GetSpecialization then
-		return GetActiveTalentGroup();
-	else
+	if C_SpecializationInfo and C_SpecializationInfo.GetSpecialization then
+		return C_SpecializationInfo.GetSpecialization();
+	elseif GetSpecialization then
 		return GetSpecialization();
+	else
+		return 1;
 	end
 
 end
@@ -1878,12 +2120,12 @@ end
 
 function VUHDO_getSpecializationInfo(aSpecNum, ...)
 
-	if not GetSpecializationInfo then
-		local tSpecNum = aSpecNum or VUHDO_getSpecialization();
-
-		return tSpecNum, tSpecNum == 1 and "Primary" or (tSpecNum == 2 and "Secondary" or "Unknown"), _, _, GetTalentGroupRole(tSpecNum) or "NONE";
-	else
+	if C_SpecializationInfo and C_SpecializationInfo.GetSpecializationInfo then
+		return C_SpecializationInfo.GetSpecializationInfo(aSpecNum, ...);
+	elseif GetSpecializationInfo then
 		return GetSpecializationInfo(aSpecNum, ...);
+	else
+		return 1, "Unknown", _, _, _, "NONE";
 	end
 
 end
@@ -1904,7 +2146,7 @@ end
 
 function VUHDO_getSpecializationRoleByID(...)
 
-	if not GetSpecializationRoleByID then
+	if VUHDO_isMists() or not GetSpecializationRoleByID then
 		return "NONE";
 	else
 		return GetSpecializationRoleByID(...);
@@ -2005,14 +2247,6 @@ function VUHDO_hasIncomingSummon(...)
 	else
 		return C_IncomingSummon.HasIncomingSummon(...);
 	end
-end
-
-
-
-function VUHDO_hasLFGRestrictions()
-
-	return IsInGroup(LE_PARTY_CATEGORY_INSTANCE);
-
 end
 
 

@@ -1,7 +1,6 @@
 # Syndicator
 
-## [205](https://github.com/Baganator/Syndicator/tree/205) (2025-05-26)
-[Full Changelog](https://github.com/Baganator/Syndicator/compare/204...205) 
+## [211](https://github.com/Baganator/Syndicator/tree/211) (2025-07-04)
+[Full Changelog](https://github.com/Baganator/Syndicator/compare/210...211) 
 
-- Retail: Adjust recording of warband bank content updates when crafting  
-- Attempt to fix warband bank data being wiped unexpectedly with multiple accounts  
+- [Fixes #70] Typo referring to the wrong table  

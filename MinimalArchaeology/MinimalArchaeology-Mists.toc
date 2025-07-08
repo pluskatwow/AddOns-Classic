@@ -2,9 +2,9 @@
 ## Title: Minimal Archaeology
 ## Author: Gyula Pataki, Joseph O'Connor, Josef Drexler
 ## Email: gyussz@live.com
-## Version: 11.1.0.9
+## Version: 11.1.0.12
 ## Notes: Archaeology UI replacement, Archaeology History and more... - Mists of Pandaria Version
-## DefaultState: Enabled
+## DefaultState: disabled
 ## LoadOnDemand: 0
 ## SavedVariablesPerCharacter: MinArchOptions
 ## SavedVariables: MinArchDB, MinArchDigsitesGlobalDB
@@ -26,6 +26,9 @@
 ## Category-zhCN: 专业
 ## Category-zhTW: 專業技能
 # Special thanks to joevt for the contribution
+
+## Title-zhTW: |cffFFFF99[專業]|r 考古小幫手
+## Notes-zhTW: Minimal Archaeology|n|n可顯示距離，自動導航挖掘場，各種挖掘紀錄，更方便快速的考古挖掘等功能。
 
 embeds.xml
 addon\addon-mists.xml

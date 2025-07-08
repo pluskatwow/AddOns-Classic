@@ -978,6 +978,105 @@ NRC.encounters = {
 	[1299] = {"905", "Deathwing", "", 40087, 536055, 9, 3, 967},
 };
 
+--From MoP onwards we get encounter textures from the encounter journal API.
+--But we need a map of encounterID to journalEncounterID (wish there was an API func for this).
+NRC.encounterIDJournalMap = {
+	--Cata dungeons.
+    [1065] = 90, --Helix Gearbreaker.
+    [1069] = 96, --Baron Ashbury.
+    [1073] = 99, --Lord Walden.
+    [1077] = 127, --Isiset, Construct of Magic.
+    [1337] = 322, --Arcurion.
+    [1182] = 185, --Jin'do the Godbreaker.
+    [1181] = 184, --Zanzil.
+    [1038] = 106, --Corla, Herald of Twilight.
+    [1042] = 116, --Asaad, Caliph of Zephyrs.
+    [1046] = 103, --Mindbender Ghur'sha.
+    [1050] = 132, --Forgemaster Throngus.
+    [1054] = 119, --High Prophet Barim.
+    [1058] = 112, --Ozruk.
+    [1062] = 92, --Admiral Ripsnarl.
+    [1192] = 189, --Halazzi.
+    [1070] = 97, --Baron Silverlaine.
+    [1074] = 128, --Ammunae, Construct of Life.
+    [1078] = 130, --Rajh, Construct of Sun.
+    [1271] = 289, --Murozond.
+    [1180] = 181, --High Priestess Kilnara.
+    [788] = 180, --Cache of Madness - Wushoolay.
+    [1179] = 176, --Bloodlord Mandokir.
+    [1178] = 175, --High Priest Venoxis.
+    [1039] = 107, --Karsh Steelbender.
+    [1043] = 114, --Grand Vizier Ertan.
+    [1047] = 104, --Ozumat.
+    [1051] = 131, --General Umbriss.
+    [1055] = 122, --Siamat.
+    [1059] = 111, --Slabhide.
+    [1063] = 91, --Foe Reaper 5000.
+    [1193] = 190, --Hex Lord Malacrass.
+    [1071] = 98, --Commander Springvale.
+    [1075] = 126, --Anraphet.
+    [1268] = 283, --Echo of Tyrande.
+    [1272] = 290, --Peroth'arn.
+    [1339] = 341, --Archbishop Benedictus.
+    [1190] = 187, --Nalorakk.
+    [1191] = 188, --Jan'alai.
+    [1036] = 109, --Ascendant Lord Obsidius.
+    [1040] = 105, --Rom'ogg Bonecrusher.
+    [1044] = 102, --Commander Ulthok, the Festering Prince.
+    [1048] = 133, --Drahga Shadowburner.
+    [1052] = 117, --General Husam.
+    [1056] = 110, --Corborus.
+    [1060] = 93, --"Captain" Cookie.
+    [1064] = 89, --Glubtok.
+    [1194] = 191, --Daakara.
+    [1072] = 100, --Lord Godfrey.
+    [1076] = 125, --Earthrager Ptah.
+    [1080] = 124, --Temple Guardian Anhuur.
+    [1273] = 291, --Queen Azshara.
+    [1340] = 342, --Asira Dawnslayer.
+    [1189] = 186, --Akil'zon.
+    [1274] = 292, --Mannoroth and Varo'then.
+    [1037] = 108, --Beauty.
+    [1041] = 115, --Altairus.
+    [1045] = 101, --Lady Naz'jar.
+    [1049] = 134, --Erudax, the Duke of Below.
+    [1053] = 118, --Lockmaw.
+    [1057] = 113, --High Priestess Azil.
+    [1269] = 323, --Echo of Sylvanas.
+    [1079] = 129, --Setesh, Construct of Destruction.
+	--Cata raids.
+	[1200] = 196, --Baleroc, the Gatekeeper.
+    [1294] = 324, --Warlord Zon'ozz.
+    [1295] = 325, --Yor'sahj the Unsleeping.
+    [1296] = 317, --Hagara the Stormbinder.
+    [1297] = 331, --Ultraxion.
+    [1298] = 332, --Warmaster Blackhorn.
+    [1022] = 171, --Atramedes.
+    [1023] = 172, --Chimaeron.
+    [1024] = 170, --Magmaw.
+    [1025] = 173, --Maloriak.
+    [1026] = 174, --Nefarian's End.
+    [1027] = 169, --Omnotron Defense System.
+    [1028] = 158, --Ascendant Council.
+    [1029] = 167, --Cho'gall.
+    [1185] = 197, --Majordomo Staghelm.
+    [1030] = 156, --Halfus Wyrmbreaker.
+    [1032] = 157, --Theralion and Valiona.
+    [1033] = 139, --Argaloth.
+    [1034] = 155, --Al'Akir.
+    [1035] = 154, --The Conclave of Wind.
+    [1203] = 198, --Ragnaros.
+    [1206] = 195, --Shannox.
+    [1205] = 194, --Alysrazor.
+    [1204] = 193, --Lord Rhyolith.
+    [1332] = 339, --Alizabal, Mistress of Hate.
+    [1299] = 333, --Madness of Deathwing.
+    [1197] = 192, --Beth'tilac.
+    [1291] = 318, --Spine of Deathwing.
+    [1292] = 311, --Morchok.
+    [1250] = 140, --Occu'thar.
+};
+
 --Data from EJ_GetInstanceByIndex, some modifications and mapped to instanceID.
 --name, description, bgImage, loreImage, buttonImage1, buttonImage2, dungeonAreaMapID.
 NRC.instanceTextures = {

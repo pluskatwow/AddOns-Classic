@@ -1,0 +1,186 @@
+notes for Mists Classic 5.5.0
+
+Look for the following comments in the files changed
+
+ -- changed for Mists 
+ -- removed for Mists 
+ -- added for Mists 
+
+---------------------------------------------------------------------------------------------------------
+
+ButtonForge.toc
+
+---- Updated with
+## Interface: 50500
+## Title: Button Forge |cff69ccf0(Classic-Mists)|r
+## Version: 1.0.25-classic-Mists
+## Author: Massiner of Nathrezim, Albirew, Sunnova
+
+---------------------------------------------------------------------------------------------------------
+
+Const.lua
+
+changed from:
+
+Const.VersionMinor			= 0.25;
+
+to:
+
+Const.VersionMinor			= 0.26;   -- Modified for Mists 5.5.0 07/05/2025
+
+
+---------------------------------------------------------------------------------------------------------
+
+Util.lua
+
+---------------
+
+changed from:
+
+ItemName = GetItemInfo(ItemId or "");
+
+to:
+
+ItemName = C_Item.GetItemInfo(ItemId or "");  -- changed for Mists 05/15/2025
+
+---------------
+
+changed from:
+
+	IsAddOnLoaded
+
+to:	
+	
+	C_AddOns.IsAddOnLoaded -- changed for Mists 5.5.0 05/15/2025
+
+---------------
+
+changed from:
+
+	Pickupitem
+
+to:	
+	
+	C_Item.Pickupitem -- changed for Mists 5.5.0 05/17/2025
+
+	
+---------------------------------------------------------------------------------------------------------
+
+Bar.lua
+
+---------------
+
+changed from:
+
+local NumSpecs = GetNumTalentGroups()
+
+to:
+
+local NumSpecs = GetNumSpecializations() -- changed for Mists 5.5.0 05/15/2025
+
+---------------------------------------------------------------------------------------------------------
+
+Button.lua
+
+
+---------------
+
+changed from:
+
+    self.Widget:SetAttribute("macrotext", "/cast "..self.MountSpellName); 
+
+to:
+
+		if self.MountSpellName then -- changed for Mists 5.5.0 07/05/2025
+		  self.Widget:SetAttribute("macrotext", "/cast "..self.MountSpellName); 
+		end  
+
+---------------
+
+changed from:
+
+function Button:UpdateCheckedBattlePet()
+	self.Widget:SetChecked(C_PetJournal.IsCurrentlySummoned(self.BattlePetId))
+end
+
+to:
+
+function Button:UpdateCheckedBattlePet()
+	local Active = self.BattlePetId == C_PetJournal.GetSummonedPetGUID();
+	self.Widget:SetChecked(Active);
+end
+
+---------------
+
+changed_from:
+
+GetItemIcon
+
+to:
+
+C_Item.GetItemIconByID
+
+---------------
+
+changed_from:
+
+IsCurrentItem
+
+to:
+
+C_Item.IsCurrentItem  -- changed for Mists 05/16/2025
+
+---------------
+
+changed_from:
+
+IsEquippedItem
+
+to:
+
+C_Item.IsEquippedItem  -- changed for Mists 05/16/2025
+
+
+---------------
+
+changed_from:
+
+IsUsableItem
+
+to:
+
+C_Item.IsUsableItem  -- changed for Mists 05/16/2025
+
+
+---------------
+
+changed_from:
+
+GetItemCount
+
+to:
+
+C_Item.GetItemCount  -- changed for Mists 05/16/2025
+
+---------------
+
+changed_from:
+
+IsConsumableItem
+
+to:
+
+C_Item.IsConsumableItem  -- changed for Mists 05/16/2025
+
+
+---------------
+
+changed_from:
+
+C_PetJournal.DismissSummonedPet(petID)
+
+to:
+
+C_PetJournal.SummonPetByGUID(C_PetJournal.GetSummonedPetGUID())  -- changed for Mists 05/16/2025
+
+---------------------------------------------------------------------------------------------------------

@@ -1842,7 +1842,8 @@ function NRC:updateRaidStatusFrames(updateLayout)
 						--We shouldn't have to remove this click onclick handler if the talents colum option is disabled.
 						--This is the last column so this column won't be reused for any other type.
 						frame:SetScript("OnClick", function(self)
-							NRC:openTalentFrame(name, talentString);
+							local fromRaidStatus = not NRC.raidStatusCache;
+							NRC:openTalentFrame(name, talentString, nil, nil, nil, nil, nil, v.guid, nil, fromRaidStatus);
 						end)
 					elseif (frame) then
 						frame.fs:SetText("--");
@@ -2616,23 +2617,32 @@ function NRC:raidStatusSortMultipleIcons(frame, spellData, maxPossible, checkMax
 		if (k == 1) then
 			texture = frame.texture;
 		else
+			if (not frame["texture" .. k]) then
+				--Semi rare bug the texture is missing not sure why yet, this should fix it for now.
+				frame.createBuffTexture(k);
+				NRC:debug("Created missing raid status texture:", k, frame:GetName())
+			end
 			texture = frame["texture" .. k];
 		end
-		if (tooltipText == "") then
-			tooltipText = tooltipText .. getMultipleIconsTooltip(v);
+		if (texture) then
+			if (tooltipText == "") then
+				tooltipText = tooltipText .. getMultipleIconsTooltip(v);
+			else
+				tooltipText = tooltipText .. "\n" .. getMultipleIconsTooltip(v);
+			end
+			if (not v.maxRank) then
+				missingMaxRank = true;
+			end
+			if (v.endTime and v.endTime - GetServerTime() < (customLowDuration or lowDurationTime) and v.duration ~= 0) then
+				lowDurationFound = true;
+			end
+			texture:ClearAllPoints();
+			texture:SetTexture(v.icon);
+			texture:Show();
+			tinsert(textures, texture);
 		else
-			tooltipText = tooltipText .. "\n" .. getMultipleIconsTooltip(v);
+			NRC:debug("Error: missing raid status texture", k, maxPossible);
 		end
-		if (not v.maxRank) then
-			missingMaxRank = true;
-		end
-		if (v.endTime and v.endTime - GetServerTime() < (customLowDuration or lowDurationTime) and v.duration ~= 0) then
-			lowDurationFound = true;
-		end
-		texture:ClearAllPoints();
-		texture:SetTexture(v.icon);
-		texture:Show();
-		tinsert(textures, texture);
 		if (k == maxPossible) then
 			break;
 		end
@@ -3175,6 +3185,11 @@ function NRC:raidStatusSortWorldBuffIcons(frame, spellData, maxPossible, checkMa
 				tooltipText = tooltipText .. getMultipleIconsTooltip(spellData[1], true);
 				lastTexture = frame.texture;
 			else
+				if (not frame["texture" .. i]) then
+					--Semi rare bug the texture is missing not sure why yet, this should fix it for now.
+					frame.createBuffTexture(i);
+					NRC:debug("Created missing raid status texture2:", i, frame:GetName())
+				end
 				frame["texture" .. i]:SetPoint("LEFT", lastTexture, "RIGHT", 1, 0);
 				--frame["texture" .. i]:SetPoint("CENTER", 0, 0);
 				frame["texture" .. i]:SetTexture(spellData[i].icon);
@@ -3797,96 +3812,206 @@ function NRC:createRaidStatusData(updateLayout)
 		data.logID = NRC.raidStatusCache.logID;
 		data.encounterID = NRC.raidStatusCache.encounterID;
 		data.success = NRC.raidStatusCache.success;
-		for k, v in pairs(NRC.raidStatusCache.group) do
-			local auraCache = NRC.raidStatusCache.auraCache[k];
-			if (auraCache) then
-				count = count + 1;
-				if (count > 60) then
-					break;
-				end
-				data.rows[count + 1] = v.name;
-				data.chars[count] = addChar(v, k, v.name);
-				for buffID, buffData in NRC:pairsByKeys(auraCache) do
-					if (NRC.flasks[buffID]) then
-						data.chars[count].flask = buffData;
-					end
-					if (NRC.foods[buffID]) then
-						data.chars[count].food = buffData;
-					end
-					if (int[buffID]) then
-						data.chars[count].int = buffData;
-					end
-					if (fort[buffID]) then
-						data.chars[count].fort = buffData;
-					end
-					if (spirit[buffID]) then
-						data.chars[count].spirit = buffData;
-					end
-					if (shadow[buffID]) then
-						data.chars[count].shadow = buffData;
-					end
-					if (motw[buffID]) then
-						data.chars[count].motw = buffData;
-					end
-					if (pal[buffID]) then
-						data.chars[count].pal = buffData;
-					end
-					--if (worldBuffs[count]) then
-					--	data.chars[count].worldBuffs = buffData;
-					--end
-				end
-			end
-			if (NRC.raidStatusCache.resCache) then
-				local resCache = NRC.raidStatusCache.resCache[k];
-				if (resCache) then
-					if (not data.chars[count]) then
-						count = count + 1;
-						if (count > 60) then
-							break;
-						end
-						data.rows[count + 1] = v.name;
-						data.chars[count] = addChar(v, k, v.name);
-					end
-					data.chars[count].resCache = resCache;
-				end
-			end
-			if (NRC.raidStatusCache.weaponEnchantCache) then
-				local weaponEnchantCache = NRC.raidStatusCache.weaponEnchantCache[k];
-				if (weaponEnchantCache) then
-					if (not data.chars[count]) then
-						count = count + 1;
-						if (count > 60) then
-							break;
-						end
-						data.rows[count + 1] = v.name;
-						data.chars[count] = addChar(v, k, v.name);
-					end
-					data.chars[count].weaponEnchantCache = weaponEnchantCache;
-				end
-			end
-			if (NRC.raidStatusCache.talentCache) then
-				local talentCache;
-				local encounters = NRC.db.global.instances[NRC.raidStatusCache.logID].encounters;
-				for k, v in ipairs(encounters) do
-					--Get last recorded talents before this encounter.
-					if (v.talentCache) then
-						talentCache = v.talentCache;
-					end
-					if (v.encounterID == NRC.raidStatusCache.encounterID) then
+		if (NRC.raidStatusCache.group and next(NRC.raidStatusCache.group)) then
+			for k, v in pairs(NRC.raidStatusCache.group) do
+				local auraCache = NRC.raidStatusCache.auraCache[k];
+				if (auraCache) then
+					count = count + 1;
+					if (count > 60) then
 						break;
 					end
+					--The counts here are different becaus the first row is the header, second row is the first char, so chars is 1 row count more.
+					data.rows[count + 1] = v.name;
+					data.chars[count] = addChar(v, k, v.name);
+					for buffID, buffData in NRC:pairsByKeys(auraCache) do
+						if (NRC.flasks[buffID]) then
+							data.chars[count].flask = buffData;
+						end
+						if (NRC.foods[buffID]) then
+							data.chars[count].food = buffData;
+						end
+						if (int[buffID]) then
+							data.chars[count].int = buffData;
+						end
+						if (fort[buffID]) then
+							data.chars[count].fort = buffData;
+						end
+						if (spirit[buffID]) then
+							data.chars[count].spirit = buffData;
+						end
+						if (shadow[buffID]) then
+							data.chars[count].shadow = buffData;
+						end
+						if (motw[buffID]) then
+							data.chars[count].motw = buffData;
+						end
+						if (pal[buffID]) then
+							data.chars[count].pal = buffData;
+						end
+						--if (worldBuffs[count]) then
+						--	data.chars[count].worldBuffs = buffData;
+						--end
+					end
 				end
-				if (talentCache) then
-					if (not data.chars[count]) then
-						count = count + 1;
-						if (count > 60) then
+				if (NRC.raidStatusCache.resCache) then
+					local resCache = NRC.raidStatusCache.resCache[k];
+					if (resCache) then
+						if (not data.chars[count]) then
+							count = count + 1;
+							if (count > 60) then
+								break;
+							end
+							data.rows[count + 1] = v.name;
+							data.chars[count] = addChar(v, k, v.name);
+						end
+						data.chars[count].resCache = resCache;
+					end
+				end
+				if (NRC.raidStatusCache.weaponEnchantCache) then
+					local weaponEnchantCache = NRC.raidStatusCache.weaponEnchantCache[k];
+					if (weaponEnchantCache) then
+						if (not data.chars[count]) then
+							count = count + 1;
+							if (count > 60) then
+								break;
+							end
+							data.rows[count + 1] = v.name;
+							data.chars[count] = addChar(v, k, v.name);
+						end
+						data.chars[count].weaponEnchantCache = weaponEnchantCache;
+					end
+				end
+				if (NRC.raidStatusCache.talentCache) then
+					local talentCache;
+					local encounters = NRC.db.global.instances[NRC.raidStatusCache.logID].encounters;
+					for k, v in ipairs(encounters) do
+						--Get last recorded talents before this encounter.
+						if (v.talentCache) then
+							talentCache = v.talentCache;
+						end
+						if (v.encounterID == NRC.raidStatusCache.encounterID) then
 							break;
 						end
-						data.rows[count + 1] = v.name;
-						data.chars[count] = addChar(v, k, v.name);
 					end
-					data.chars[count].talentCache = talentCache[v.name];
+					if (talentCache) then
+						if (not data.chars[count]) then
+							count = count + 1;
+							if (count > 60) then
+								break;
+							end
+							data.rows[count + 1] = v.name;
+							data.chars[count] = addChar(v, k, v.name);
+						end
+						data.chars[count].talentCache = talentCache[v.name];
+					end
 				end
+			end
+		else
+			--We're soloing, no group.
+			local me = NRC.raidStatusCache.playerName;
+			local k = NRC:getGUIDFromMyAltName(me);
+			local charData = {};
+			count = count + 1;
+			local k = charData.guid or NRC:getGUIDFromMyAltName(me);
+			if (k) then
+				local auraCache = NRC.raidStatusCache.auraCache[k];
+				local v = {
+					--Mock up a fake group cache for this char when solo.
+					class = charData.englishClass;
+					name = me;
+					race = charData.race;
+					realm = charData.realm;
+				};
+				if (auraCache) then
+					data.rows[count + 1] = me;
+					data.chars[count] = addChar(v, k, me);
+					for buffID, buffData in NRC:pairsByKeys(auraCache) do
+						if (NRC.flasks[buffID]) then
+							data.chars[count].flask = buffData;
+						end
+						if (NRC.foods[buffID]) then
+							data.chars[count].food = buffData;
+						end
+						if (int[buffID]) then
+							data.chars[count].int = buffData;
+						end
+						if (fort[buffID]) then
+							data.chars[count].fort = buffData;
+						end
+						if (spirit[buffID]) then
+							data.chars[count].spirit = buffData;
+						end
+						if (shadow[buffID]) then
+							data.chars[count].shadow = buffData;
+						end
+						if (motw[buffID]) then
+							data.chars[count].motw = buffData;
+						end
+						if (pal[buffID]) then
+							data.chars[count].pal = buffData;
+						end
+						--if (worldBuffs[count]) then
+						--	data.chars[count].worldBuffs = buffData;
+						--end
+					end
+				end
+				if (NRC.raidStatusCache.resCache) then
+					local resCache = NRC.raidStatusCache.resCache[me];
+					if (resCache) then
+						if (not data.chars[count]) then
+							data.rows[count + 1] = me;
+							data.chars[count] = addChar(v, k, me);
+						end
+						data.chars[count].resCache = resCache;
+					end
+				end
+				if (NRC.raidStatusCache.weaponEnchantCache) then
+					local weaponEnchantCache = NRC.raidStatusCache.weaponEnchantCache[me];
+					if (weaponEnchantCache) then
+						if (not data.chars[count]) then
+							data.rows[count + 1] = me;
+							data.chars[count] = addChar(v, k, me);
+						end
+						data.chars[count].weaponEnchantCache = weaponEnchantCache;
+					end
+				end
+				local talents, glyphs = NRC:getAllTalentsFromEncounter(NRC.raidStatusCache.logID, NRC.raidStatusCache.encounterID, NRC.raidStatusCache.attemptID);
+				if (talents) then
+					for kk, vv in pairs(talents) do
+						if (kk == me) then
+							if (not data.chars[count]) then
+								data.rows[count + 1] = me;
+								data.chars[count] = addChar(v, k, me);
+							end
+							data.chars[count].talentCache = vv;
+							if (not NRC.raidStatusCache.talentCache) then
+								--Not even sure this is used... I think it just uses NRC.raidStatusCache.talentCache? wrote this a long time ago.
+								NRC.raidStatusCache.talentCache = {};
+							end
+							NRC.raidStatusCache.talentCache[me] = vv;
+						end
+					end
+				end
+				--[[if (NRC.raidStatusCache.talentCache) then
+					local talentCache;
+					local encounters = NRC.db.global.instances[NRC.raidStatusCache.logID].encounters;
+					for k, v in ipairs(encounters) do
+						--Get last recorded talents before this encounter.
+						if (v.talentCache) then
+							talentCache = v.talentCache;
+						end
+						if (v.encounterID == NRC.raidStatusCache.encounterID) then
+							break;
+						end
+					end
+					if (talentCache) then
+						if (not data.chars[count]) then
+							data.rows[count + 1] = me;
+							data.chars[count] = addChar(v, k, me);
+						end
+						data.chars[count].talentCache = talentCache[me];
+					end
+				end]]
 			end
 		end
 	else

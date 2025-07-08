@@ -1,6 +1,8 @@
 # Simple Item Level
 
-## [v48](https://github.com/kemayo/wow-simpleitemlevel/tree/v48) (2025-04-30)
-[Full Changelog](https://github.com/kemayo/wow-simpleitemlevel/compare/v47...v48) [Previous Releases](https://github.com/kemayo/wow-simpleitemlevel/releases)
+## [v50](https://github.com/kemayo/wow-simpleitemlevel/tree/v50) (2025-07-05)
+[Full Changelog](https://github.com/kemayo/wow-simpleitemlevel/compare/v49...v50) [Previous Releases](https://github.com/kemayo/wow-simpleitemlevel/releases)
 
-- Fix battle pets, gems, enchantments for new quality color syntax  
+- Add support for Bagnonium  
+- Stop assuming Classic means a ranged slot exists and just test for it  
+    Pandaria removed the ranged slot.  

@@ -511,7 +511,7 @@ function NRCAH:createTalentString()
 end
 
 --First 3 major, second 3 minor.
-function NRCAH:createGlyphString(f)
+function NRCAH:createGlyphString()
 	if (NRCAH.expansionNum < 3 or not GetGlyphSocketInfo) then
 		return;
 	end
