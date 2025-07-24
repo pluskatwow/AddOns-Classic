@@ -2,7 +2,7 @@
 
 if not AL then return end
 
--- These localization strings are translated on Curseforge: https://www.curseforge.com/wow/addons/atlaslootclassic-cata/localization
+-- These localization strings are translated on Curseforge: https://www.curseforge.com/wow/addons/atlaslootclassic-mists/localization
 -- DungeonsAndRaids
 AL["%s killed last"] = "%s tué en dernier"
 AL["20 Raids"] = "Raids 20"
@@ -320,11 +320,14 @@ AL["Yogg-Saron"] = "Yogg-Saron"
 
 -- DungeonsAndRaidsCata
 AL["Akma'hat"] = "Akma'hat"
+AL["Elemental Rune Inferno"] = "Inferno de rune élémentaire"
+AL["Elemental Rune Twilight"] = "Crépuscule de rune élémentaire"
 AL["Firestone Vendor"] = "Échangeur de Pierres de feu"
 AL["Geode"] = "Géode"
 AL["Julak-Doom"] = "Julak-Dram"
 AL["Mobus"] = "Mobus"
 AL["Poseidus"] = "Poséidus"
 AL["Shared Boss Loot"] = "Butin de boss partagé"
+AL["Tier Token iLvl384"] = "Marque d’ensemble de niveau 384"
 AL["Weapon or Jewelry iLvl384"] = "Arme ou joaillerie de niveau 384"
 AL["Xariona"] = "Xariona"

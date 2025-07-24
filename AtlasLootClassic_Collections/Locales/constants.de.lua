@@ -2,7 +2,7 @@ local AL = _G.AtlasLoot.GetLocales("deDE")
 
 if not AL then return end
 
--- These localization strings are translated on Curseforge: https://www.curseforge.com/wow/addons/atlaslootclassic-cata/localization
+-- These localization strings are translated on Curseforge: https://www.curseforge.com/wow/addons/atlaslootclassic-mists/localization
 -- Collections
 AL["'%s %s' Vendor"] = "'%s %s' Verkäufer "
 AL["%s Sets"] = "%s Sets"
@@ -27,7 +27,6 @@ AL["Card Game Tabards"] = "Trading Card Game (TCG) Wappenröcke"
 AL["Childrens Week"] = "Kinderwoche"
 AL["Crimson Templar"] = "Purpurroter Templer"
 AL["Day of the Dead"] = "Tag der Toten"
-AL["Defiler's Scourgestone"] = "Geißelstein des Entweihers"
 AL["Drops"] = "Drops"
 AL["Dungeon Set %s"] = "Dungeon-Set %s"
 AL["Dungeon Sets"] = "Dungeon-Sets"
@@ -53,8 +52,6 @@ AL["Harvest Festival"] = "Erntedankfest"
 AL["High Marshal Whirlaxis"] = "Hochmarschall Whirlaxis "
 AL["Hoary Templar"] = "Weißgrauer Templer"
 AL["Idols"] = "Götzen"
-AL["Justice Points"] = "Gerechtigkeitspunkte"
-AL["Legendarys"] = "Legendäre Gegenstände"
 AL["Librams"] = "Buchband"
 AL["Lord Skwol"] = "Lord Skwol"
 AL["Love is in the Air"] = "Liebe liegt in der Luft"
@@ -88,7 +85,6 @@ AL["Totems"] = "Totems"
 AL["Two-Handed Weapons"] = "Zweihandwaffen"
 AL["Unobtainable"] = "Nicht mehr verfügbar"
 AL["Unobtainable Tabards"] = "Nicht erhältliche Wappenröcke"
-AL["Valor Points"] = "Tapferkeitspunkte"
 AL["Wands"] = "Zauberstäbe"
 AL["World Epics"] = "Welt-Epics"
 AL["World Events"] = "Weltereignisse"

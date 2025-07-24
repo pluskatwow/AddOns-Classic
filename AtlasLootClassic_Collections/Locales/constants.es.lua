@@ -2,14 +2,18 @@
 
 if not AL then return end
 
--- These localization strings are translated on Curseforge: https://www.curseforge.com/wow/addons/atlaslootclassic-cata/localization
+-- These localization strings are translated on Curseforge: https://www.curseforge.com/wow/addons/atlaslootclassic-mists/localization
 -- Collections
 AL["'%s %s' Vendor"] = "Vendedor de '%s %s'"
+--[[Translation missing --]]
+--[[ AL["%s Replica Sets"] = "% Replica Sets"--]] 
 AL["%s Sets"] = "Conjuntos de %s"
 AL["'%s' Vendor"] = "'%s' Vendedor"
 AL["Abyssal Dukes"] = "Duques abisales"
 AL["Abyssal Lords"] = "Lords abisales"
 AL["Abyssal Templars"] = "Templarios abisales"
+--[[Translation missing --]]
+--[[ AL["Accessories"] = "Accessories"--]] 
 --[[Translation missing --]]
 --[[ AL["Additional Armaments"] = "Additional Armaments"--]] 
 AL["Ahune"] = "Ahune"
@@ -39,11 +43,15 @@ AL["Capitals"] = "Capitales"
 --[[Translation missing --]]
 --[[ AL["Cataclysm"] = "Cataclysm"--]] 
 AL["Childrens Week"] = "Semana de los Niños"
+--[[Translation missing --]]
+--[[ AL["Crafting"] = "Crafting"--]] 
 AL["Crimson Templar"] = "Templario Carmesí"
 --[[Translation missing --]]
 --[[ AL["Day of the Dead"] = "Day of the Dead"--]] 
 --[[Translation missing --]]
---[[ AL["Defiler's Scourgestone"] = "Defiler's Scourgestone"--]] 
+--[[ AL["Decks"] = "Decks"--]] 
+--[[Translation missing --]]
+--[[ AL["Dragon Soul"] = "Dragon Soul"--]] 
 AL["Drops"] = "Despoja"
 AL["Dungeon Set %s"] = "Conjunto de mazmorra %s"
 AL["Dungeon Sets"] = "Conjuntos de mazmorra"
@@ -67,9 +75,9 @@ AL["Feast of Winter Veil"] = "El festín del Festival de Invierno"
 AL["Festive Gift"] = "Obsequio festivo"
 --[[Translation missing --]]
 --[[ AL["Filling the Moonwell"] = "Filling the Moonwell"--]] 
-AL["First Prize"] = "Primer precio"
 --[[Translation missing --]]
---[[ AL["Fissure Stone Fragment"] = "Fissure Stone Fragment"--]] 
+--[[ AL["Firelands"] = "Firelands"--]] 
+AL["First Prize"] = "Primer precio"
 AL["Food"] = "Comida"
 AL["Gaily Wrapped Present"] = "Regalo con envoltorio alegre"
 AL["Gently Shaken Gift"] = "Regalo ligeramente agitado"
@@ -79,14 +87,13 @@ AL["Gift of Adoration"] = "Ofrenda de adoración"
 AL["Gurubashi Arena"] = "Arena Gurubashi"
 AL["Hallow's End"] = "Halloween"
 AL["Harvest Festival"] = "Festival de la Cosecha"
+--[[Translation missing --]]
+--[[ AL["Heirlooms"] = "Heirlooms"--]] 
 AL["High Marshal Whirlaxis"] = "Alto mariscal Eje Torbellino"
 AL["Hoary Templar"] = "Templario vetusto"
 AL["Idols"] = "Ídolos"
 --[[Translation missing --]]
---[[ AL["Justice Points"] = "Justice Points"--]] 
---[[Translation missing --]]
 --[[ AL["Legendaries"] = "Legendaries"--]] 
-AL["Legendarys"] = "Legendarios"
 AL["Librams"] = "Tratados"
 AL["Lord Skwol"] = "Lord Skwol"
 AL["Love is in the Air"] = "Amor en el aire"
@@ -98,8 +105,6 @@ AL["Midsummer Festival"] = "Festival de Fuego del Solsticio de Verano"
 --[[Translation missing --]]
 --[[ AL["Molten Front"] = "Molten Front"--]] 
 AL["Noblegarden"] = "Jardín Noble"
---[[Translation missing --]]
---[[ AL["Obsidian Fragment"] = "Obsidian Fragment"--]] 
 AL["One-Handed Weapons"] = "Armas de una mano"
 --[[Translation missing --]]
 --[[ AL["P1"] = "P1"--]] 
@@ -111,15 +116,13 @@ AL["One-Handed Weapons"] = "Armas de una mano"
 --[[ AL["Pilgrim's Bounty"] = "Pilgrim's Bounty"--]] 
 AL["Prince Skaldrenox"] = "Príncipe Skaldrenox"
 AL["Princess Tempestria"] = "Princesa Tempestria"
+--[[Translation missing --]]
+--[[ AL["Quests"] = "Quests"--]] 
 AL["Ranged Weapons"] = "Armas a distancia"
 AL["Rare Fish"] = "Pescados raros"
 AL["Rare Fish Rewards"] = "Recompensas raras de pesca"
 AL["Scarlet Monastery - Graveyard"] = "Monasterio Escarlata - Cementerio"
 AL["Scourge Invasion"] = "Invasión de la Plaga"
---[[Translation missing --]]
---[[ AL["Sidereal Essence"] = "Sidereal Essence"--]] 
---[[Translation missing --]]
---[[ AL["Sidereal Essence: 1 for 1"] = "Sidereal Essence: 1 for 1"--]] 
 AL["Silithus Abyssal"] = "Abisal Silithus"
 AL["Smokywood Pastures"] = "Pastos de Bosquehumeante"
 AL["Smokywood Pastures Special Gift"] = "Obsequio especial de Pastos de Bosquehumeante"
@@ -140,8 +143,6 @@ AL["Two-Handed Weapons"] = "Armas de dos manos"
 AL["Unobtainable"] = "Inobtenible"
 --[[Translation missing --]]
 --[[ AL["Unobtainable Tabards"] = "Unobtainable Tabards"--]] 
---[[Translation missing --]]
---[[ AL["Valor Points"] = "Valor Points"--]] 
 AL["Wands"] = "Varitas"
 AL["World Epics"] = "Épicos del Mundo"
 AL["World Events"] = "Eventos del Mundo"

@@ -2,7 +2,7 @@
 
 if not AL then return end
 
--- These localization strings are translated on Curseforge: https://www.curseforge.com/wow/addons/atlaslootclassic-cata/localization
+-- These localization strings are translated on Curseforge: https://www.curseforge.com/wow/addons/atlaslootclassic-mists/localization
 -- Options
 AL["Add line break before source."] = "Agrega un salto de línea antes de la fuente."
 AL["Add new list"] = "Añade nueva lista"

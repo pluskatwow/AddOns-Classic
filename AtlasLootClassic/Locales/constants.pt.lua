@@ -2,7 +2,7 @@
 
 if not AL then return end
 
--- These localization strings are translated on Curseforge: https://www.curseforge.com/wow/addons/atlaslootclassic-cata/localization
+-- These localization strings are translated on Curseforge: https://www.curseforge.com/wow/addons/atlaslootclassic-mists/localization
 AL["--- or ---"] = "--- ou ---"
 AL["%s will finish loading after combat."] = "%s terminará o carregamento após o combate."
 AL["(%d) Set:"] = "(%d) Conjunto:"
@@ -60,7 +60,6 @@ AL["Grand Widow Faerlina"] = "Grã-viúva Faerlina"
 AL["Grobbulus"] = "Grobbulus"
 AL["Gun"] = "Arma de fogo"
 AL["Heigan the Unclean"] = "Heigan, o Sujo"
-AL["Heroic"] = "Heróico"
 AL["Honor Hold"] = "Fortaleza da Honra"
 AL["Instructor Razuvious"] = "Instrutor Razúvio"
 AL["Items"] = "Itens"
@@ -83,7 +82,6 @@ AL["Module %s is deactivated."] = "O módulo %s está desativado."
 AL["Module %s is not installed."] = "O módulo %s não está instalado."
 AL["New version available!"] = "Nova versão disponível!"
 AL["No module found."] = "Nenhum módulo encontrado."
-AL["Normal"] = "Normal"
 AL["Noth the Plaguebringer"] = "Noth, o Pestífero"
 AL["One-Hand, Axe"] = "Uma Mão, Machado"
 AL["One-Hand, Mace"] = "Uma Mão, Maça"

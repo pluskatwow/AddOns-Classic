@@ -2,7 +2,7 @@
 
 if not AL then return end
 
--- These localization strings are translated on Curseforge: https://www.curseforge.com/wow/addons/atlaslootclassic-cata/localization
+-- These localization strings are translated on Curseforge: https://www.curseforge.com/wow/addons/atlaslootclassic-mists/localization
 -- DungeonsAndRaids
 AL["Anub'shiah"] = "Anub'shiah"
 AL["Ayamiss the Hunter"] = "Ayamiss il Cacciatore"

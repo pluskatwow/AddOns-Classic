@@ -2,7 +2,7 @@
 
 if not AL then return end
 
--- These localization strings are translated on Curseforge: https://www.curseforge.com/wow/addons/atlaslootclassic-cata/localization
+-- These localization strings are translated on Curseforge: https://www.curseforge.com/wow/addons/atlaslootclassic-mists/localization
 -- Crafting
 AL["Apprentice"] = "Aprendiz"
 AL["Artisan"] = "Artesano"
@@ -46,11 +46,17 @@ AL["Healing/Mana Potions"] = "Pociones de sanación/maná"
 AL["Journeyman"] = "Oficial"
 --[[Translation missing --]]
 --[[ AL["Leveling Gear"] = "Leveling Gear"--]] 
+--[[Translation missing --]]
+--[[ AL["Low Level Recipes"] = "Low Level Recipes"--]] 
 AL["Maces"] = "Mazas"
+--[[Translation missing --]]
+--[[ AL["Mantid"] = "Mantid"--]] 
 AL["Master"] = "Maestro"
 --[[Translation missing --]]
 --[[ AL["Misc"] = "Misc"--]] 
 AL["Misc Elixirs"] = "Elixires varios"
+--[[Translation missing --]]
+--[[ AL["Mogu"] = "Mogu"--]] 
 --[[Translation missing --]]
 --[[ AL["Mount"] = "Mount"--]] 
 --[[Translation missing --]]
@@ -64,6 +70,8 @@ AL["Misc Elixirs"] = "Elixires varios"
 AL["Oil"] = "Aceite"
 --[[Translation missing --]]
 --[[ AL["Orc"] = "Orc"--]] 
+--[[Translation missing --]]
+--[[ AL["Pandaren"] = "Pandaren"--]] 
 AL["Pet"] = "Mascota"
 AL["Pets"] = "Mascotas"
 --[[Translation missing --]]
@@ -71,6 +79,8 @@ AL["Pets"] = "Mascotas"
 AL["Protection Potions"] = "Pociones de protección"
 --[[Translation missing --]]
 --[[ AL["Raw Gems"] = "Raw Gems"--]] 
+--[[Translation missing --]]
+--[[ AL["Research"] = "Research"--]] 
 AL["Resistance"] = "Resistencia"
 AL["Ring"] = "Anillo"
 --[[Translation missing --]]
@@ -98,3 +108,5 @@ AL["Transmutes"] = "Transmutar"
 AL["Util Potions"] = "Pociones de utilidad"
 --[[Translation missing --]]
 --[[ AL["Vrykul"] = "Vrykul"--]] 
+--[[Translation missing --]]
+--[[ AL["Zen Master"] = "Zen Master"--]] 

@@ -2,7 +2,7 @@
 
 if not AL then return end
 
--- These localization strings are translated on Curseforge: https://www.curseforge.com/wow/addons/atlaslootclassic-cata/localization
+-- These localization strings are translated on Curseforge: https://www.curseforge.com/wow/addons/atlaslootclassic-mists/localization
 -- DungeonsAndRaids
 AL["%s killed last"] = "%s|1이;가; 마지막 사망 시"
 AL["20 Raids"] = "20인 공격대"

@@ -2,7 +2,7 @@
 
 if not AL then return end
 
--- These localization strings are translated on Curseforge: https://www.curseforge.com/wow/addons/atlaslootclassic-cata/localization
+-- These localization strings are translated on Curseforge: https://www.curseforge.com/wow/addons/atlaslootclassic-mists/localization
 AL["--- or ---"] = "--- o ---"
 AL["%s will finish loading after combat."] = "%s terminará cargando después de combate."
 AL["(%d) Set:"] = "(%d) Conjunto:"
@@ -17,15 +17,9 @@ AL["|cff00ff00Left-Click:|r %s"] = "|cff00ff00Clic Izquierdo:|r %s"
 AL["|cff00ff00Left-Click:|r Show reagents."] = "|cff00ff00Clic Izquierdo:|r Zeige Reagenzien."
 AL["|cff00ff00Right-Click:|r Change Class"] = "|cff00ff00Right-Click:|r Cambiar Clase"
 AL["|cff00ff00Set item:|r "] = "|cff00ff00Equipo de conjunto:|r"
-AL["10 Raid"] = "Banda de 10"
-AL["10 Raid Heroic"] = "Banda Heroica de 10"
 AL["10H"] = "10H"
 AL["10H / 25 / 25H"] = "10H / 25 / 25H"
-AL["20 Raid"] = "Banda de 20"
-AL["25 Raid"] = "Banda de 25"
-AL["25 Raid Heroic"] = "Banda Heroica de 25"
 AL["25H"] = "25H"
-AL["40 Raid"] = "Banda de 40"
 AL["Active list"] = "Lista Activa"
 AL["Add item into chat"] = "Añade objeto al chat"
 AL["Add ItemID"] = "Añade ObjetoID"
@@ -51,11 +45,15 @@ AL["Bow"] = "Arco"
 --[[Translation missing --]]
 --[[ AL["Brutal %s"] = "Brutal %s"--]] 
 --[[Translation missing --]]
+--[[ AL["C"] = "C"--]] 
+--[[Translation missing --]]
 --[[ AL["Cancel"] = "Cancel"--]] 
 --[[Translation missing --]]
 --[[ AL["Cataclysmic %s"] = "Cataclysmic %s"--]] 
 --[[Translation missing --]]
 --[[ AL["Cataclysmic (Elite) %s"] = "Cataclysmic (Elite) %s"--]] 
+--[[Translation missing --]]
+--[[ AL["Celestial"] = "Celestial"--]] 
 --[[Translation missing --]]
 --[[ AL["Change item note"] = "Change item note"--]] 
 AL["Chat Link"] = "Enlace de Chat"
@@ -63,6 +61,8 @@ AL["Chat Link"] = "Enlace de Chat"
 --[[ AL["Chat-Link"] = "Chat-Link"--]] 
 AL["Classic"] = "Clásico"
 AL["Click to open Atlas instance map."] = "Haz clic para abrir el mapa de instancias de Atlas."
+--[[Translation missing --]]
+--[[ AL["CM"] = "CM"--]] 
 AL["Collections"] = "Colecciones"
 AL["Command %s not found. Use '/al slash' for a full list of commands"] = "Comando %s no se encuentra. Escribe '/al slash' para una lista de todos los comandos."
 --[[Translation missing --]]
@@ -72,7 +72,11 @@ AL["Command %s not found. Use '/al slash' for a full list of commands"] = "Coman
 AL["Content phase:"] = "Fase de contenido:"
 AL["Copy Box"] = "Caja de copiar"
 AL["Coren Direbrew"] = "Coren Cerveza Temible"
+--[[Translation missing --]]
+--[[ AL["Crafted"] = "Crafted"--]] 
 AL["Crafting"] = "Fabricados"
+--[[Translation missing --]]
+--[[ AL["Created with..."] = "Created with..."--]] 
 AL["Crossbow"] = "Ballesta"
 AL["Ctrl + C to copy"] = "Ctrl + C para copiar"
 AL["Ctrl + Left Click"] = "Ctrl + Clic Izquierdo"
@@ -80,12 +84,16 @@ AL["Custom Modules"] = "Módulos personalizados"
 AL["Dagger"] = "Daga"
 --[[Translation missing --]]
 --[[ AL["Deadly %s"] = "Deadly %s"--]] 
+--[[Translation missing --]]
+--[[ AL["Dreadful"] = "Dreaful"--]] 
 AL["Dress up"] = "Probar"
 AL["Droprate:"] = "Prob. de conseguirse: "
 AL["Dungeons and Raids"] = "Calabozos y Bandas"
 AL["Enhancements"] = "Mejoras"
 --[[Translation missing --]]
 --[[ AL["Enter a note for %s"] = "Enter a note for %s"--]] 
+--[[Translation missing --]]
+--[[ AL["F"] = "F"--]] 
 AL["Factions"] = "Facciones"
 AL["Favourites"] = "Favoritos"
 AL["Fishing Pole"] = "Caña de pescar"
@@ -110,7 +118,8 @@ AL["Heigan the Unclean"] = "Heigan el Impuro"
 --[[ AL["Heirloom"] = "Heirloom"--]] 
 --[[Translation missing --]]
 --[[ AL["Heroes' %s"] = "Heroes' %s"--]] 
-AL["Heroic"] = "Heroico"
+--[[Translation missing --]]
+--[[ AL["Heroic %s"] = "Heroic %s"--]] 
 --[[Translation missing --]]
 --[[ AL["Heroic Sanctified %s"] = "Heroic Sanctified %s"--]] 
 AL["Honor Hold"] = "Bastión del Honor"
@@ -139,6 +148,8 @@ AL["Lord Blackwood"] = "Lord Bosque Negro"
 AL["Maexxna"] = "Maexxna"
 AL["Main"] = "Principal"
 --[[Translation missing --]]
+--[[ AL["Malevolent"] = "Malevolent"--]] 
+--[[Translation missing --]]
 --[[ AL["Malformed link"] = "Malformed link"--]] 
 AL["Middle Click"] = "Clic Central"
 AL["Misc"] = "Varios"
@@ -149,7 +160,6 @@ AL["Module %s is not installed."] = "Módulo %s no es instalado."
 --[[ AL["N"] = "N"--]] 
 AL["New version available!"] = "¡Nueva versión disponible!"
 AL["No module found."] = "No se encuentra módulo."
-AL["Normal"] = "Normal"
 AL["Noth the Plaguebringer"] = "Noth el Pesteador"
 AL["One-Hand, Axe"] = "Una mano, Hacha"
 AL["One-Hand, Mace"] = "Una mano, Maza"
@@ -200,6 +210,8 @@ AL["Sapphiron"] = "Sapphiron"
 --[[ AL["Savage %s"] = "Savage %s"--]] 
 --[[Translation missing --]]
 --[[ AL["Save"] = "Save"--]] 
+--[[Translation missing --]]
+--[[ AL["SC"] = "SC"--]] 
 AL["Scorn"] = "Desdén"
 AL["Select Module"] = "Seleccionar módulo"
 AL["Select Subcategory"] = "Seleccionar subcategoría"

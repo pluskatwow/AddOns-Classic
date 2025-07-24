@@ -2,7 +2,7 @@ local AL = _G.AtlasLoot.GetLocales("deDE")
 
 if not AL then return end
 
--- These localization strings are translated on Curseforge: https://www.curseforge.com/wow/addons/atlaslootclassic-cata/localization
+-- These localization strings are translated on Curseforge: https://www.curseforge.com/wow/addons/atlaslootclassic-mists/localization
 -- Options
 AL["Add line break before source."] = "Zeilenumbruch vor Quelle einfügen."
 AL["Add new list"] = "Neue Liste erstellen"

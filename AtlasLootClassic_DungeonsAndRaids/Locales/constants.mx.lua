@@ -2,7 +2,7 @@
 
 if not AL then return end
 
--- These localization strings are translated on Curseforge: https://www.curseforge.com/wow/addons/atlaslootclassic-cata/localization
+-- These localization strings are translated on Curseforge: https://www.curseforge.com/wow/addons/atlaslootclassic-mists/localization
 -- DungeonsAndRaids
 AL["%s killed last"] = "%s matado el último"
 AL["20 Raids"] = "Bandas de 20"
@@ -111,6 +111,8 @@ AL["Ragglesnout"] = "Morrandrajos"
 AL["Ragnaros"] = "Ragnaros"
 --[[Translation missing --]]
 --[[ AL["Raid Finder"] = "Raid Finder"--]] 
+--[[Translation missing --]]
+--[[ AL["Raid Finder %s"] = "Raid Finder %s"--]] 
 AL["Razorfen Spearhide"] = "Cuerolanza de Rajacieno"
 AL["Razorgore the Untamed"] = "Sangrevaja el Indomable"
 AL["Relic Coffer"] = "Arca de reliquias"
