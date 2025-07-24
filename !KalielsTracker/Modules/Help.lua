@@ -253,6 +253,9 @@ local function SetupTutorials()
 			imageY = WOW_PROJECT_ID > WOW_PROJECT_CLASSIC and 9 or 16,
 			imageAbsolute = true,
 			text = "            |T"..helpPath.."help_whats-new_title:32:181:0:0:256:32:0:181:0:32|t\n\n"..
+					cTitle.."Version 4.2.2|r\n"..
+					"- FIXED - error getting incorrect quest data (not replicated, may cause new errors)\n"..
+					"\n"..
 					cTitle.."Version 4.2.1|r\n"..
 					"- FIXED (quests) - incorrect quest data saved\n"..
 					"- REVERTED - nil value of quest level\n"..
