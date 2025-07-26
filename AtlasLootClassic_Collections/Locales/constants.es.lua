@@ -42,6 +42,8 @@ AL["Capitals"] = "Capitales"
 --[[ AL["Cata"] = "Cata"--]] 
 --[[Translation missing --]]
 --[[ AL["Cataclysm"] = "Cataclysm"--]] 
+--[[Translation missing --]]
+--[[ AL["Challenge Mode Armor Sets"] = "Challenge Mode Armor Sets"--]] 
 AL["Childrens Week"] = "Semana de los Niños"
 --[[Translation missing --]]
 --[[ AL["Crafting"] = "Crafting"--]] 
