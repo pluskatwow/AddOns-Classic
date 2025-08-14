@@ -4828,10 +4828,8 @@ function NWB:sendBigWigs(time, msg, type)
 		--This cooldown is checked in the first yell func instead.
 		--if (GetServerTime() - NWB.firstYells[type] > NWB.buffDropSpamCooldown) then
 		if (NWB:isCapitalCityAction(type)) then
-			if SlashCmdList.BIGWIGSLOCALBAR then --BigWigs exists and is fully loaded.
-				SlashCmdList.BIGWIGSLOCALBAR(time .. " " .. msg);
-			elseif (SlashCmdList["/LOCALBAR"]) then --BigWigs exists but is not yet fully loaded.
-				SlashCmdList["/LOCALBAR"](time .. " " .. msg);
+			if (SlashCmdList.localbar) then
+				SlashCmdList.localbar(time .. " " .. msg);
 			end
 		end
 		--end
