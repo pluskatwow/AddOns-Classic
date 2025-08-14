@@ -455,3 +455,5 @@ L["Jungle Durian"] = "Durian de la jungle";
 L["Stratholme Holy Water"] = "Eau sacrée de Stratholme";
 
 L["Sanctified"] = "Sanctifié";
+
+L["Galleon"] = "Galion";
