@@ -4,16 +4,15 @@
 ---
 --- This file is part of addon Kaliel's Tracker.
 
-local addonName, KT = ...
-local M = KT:NewModule(addonName.."_Help")
+local _, KT = ...
+local M = KT:NewModule("Help")
 KT.Help = M
 
 local T = LibStub("MSA-Tutorials-1.0")
 local _DBG = function(...) if _DBG then _DBG("KT", ...) end end
 
 local db, dbChar
-local mediaPath = "Interface\\AddOns\\"..addonName.."\\Media\\"
-local helpPath = mediaPath.."Help\\"
+local helpPath = KT.MEDIA_PATH.."Help\\"
 local helpName = "help"
 local helpNumPages = 9
 local supportersName = "supporters"
@@ -23,7 +22,7 @@ local cBold = "|cff00ffe3"
 local cWarning = "|cffff7f00"
 local cDots = "|cff808080"
 local offs = "\n|T:1:8|t"
-local ebSpace = "|T:22:1|t"
+local ebSpace = "|T:24:1|t"
 local beta = "|cffff7fff[Beta]|r"
 local new = "|cffff7fff[NEW]|r"
 
@@ -35,7 +34,7 @@ local KTF = KT.frame
 
 local function AddonInfo(name)
 	local info = "Addon "..name
-	if IsAddOnLoaded(name) then
+	if C_AddOns.IsAddOnLoaded(name) then
 		info = info.." |cff00ff00is installed|r."
 	else
 		info = info.." |cffff0000is not installed|r."
@@ -105,15 +104,15 @@ local function SetupTutorials()
 			imageHeight = 128,
 			text = cTitle.."Header buttons|r\n\n"..
 					"Minimize button:\n"..
-					"|T"..mediaPath.."UI-KT-HeaderButtons:14:14:-1:2:32:64:0:14:0:14:209:170:0|t "..cDots.."...|r Expand Tracker\n"..
-					"|T"..mediaPath.."UI-KT-HeaderButtons:14:14:-1:2:32:64:0:14:16:30:209:170:0|t "..cDots.."...|r Collapse Tracker\n"..
-					"|T"..mediaPath.."UI-KT-HeaderButtons:14:14:-1:2:32:64:0:14:32:46:209:170:0|t "..cDots.."...|r when is tracker empty\n\n"..
+					"|T"..KT.MEDIA_PATH.."UI-KT-HeaderButtons:14:14:-1:2:32:64:0:14:0:14:209:170:0|t "..cDots.."...|r Expand Tracker\n"..
+					"|T"..KT.MEDIA_PATH.."UI-KT-HeaderButtons:14:14:-1:2:32:64:0:14:16:30:209:170:0|t "..cDots.."...|r Collapse Tracker\n"..
+					"|T"..KT.MEDIA_PATH.."UI-KT-HeaderButtons:14:14:-1:2:32:64:0:14:32:46:209:170:0|t "..cDots.."...|r when is tracker empty\n\n"..
 					"Other buttons:\n"..
-					"|T"..mediaPath.."UI-KT-HeaderButtons:14:14:-1:2:32:64:16:30:0:14:209:170:0|t "..cDots.."...|r Open Quest Log\n"..
-					"|T"..mediaPath.."UI-KT-HeaderButtons:14:14:-1:2:32:64:16:30:16:30:209:170:0|t "..cDots.."...|r Open Achievements (not in Classic Era)\n"..
-					"|T"..mediaPath.."UI-KT-HeaderButtons:14:14:-1:2:32:64:16:30:32:46:209:170:0|t "..cDots.."...|r Open Filters menu\n\n"..
-					"Buttons |T"..mediaPath.."UI-KT-HeaderButtons:14:14:0:2:32:64:16:30:0:14:209:170:0|t and "..
-					"|T"..mediaPath.."UI-KT-HeaderButtons:14:14:0:2:32:64:16:30:16:30:209:170:0|t you can disable in Options.\n\n"..
+					"|T"..KT.MEDIA_PATH.."UI-KT-HeaderButtons:14:14:-1:2:32:64:16:30:0:14:209:170:0|t "..cDots.."...|r Open Quest Log\n"..
+					"|T"..KT.MEDIA_PATH.."UI-KT-HeaderButtons:14:14:-1:2:32:64:16:30:16:30:209:170:0|t "..cDots.."...|r Open Achievements (not in Classic Era)\n"..
+					"|T"..KT.MEDIA_PATH.."UI-KT-HeaderButtons:14:14:-1:2:32:64:16:30:32:46:209:170:0|t "..cDots.."...|r Open Filters menu\n\n"..
+					"Buttons |T"..KT.MEDIA_PATH.."UI-KT-HeaderButtons:14:14:0:2:32:64:16:30:0:14:209:170:0|t and "..
+					"|T"..KT.MEDIA_PATH.."UI-KT-HeaderButtons:14:14:0:2:32:64:16:30:16:30:209:170:0|t you can disable in Options.\n\n"..
 					"You can set "..cBold.."[key bind]|r for Minimize button.\n"..
 					cBold.."Alt+Click|r on Minimize button opens "..KT.title.." Options.",
 			textY = 16,
@@ -147,12 +146,12 @@ local function SetupTutorials()
 		{	-- 4
 			image = helpPath.."help_tracker-filters",
 			text = cTitle.."Tracker Filters|r\n\n"..
-					"For open Filters menu "..cBold.."Click|r on the button |T"..mediaPath.."UI-KT-HeaderButtons:14:14:-2:2:32:64:16:30:32:46:209:170:0|t.\n\n"..
+					"For open Filters menu "..cBold.."Click|r on the button |T"..KT.MEDIA_PATH.."UI-KT-HeaderButtons:14:14:-2:1:32:64:16:30:32:46:209:170:0|t.\n\n"..
 					"There are two types of filters:\n"..
 					cTitle.."Static filter|r - adds quests/achievements to tracker by criterion (e.g. \"Daily\") and then you can add / remove items by hand.\n"..
 					cTitle.."Dynamic filter|r - automatically adding quests/achievements to tracker by criterion (e.g. \"|cff00ff00Auto|r Zone\") "..
 					"and continuously changing them. This type doesn't allow add / remove items by hand."..
-					"When is some Dynamic filter active, header button is green |T"..mediaPath.."UI-KT-HeaderButtons:14:14:-2:2:32:64:16:30:32:46:0:255:0|t.\n\n"..
+					"When is some Dynamic filter active, header button is green |T"..KT.MEDIA_PATH.."UI-KT-HeaderButtons:14:14:-2:1:32:64:16:30:32:46:0:255:0|t.\n\n"..
 					"For Achievements can change searched categories, it will affect the outcome of the filter.\n\n"..
 					"This menu displays other options affecting the content of the tracker.",
 			textY = 16,
@@ -167,9 +166,9 @@ local function SetupTutorials()
 			text = cTitle.."Quest Item buttons|r\n\n"..
 					"For support Quest Items you need Questie addon (see page 8). Buttons are out of the tracker, because Blizzard doesn't allow to work with the action buttons inside addons.\n\n"..
 					"|T"..helpPath.."help_quest-item-buttons_2:32:32:1:0:64:32:0:32:0:32|t "..cDots.."...|r  This tag indicates quest item in quest. The number inside is for\n"..
-					"                identification moved quest item button.\n\n"..
+					"              identification moved quest item button.\n\n"..
 					"|T"..helpPath.."help_quest-item-buttons_2:32:32:0:3:64:32:32:64:0:32|t "..cDots.."...|r  Real quest item button is moved out of the tracker to the left/right\n"..
-					"                side (by selected anchor point). The number is the same as for the tag.\n\n"..
+					"              side (by selected anchor point). The number is the same as for the tag.\n\n"..
 					cWarning.."Warning:|r\n"..
 					"In some situation during combat, actions around the quest item buttons paused and carried it up after a player is out of combat.",
 			shineTop = 3,
@@ -201,13 +200,13 @@ local function SetupTutorials()
 					text = "https://www.wowinterface.com/downloads/info24937-ClassicQuestLogforClassic.html",
 					width = 485,
 					left = 9,
-					bottom = 37,
+					bottom = 39,
 				},
 				{
 					text = "https://www.curseforge.com/wow/addons/questguru_classic",
 					width = 485,
 					left = 9,
-					bottom = 3,
+					bottom = 5,
 				}
 			},
 			shine = KTF,
@@ -234,7 +233,7 @@ local function SetupTutorials()
 				{
 					text = "https://www.curseforge.com/wow/addons/questie",
 					width = 450,
-					bottom = 3,
+					bottom = 6,
 				}
 			},
 			shine = KTF,
@@ -245,32 +244,34 @@ local function SetupTutorials()
 		},
 		{	-- 9
 			image = helpPath.."help_whats-new_logo",
-			imageWidth = 182,
-			imageHeight = WOW_PROJECT_ID > WOW_PROJECT_CLASSIC and 40 or 21,
+			imageWidth = 192,
+			imageHeight = WOW_PROJECT_ID > WOW_PROJECT_CLASSIC and 42 or 22,
 			imageTexCoords = WOW_PROJECT_ID > WOW_PROJECT_CLASSIC and { 0, 0.75, 0, 0.65625 } or { 0, 0.75, 0.65625, 1 },
 			imagePoint = "TOPRIGHT",
 			imageX = -20,
-			imageY = WOW_PROJECT_ID > WOW_PROJECT_CLASSIC and 9 or 16,
+			imageY = WOW_PROJECT_ID > WOW_PROJECT_CLASSIC and 3 or 16,
 			imageAbsolute = true,
-			text = "            |T"..helpPath.."help_whats-new_title:32:181:0:0:256:32:0:181:0:32|t\n\n"..
-					cTitle.."Version 4.2.2|r\n"..
-					"- FIXED - error getting incorrect quest data (not replicated, may cause new errors)\n"..
+			text = "           |T"..helpPath.."help_whats-new_title:32:181:0:0:256:32:0:181:0:32|t\n\n"..
+					cTitle.."Version 5.0.1|r\n"..
+					"- FIXED (quests) - error when filtering by zone with Auto Quest tracking\n"..
 					"\n"..
-					cTitle.."Version 4.2.1|r\n"..
-					"- FIXED (quests) - incorrect quest data saved\n"..
-					"- REVERTED - nil value of quest level\n"..
-					"\n"..
-					cTitle.."Version 4.2.0|r\n"..
-					"- ADDED - support for WoW 4.4.2.59346\n"..
-					"- ADDED - support for WoW 1.15.6.58912\n"..
-					"- CHANGED - addon support - ElvUI 13.86, Tukui 20.460\n"..
-					"- CHANGED - addon support - Questie 10.18.1\n"..
+					cTitle.."Version 5.0.0|r\n"..
+					"- ADDED - support for WoW 1.15.7.61582\n"..
+					"- ADDED - support for WoW 5.5.0.62258\n"..
 					"- CHANGED (help) - Active Patrons\n"..
-					"- CHANGED - addon support - ElvUI 13.84, Tukui 20.458\n"..
-					"- CHANGED - addon support - Questie 10.17.0\n"..
+					"- CHANGED (scenario) - Proving Grounds is not supported (it may cause errors)\n"..
+					"- CHANGED (quests) - persistent states (complete sounds no longer play repeatedly)\n"..
+					"- CHANGED (quests) - improved zone filtering\n"..
+					"- CHANGED (quests) - quest tracking management (internal watchlist)\n"..
+					"- CHANGED - addon support - Questie 11.2.11\n"..
+					"- CHANGED (quests) - context menu improvements\n"..
+					"- CHANGED - deprecated functions in WoW 3.4.4\n"..
+					"- FIXED - error getting incorrect quest data\n"..
+					"- FIXED - tracked quests are untracked after login\n"..
 					"\n"..
 
-					cTitle.."WoW 4.4.2/1.15.6 - Known issues w/o solution|r\n"..
+					cTitle.."WoW 5.5.0/1.15.7 - Known issues w/o solution|r\n"..
+					"- Scenario Proving Grounds is not supported. I currently have no way to test it, and it may cause errors.\n"..
 					"- Clicking on tracked quests or achievements has no response during combat.\n"..
 					"- Header buttons Q and A don't work during combat.\n\n"..
 
@@ -284,7 +285,7 @@ local function SetupTutorials()
 				{
 					text = "https://www.curseforge.com/wow/addons/kaliels-tracker-classic/issues",
 					width = 450,
-					bottom = 38,
+					bottom = 41,
 				}
 			},
 			shine = KTF,
@@ -305,15 +306,14 @@ local function SetupTutorials()
 					self[i].shineLeft = db.headerOtherButtons and -55 + eraMod or -15
 				end
 			elseif i == 3 then
-				local questInfo = KT_GetQuestListInfo(1)
-				if questInfo then
-					local block = QUEST_TRACKER_MODULE.usedBlocks[questInfo.id]
-					if block then
-						self[i].shine = block
-					end
-					KTF.Scroll.value = 0
-					ObjectiveTracker_Update()
+				local questLogIndex = GetQuestIndexForWatch(1)
+				local questID = GetQuestIDFromLogIndex(questLogIndex)
+				local block = QUEST_TRACKER_MODULE.usedBlocks[questID]
+				if block then
+					self[i].shine = block
 				end
+				KTF.Scroll.value = 0
+				ObjectiveTracker_Update()
 			elseif i == 5 then
 				self[i].shine = KTF.Buttons
 			end
@@ -339,16 +339,14 @@ local function SetupTutorials()
 					"of time that addon development requires.\n\n"..
 					"                                    Many thanks to all supporters  |T"..helpPath.."help_patreon:16:16:0:0:256:32:174:190:0:16|t\n\n"..
 					cTitle.."Active Patrons|r\n"..
-					SetFormatedPatronName("Epic", "Haekwon", "Elune")..
 					SetFormatedPatronName("Epic", "Liothen", "Emerald Dream")..
-					SetFormatedPatronName("Rare", "A")..
+					SetFormatedPatronName("Rare", "Ian F")..
+					SetFormatedPatronName("Rare", "Spance")..
 					SetFormatedPatronName("Uncommon", "Anaara", "Auchindoun")..
 					SetFormatedPatronName("Uncommon", "Charles Howarth")..
-					SetFormatedPatronName("Uncommon", "Flex (drantor)")..
 					SetFormatedPatronName("Uncommon", "Illidanclone", "Kazzak")..
 					SetFormatedPatronName("Uncommon", "Mystekal")..
 					SetFormatedPatronName("Uncommon", "Semy", "Ravencrest")..
-					SetFormatedPatronName("Uncommon", "Sopleb")..
 					SetFormatedPatronName("Uncommon", "Xeelee", "Razorfen")..
 					SetFormatedPatronName("Common", "Darren Divecha")..
 					"\n"..

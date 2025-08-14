@@ -1,7 +1,7 @@
-## Interface: 40402
+## Interface: 50500
 ## Title: Kaliel's Tracker
-## Notes: Cataclysm Classic Objective Tracker
-## Version: 4.2.2
+## Notes: MoP Classic Objective Tracker
+## Version: 5.0.1
 ## Author: Kaliel (Marouan Sabbagh)
 
 ## SavedVariables: KalielsTrackerDB
@@ -9,15 +9,14 @@
 ## OptionalDeps: Ace3, LibSharedMedia-3.0, AceGUI-3.0-SharedMediaWidgets, LibSink-2.0, MSA-DropDownMenu-1.0, Questie
 
 Compatibility.lua
-Blizzard_Core.xml
+Core\Core.xml
 
-Libs.xml
+Libs\Libs.xml
 Constants.lua
 Utils.lua
 Media.lua
 
 KalielsTracker.lua
 KalielsTracker.xml
-Options.lua
 
-Modules.xml
+Modules\Modules.xml
