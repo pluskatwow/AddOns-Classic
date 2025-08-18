@@ -7,6 +7,8 @@ L["%s does not match your currently equipped %s. ReforgeLite only supports equip
 L["^+(%d+) %s$"] = "^+(%d+)%s$"
 L["Active window color"] = "當前視窗的顏色"
 L["Add cap"] = "增加上限"
+--[[Translation missing --]]
+--[[ L["Apply %s Output"] = ""--]] 
 L["At least"] = "至少（可超過）"
 L["At most"] = "最多（不超過）"
 --[[Translation missing --]]
@@ -26,14 +28,18 @@ L["Debug"] = "偵錯"
 L["Enter pawn string"] = "輸入pawn字串"
 L["Enter the preset name"] = "輸入預設名稱"
 L["Enter WoWSims JSON"] = "输入 WoWSims JSON"
+--[[Translation missing --]]
+--[[ L["Enter WoWSims JSON or Pawn string"] = ""--]] 
 L["Exactly"] = "確切地"
 L["Expertise hard cap"] = "熟練硬上限"
 L["Expertise soft cap"] = "熟練軟上限"
 L["Export"] = "出口"
 --[[Translation missing --]]
 --[[ L["Highlight reforged stats"] = ""--]] 
-L["Import Pawn"] = "匯入Pawn"
-L["Import WoWSims"] = "匯入WoWSims"
+--[[Translation missing --]]
+--[[ L["Import"] = ""--]] 
+--[[Translation missing --]]
+--[[ L["Import WoWSims/Pawn"] = ""--]] 
 L["Inactive window color"] = "非當前視窗的顏色"
 --[[Translation missing --]]
 --[[ L["Masterfrost"] = ""--]] 

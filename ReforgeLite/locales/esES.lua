@@ -7,6 +7,8 @@ L["%s does not match your currently equipped %s. ReforgeLite only supports equip
 L["^+(%d+) %s$"] = "^+(%d+) %s$"
 L["Active window color"] = "Color de ventana activa"
 L["Add cap"] = "Agregar cap"
+--[[Translation missing --]]
+--[[ L["Apply %s Output"] = ""--]] 
 L["At least"] = "Al menos"
 L["At most"] = "Como maximo"
 --[[Translation missing --]]
@@ -28,14 +30,18 @@ L["Crit block"] = "Crit block"
 L["Enter pawn string"] = "Introduzca cadena peon"
 L["Enter the preset name"] = "Introduzca el nombre del ajuste"
 L["Enter WoWSims JSON"] = "Ingrese WoWSims JSON"
+--[[Translation missing --]]
+--[[ L["Enter WoWSims JSON or Pawn string"] = ""--]] 
 L["Exactly"] = "Exactamente"
 L["Expertise hard cap"] = "Cap maximo Pericia"
 L["Expertise soft cap"] = "Cap minimo Pericia"
 L["Export"] = "Exportar"
 --[[Translation missing --]]
 --[[ L["Highlight reforged stats"] = ""--]] 
-L["Import Pawn"] = "Importar Peon"
-L["Import WoWSims"] = "Importar WoWsims"
+--[[Translation missing --]]
+--[[ L["Import"] = ""--]] 
+--[[Translation missing --]]
+--[[ L["Import WoWSims/Pawn"] = ""--]] 
 L["Inactive window color"] = "Color de ventana inactiva"
 --[[Translation missing --]]
 --[[ L["Masterfrost"] = ""--]] 

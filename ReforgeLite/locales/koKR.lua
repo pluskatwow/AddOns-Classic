@@ -7,6 +7,8 @@ L["%s does not match your currently equipped %s. ReforgeLite only supports equip
 L["^+(%d+) %s$"] = "^%s %+(%d+)$"
 L["Active window color"] = "활성화된 창 색상"
 L["Add cap"] = "조건 추가"
+--[[Translation missing --]]
+--[[ L["Apply %s Output"] = ""--]] 
 L["At least"] = "최소"
 L["At most"] = "최대"
 --[[Translation missing --]]
@@ -26,14 +28,18 @@ L["Debug"] = "디버그"
 L["Enter pawn string"] = "Pawn 문자열을 입력하세요"
 L["Enter the preset name"] = "프리셋 이름을 입력하세요"
 L["Enter WoWSims JSON"] = "WoWSims JSON을 입력하세요"
+--[[Translation missing --]]
+--[[ L["Enter WoWSims JSON or Pawn string"] = ""--]] 
 L["Exactly"] = "정확히"
 L["Expertise hard cap"] = "숙련 하드 캡"
 L["Expertise soft cap"] = "숙련 소프트 캡"
 L["Export"] = "내보내다"
 --[[Translation missing --]]
 --[[ L["Highlight reforged stats"] = ""--]] 
-L["Import Pawn"] = "Pawn 가져오기"
-L["Import WoWSims"] = "WoWSims 가져오기"
+--[[Translation missing --]]
+--[[ L["Import"] = ""--]] 
+--[[Translation missing --]]
+--[[ L["Import WoWSims/Pawn"] = ""--]] 
 L["Inactive window color"] = "비활성화된 창 색상"
 --[[Translation missing --]]
 --[[ L["Masterfrost"] = ""--]] 
